@@ -13,3 +13,20 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Wails bin directory
+build/bin
+
+# IDEs
+.idea
+.vscode
+
+# The black hole that is...
+node_modules
+
+# Wails build
+frontend/dist
+frontend/wailsjs
+
+# dist
+dist
