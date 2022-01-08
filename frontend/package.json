@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@primer/css": "^19.1.1",
+    "@tensorflow/tfjs": "^3.12.0",
     "echarts": "^5.2.2",
     "sirv-cli": "^1.0.0",
     "svelte-octicons": "^17.1.0"
