@@ -1,0 +1,20 @@
+{
+  "name": "TWLogAIAN",
+  "frontend:build": "npm run build",
+  "frontend:install": "npm install",
+  "frontend:dev": "",
+  "wailsjsdir": "./frontend",
+  "version": "2",
+  "Path": "",
+  "BuildDir": "",
+  "outputfilename": "TWLogAIAN",
+  "OutputType": "",
+  "Platform": "",
+  "Author": {
+    "name": "twsnmp",
+    "email": "ymi@twise.co.jp"
+  },
+  "debounceMS": 100,
+  "devserverurl": "http://localhost:34115",
+  "appargs": ""
+}

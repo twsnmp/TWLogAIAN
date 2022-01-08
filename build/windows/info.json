@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "1.0.0"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "1.0.0",
+			"CompanyName": "TWLogAIAN",
+			"FileDescription": "TWLogAIAN",
+			"LegalCopyright": "Copyright.........",
+			"ProductName": "TWLogAIAN",
+			"Comments": "Built using Wails (https://wails.app)"
+		}
+	}
+}
