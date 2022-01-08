@@ -5,6 +5,7 @@ import livereload from 'rollup-plugin-livereload';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import postcss from 'rollup-plugin-postcss'
+import replace from '@rollup/plugin-replace';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -60,7 +61,6 @@ export default {
 		copy({
 			targets: [
 				{src: 'src/index.html', dest: 'dist/'},
-				{src: 'src/global.css', dest: 'dist/'},
 				{src: 'src/assets', dest: 'dist/'},
 			]
 		}),
@@ -75,7 +75,10 @@ export default {
 
 		// If we're building for production (npm run build
 		// instead of npm run dev), minify
-		production && terser()
+		production && terser(),
+    replace({
+      'process.env.NODE_ENV': JSON.stringify( 'development' )
+    }),
 	],
 	watch: {
 		clearScreen: false
