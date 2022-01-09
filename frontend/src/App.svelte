@@ -7,6 +7,11 @@
       greeting = result;
     });
   }
+  import Grid from "gridjs-svelte";
+  const data = [
+    { name: "John", email: "john@example.com" },
+    { name: "Mark", email: "mark@gmail.com" },
+  ];
 </script>
 
 <main>
@@ -17,6 +22,7 @@
   {#if greeting}
     <div id="result">{greeting}</div>
   {/if}
+  <Grid data={data} sort pagination search />  
 </main>
 
 <style>
