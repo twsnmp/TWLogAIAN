@@ -12,8 +12,8 @@
 
 .gridjs-head {
   width: 100%;
-  margin-bottom: 5px;
-  padding: 5px 1px; }
+  margin-bottom: 3px;
+  padding: 3px 1px; }
   .gridjs-head::after {
     content: '';
     display: block;
@@ -36,7 +36,7 @@
   position: relative;
   width: 100%;
   z-index: 5;
-  padding: 12px 24px;
+  padding: 6px 12px;
   border-top: 1px solid #e5e7eb;
   background-color: #fff;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.26);
@@ -53,8 +53,8 @@ input.gridjs-input {
   background-color: #fff;
   border: 1px solid #d2d6dc;
   border-radius: 5px;
-  padding: 10px 13px;
-  font-size: 14px;
+  padding: 5px 5px;
+  font-size: 12px;
   line-height: 1.45;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -75,9 +75,10 @@ input.gridjs-input {
   .gridjs-pagination .gridjs-pages {
     float: right; }
     .gridjs-pagination .gridjs-pages button {
-      padding: 5px 14px;
+      padding: 3px 10px;
       border: 1px solid #d2d6dc;
       background-color: #fff;
+      color: #999;
       border-right: none;
       outline: none;
       -webkit-user-select: none;
@@ -101,6 +102,7 @@ input.gridjs-input {
       box-shadow: none;
       background-color: #fff; }
     .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+      color: #000;
       background-color: #f7f7f7;
       font-weight: bold; }
     .gridjs-pagination .gridjs-pages button:last-child {
@@ -155,7 +157,7 @@ table.gridjs-table {
 
 td.gridjs-td {
   border: 1px solid #e5e7eb;
-  padding: 12px 24px;
+  padding: 6px 12px;
   background-color: #fff;
   box-sizing: content-box; }
 
@@ -174,7 +176,7 @@ th.gridjs-th {
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
   border-top: none;
-  padding: 14px 24px;
+  padding: 7px 12px;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
@@ -288,4 +290,120 @@ th.gridjs-th:last-child {
     cursor: ew-resize;
     background-color: #9bc2f7; }
 
-/*# sourceMappingURL=mermaid.css.map */
+/* Dark Mode */
+
+[data-dark-theme=dark] .gridjs-container{
+  color: #c9d1d9;
+}
+
+[data-dark-theme=dark] .gridjs-footer {
+  border-top: 1px solid #e5e7eb;
+  background-color: #0d1117;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.26);
+  border-color: #e5e7eb;
+}
+
+[data-dark-theme=dark] input.gridjs-input {
+  background-color: #0d1117;
+  border: 1px solid #d2d6dc;
+}
+
+[data-dark-theme=dark] input.gridjs-input:focus {
+    box-shadow: 0 0 0 3px rgba(149, 189, 243, 0.5);
+    border-color: #9bc2f7;
+}
+
+[data-dark-theme=dark] .gridjs-pagination {
+  color: #c9d1d9;
+}
+
+[data-dark-theme=dark] .gridjs-pagination .gridjs-pages button {
+  border: 1px solid #d2d6dc;
+  background-color: #0d1117;
+  color: #c9d1d9;
+}
+
+[data-dark-theme=dark] .gridjs-pagination .gridjs-pages button:focus {
+  box-shadow: 0 0 0 2px rgba(149, 189, 243, 0.5);
+}
+
+[data-dark-theme=dark] .gridjs-pagination .gridjs-pages button:hover {
+  background-color: rgba(149, 189, 243, 0.5);
+  color: #ccc;
+}
+
+[data-dark-theme=dark] .gridjs-pagination .gridjs-pages button:hover:disabled {
+  background-color: #0d1117;
+  color: #6b7280;
+}
+
+[data-dark-theme=dark] .gridjs-pagination .gridjs-pages button.gridjs-spread {
+  background-color: #0d1117;
+}
+
+[data-dark-theme=dark] .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+  color: #fff;
+  background-color: #0d1117;
+}
+
+[data-dark-theme=dark] .gridjs-pagination .gridjs-pages button:last-child {
+  border-right: 1px solid #d2d6dc;
+}
+
+[data-dark-theme=dark] .gridjs-tbody {
+  background-color: #0d1117;
+}
+
+[data-dark-theme=dark] td.gridjs-td {
+  border: 1px solid #e5e7eb;
+  background-color: #0d1117;
+}
+
+[data-dark-theme=dark] th.gridjs-th {
+  color: #eee;
+  background-color: #444;
+  border: 1px solid #e5e7eb;
+}
+
+[data-dark-theme=dark] th.gridjs-th-sort:hover {
+  color: #333;
+  background-color: #e5e7eb;
+}
+
+[data-dark-theme=dark] th.gridjs-th-sort:focus {
+  color: #333;
+  background-color: #e5e7eb;
+}
+
+[data-dark-theme=dark] th.gridjs-th-fixed {
+  box-shadow: 0 1px 0 0 #e5e7eb;
+}
+
+[data-dark-theme=dark] .gridjs-tr-selected td {
+  background-color: #ebf5ff;
+}
+
+[data-dark-theme=dark] .gridjs-wrapper {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.26);
+  border-color: #e5e7eb;
+}
+
+[data-dark-theme=dark] .gridjs-loading-bar {
+  z-index: 10;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: #0d1117;
+  opacity: 0.5;
+}
+
+[data-dark-theme=dark] .gridjs-loading-bar::after {
+  background-image: linear-gradient(90deg, rgba(204, 204, 204, 0) 0, rgba(204, 204, 204, 0.2) 20%, rgba(204, 204, 204, 0.5) 60%, rgba(204, 204, 204, 0));
+}
+
+[data-dark-theme=dark] .gridjs-resizable:hover {
+  background-color: #9bc2f7;
+}
+

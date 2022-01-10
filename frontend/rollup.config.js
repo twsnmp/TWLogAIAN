@@ -62,7 +62,7 @@ export default {
 			targets: [
 				{src: 'src/index.html', dest: 'dist/'},
 				{src: 'src/assets', dest: 'dist/'},
-				{src: 'node_modules/@primer/css/dist/primer.css', dest: 'dist/'},
+				{src: 'node_modules/@primer/css/dist/primer.css', dest: 'dist/assets/css/'},
 			]
 		}),
 

@@ -18,17 +18,17 @@
   <div id="input" data-wails-no-drag>
     <input id="name" type="text" bind:value={name} />
     <button class="button" on:click={greet}>Greet</button>
-  </div>
-  {#if greeting}
+    {#if greeting}
     <div id="result">{greeting}</div>
-  {/if}
-  <Grid data={data} sort pagination search />  
+    {/if}
+    <Grid data={data} sort pagination search />  
+  </div>
 </main>
 
 <style>
   main {
     height: 100%;
-    width: 100%;
+    width: 95%;
     margin:40px auto;
   }
 
