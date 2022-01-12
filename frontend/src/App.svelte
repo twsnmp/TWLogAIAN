@@ -1,51 +1,55 @@
 <script>
-  let name = "";
-  let greeting = "";
+  import { Router, Link, Route } from "svelte-routing";
+  import Start from "./pages/Start.svelte";
+  import DataSource from "./pages/DataSource.svelte";
+  import Result from "./pages/Result.svelte";
+  export let url = "/datasrc";
+  let isOpenDB = false;
 
-  function greet() {
-    window.go.main.App.Greet(name).then((result) => {
-      greeting = result;
-    });
+  const handleDone = () => {
+    isOpenDB = true;
   }
-  import Grid from "gridjs-svelte";
-  const data = [
-    { name: "John", email: "john@example.com" },
-    { name: "Mark", email: "mark@gmail.com" },
-  ];
+  const close = () => {
+    isOpenDB = false;
+  }
 </script>
 
 <main>
-  <div id="input" data-wails-no-drag>
-    <input id="name" type="text" bind:value={name} />
-    <button class="button" on:click={greet}>Greet</button>
-    {#if greeting}
-    <div id="result">{greeting}</div>
+  <div id="page" data-wails-no-drag>
+    {#if !isOpenDB }
+     <Start on:done={handleDone}/>
+    {:else}
+    <Router url="{url}">
+      <nav class="UnderlineNav">
+        <div class="UnderlineNav-body" role="tablist">
+          <Link to="/datasrc" class="UnderlineNav-item">データソース</Link>
+          <Link to="/datasrc1" class="UnderlineNav-item">インデックス</Link>
+          <Link to="/datasrc2" class="UnderlineNav-item">分析設定</Link>
+          <Link to="/result" class="UnderlineNav-item">結果</Link>
+        </div>
+        <div class="UnderlineNav-actions">
+          <a href="dummy" class="btn btn-sm" on:click={close}>終了</a>
+        </div>
+        </nav>
+      <div>
+        <Route path="/datasrc"><DataSource /></Route>
+        <Route path="/datasrc1"><DataSource /></Route>
+        <Route path="/datasrc2"><DataSource /></Route>
+        <Route path="/result"><Result /></Route>
+      </div>
+    </Router>
     {/if}
-    <Grid data={data} sort pagination search />  
   </div>
 </main>
 
 <style>
   main {
     height: 100%;
+    width: 100%;
+  }
+  #page {
+    height: 100%;
     width: 95%;
-    margin:40px auto;
-  }
-
-  #result {
-    margin-top: 1rem;
-    font-size: 1.5rem;
-    color: azure;
-  }
-
-  button {
-    -webkit-appearance: default-button;
-    padding: 6px;
-  }
-
-  #name {
-    border-radius: 3px;
-    outline: none;
-    -webkit-font-smoothing: antialiased;
+    margin:10px auto;
   }
 </style>

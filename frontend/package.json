@@ -31,7 +31,8 @@
     "gridjs-svelte": "^1.3.0",
     "p5-svelte": "^2.2.2",
     "sirv-cli": "^1.0.0",
-    "svelte-octicons": "^17.1.0"
+    "svelte-octicons": "^17.1.0",
+    "svelte-routing": "^1.6.0"
   },
   "author": "twsnmp"
 }
