@@ -18,6 +18,9 @@ var assets embed.FS
 //go:embed build/appicon.png
 var icon []byte
 
+var version = "v0.0.0"
+var commit = ""
+
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()
@@ -65,7 +68,7 @@ func main() {
 			WebviewIsTransparent: true,
 			WindowIsTranslucent:  true,
 			About: &mac.AboutInfo{
-				Title:   "TWLogAIAN",
+				Title:   "AIアシストログ分析ツール",
 				Message: "© 2021 Masayuki Yamai",
 				Icon:    icon,
 			},

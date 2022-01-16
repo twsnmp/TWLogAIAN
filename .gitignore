@@ -27,6 +27,7 @@ node_modules
 # Wails build
 frontend/dist
 frontend/wailsjs
+wailsjs
 
 # dist
 dist

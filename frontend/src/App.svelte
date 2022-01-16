@@ -28,7 +28,7 @@
           <Link to="/result" class="UnderlineNav-item">結果</Link>
         </div>
         <div class="UnderlineNav-actions">
-          <a href="dummy" class="btn btn-sm" on:click={close}>終了</a>
+          <a href="##" class="btn btn-sm" on:click={close}>終了</a>
         </div>
         </nav>
       <div>
