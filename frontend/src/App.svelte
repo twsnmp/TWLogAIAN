@@ -1,43 +1,26 @@
 <script>
-  import { Router, Link, Route } from "svelte-routing";
+  import Wellcome from "./pages/Wellcome.svelte";
+  import Feedback from "./pages/Feedback.svelte";
   import Start from "./pages/Start.svelte";
-  import DataSource from "./pages/DataSource.svelte";
-  import Result from "./pages/Result.svelte";
-  export let url = "/datasrc";
-  let isOpenDB = false;
-
-  const handleDone = () => {
-    isOpenDB = true;
-  }
-  const close = () => {
-    isOpenDB = false;
+  // import Config from "./pages/Config.svelte";
+  // import Search from "./pages/Search.svelte";
+  // import Result from "./pages/Result.svelte";
+  let page = "wellcome";
+  const handleDone = (e) => {
+    if (e && e.detail  && e.detail.page) {
+      page = e.detail.page;
+    }
   }
 </script>
 
 <main>
   <div id="page" data-wails-no-drag>
-    {#if !isOpenDB }
+    {#if page == "wellcome" }
+     <Wellcome on:done={handleDone}/>
+    {:else if page == "feedback"}
+     <Feedback on:done={handleDone}/>
+    {:else if page == "start"}
      <Start on:done={handleDone}/>
-    {:else}
-    <Router url="{url}">
-      <nav class="UnderlineNav">
-        <div class="UnderlineNav-body" role="tablist">
-          <Link to="/datasrc" class="UnderlineNav-item">データソース</Link>
-          <Link to="/datasrc1" class="UnderlineNav-item">インデックス</Link>
-          <Link to="/datasrc2" class="UnderlineNav-item">分析設定</Link>
-          <Link to="/result" class="UnderlineNav-item">結果</Link>
-        </div>
-        <div class="UnderlineNav-actions">
-          <a href="##" class="btn btn-sm" on:click={close}>終了</a>
-        </div>
-        </nav>
-      <div>
-        <Route path="/datasrc"><DataSource /></Route>
-        <Route path="/datasrc1"><DataSource /></Route>
-        <Route path="/datasrc2"><DataSource /></Route>
-        <Route path="/result"><Result /></Route>
-      </div>
-    </Router>
     {/if}
   </div>
 </main>
