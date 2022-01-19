@@ -1,5 +1,5 @@
 <script>
-  import { X16, FileDirectory16, Check16 } from "svelte-octicons";
+  import { X16, FileDirectory16, TriangleLeft16, TriangleRight16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   let workdir = "";
@@ -92,13 +92,13 @@
     </form>
   </div>
   <div class="Box-footer text-right">
-    <button class="btn" type="button btn-secondary mr-1" on:click={cancel}>
-      <X16 />
+    <button class="btn" type="button btn-secondary" on:click={cancel}>
+      <TriangleLeft16 />
       戻る
     </button>
-    <button class="btn btn-primary" type="button" on:click={setWorkDir}>
-      <Check16 />
+    <button class="btn btn-primary ml-2" type="button" on:click={setWorkDir}>
       次へ
+      <TriangleRight16 />
     </button>
   </div>
 </div>

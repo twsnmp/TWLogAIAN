@@ -1,7 +1,7 @@
 <script>
   import Wellcome from "./pages/Wellcome.svelte";
   import Feedback from "./pages/Feedback.svelte";
-  import Start from "./pages/Start.svelte";
+  import WorkDir from "./pages/WorkDir.svelte";
   // import Config from "./pages/Config.svelte";
   // import Search from "./pages/Search.svelte";
   // import Result from "./pages/Result.svelte";
@@ -19,8 +19,8 @@
      <Wellcome on:done={handleDone}/>
     {:else if page == "feedback"}
      <Feedback on:done={handleDone}/>
-    {:else if page == "start"}
-     <Start on:done={handleDone}/>
+    {:else if page == "workdir"}
+     <WorkDir on:done={handleDone}/>
     {/if}
   </div>
 </main>

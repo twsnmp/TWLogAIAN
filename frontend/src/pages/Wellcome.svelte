@@ -1,4 +1,5 @@
 <script>
+  import { MortarBoard16, PaperAirplane16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   let version = "1.0.0(xxxxx)";
@@ -12,8 +13,8 @@
   const feedback = () => {
     dispatch("done", { page: "feedback" });
   };
-  const start = () => {
-    dispatch("done", { page: "start" });
+  const workdir = () => {
+    dispatch("done", { page: "workdir" });
   };
 </script>
 
@@ -61,10 +62,12 @@
     </div>
   </div>
   <div class="Box-footer text-right">
-    <button class="btn btn-primary mr-1" type="button" on:click={start}>
+    <button class="btn btn-primary mr-1" type="button" on:click={workdir}>
+      <MortarBoard16 />
       分析をはじめる
     </button>
     <button class="btn btn-danger" type="button" on:click={feedback}>
+      <PaperAirplane16 />
       フィードバック
     </button>
   </div>
