@@ -3,7 +3,7 @@
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   let workdir = "";
-  let setWorkDirErr = false;
+  let setWorkDirErr = "";
   let lastWorkDirs = [];
   let selLast = "";
 
@@ -12,12 +12,12 @@
   });
   const setWorkDir = () => {
     if (!workdir) {
-      setWorkDirErr = true;
+      setWorkDirErr = "作業ディレクトリを選択してください";
       return;
     }
     window.go.main.App.SetWorkDir(workdir).then((r) => {
-      if (r) {
-        dispatch("done", { page: "config" });
+      if (r === "") {
+        dispatch("done", { page: "setting" });
       } else {
         setWorkDirErr = true;
       }
@@ -26,6 +26,7 @@
   const selectWorkDir = () => {
     window.go.main.App.GetWorkDir().then((d) => {
       workdir = d;
+      console.log(workdir);
     });
   };
   const cancel = () => {
@@ -37,7 +38,7 @@
     }
   };
   const clearMsg = () => {
-    setWorkDirErr = false;
+    setWorkDirErr = "";
   };
 </script>
 
@@ -45,9 +46,9 @@
   <div class="Box-header">
     <h3 class="Box-title">作業フォルダーの選択</h3>
   </div>
-  {#if setWorkDirErr}
+  {#if setWorkDirErr != ""}
     <div class="flash flash-error">
-      選択した作業フォルダーは利用できません
+      { setWorkDirErr }
       <button
         class="flash-close js-flash-close"
         type="button"
@@ -62,11 +63,11 @@
     <form>
       <div class="input-group mb-5">
         <input
-          class="form-control errored"
+          class="form-control"
           type="text"
           placeholder="作業フォルダー"
           aria-label="作業フォルダー"
-          value={workdir}
+          bind:value={workdir}
         />
         <span class="input-group-button">
           <button class="btn" type="button" on:click={selectWorkDir}>

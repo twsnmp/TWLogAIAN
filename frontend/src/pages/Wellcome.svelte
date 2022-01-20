@@ -1,5 +1,5 @@
 <script>
-  import { MortarBoard16, PaperAirplane16 } from "svelte-octicons";
+  import { MortarBoard16, PaperAirplane16, Sun16, Moon16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   let version = "1.0.0(xxxxx)";
@@ -16,11 +16,35 @@
   const workdir = () => {
     dispatch("done", { page: "workdir" });
   };
+
+  let dark = true;
+  window.go.main.App.GetDark().then((v) => {
+    if (!v) {
+      toggleDark()
+    }
+  });
+  const toggleDark = () => {
+    dark = !dark;
+    window.go.main.App.SetDark(dark)
+    const e = document.querySelector("body");
+    if (e) {
+      e.dataset.colorMode = dark ? "dark" : "light";
+      e.dataset.darkThme = dark ? "dark" : "light";
+    }
+  };
 </script>
 
 <div class="Box mx-auto" style="max-width: 500px;">
   <div class="Box-header">
-    <h3 class="Box-title">ようこそ TWLogAIANへ</h3>
+    <h3 class="Box-title">ようこそ TWLogAIANへ
+      <button class="btn float-right" type="button" on:click={toggleDark}>
+        {#if dark}
+          <Sun16 />
+        {:else}
+          <Moon16 />
+       {/if}
+      </button>
+    </h3>
   </div>
   <div class="Box-body">
     <div class="mx-auto" style="max-width: 200px;">

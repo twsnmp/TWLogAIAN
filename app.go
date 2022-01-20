@@ -3,21 +3,33 @@ package main
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
+	"path"
 	"runtime"
 	"strings"
 	"time"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
+	"go.etcd.io/bbolt"
 )
 
 // App application struct
 type App struct {
-	ctx context.Context
+	ctx       context.Context
+	appConfig struct {
+		DarkMode     bool
+		LastWorkDirs []string
+	}
+	workdir    string
+	db         *bbolt.DB
+	config     Config
+	logSources []LogSource
 }
 
 // NewApp creates a new App application struct
@@ -29,6 +41,7 @@ func NewApp() *App {
 func (b *App) startup(ctx context.Context) {
 	// Perform your setup here
 	b.ctx = ctx
+	b.loadAppConfig()
 }
 
 // domReady is called after the front-end dom has been loaded
@@ -44,6 +57,46 @@ func (b *App) shutdown(ctx context.Context) {
 // GetVersion : バージョンの取得
 func (b *App) GetVersion() string {
 	return fmt.Sprintf("%s(%s)", version, commit)
+}
+
+// loadAppConfig : アプリ設定を読み込み
+func (b *App) loadAppConfig() {
+	conf := b.getConfigName()
+	if conf == "" {
+		return
+	}
+	j, err := ioutil.ReadFile(conf)
+	if err != nil {
+		wails.LogError(b.ctx, fmt.Sprintf("loadAppConfig err=%v", err))
+		return
+	}
+	wails.LogDebug(b.ctx, string(j))
+	json.Unmarshal(j, &b.appConfig)
+}
+
+// saveAppConfig : アプリ設定の保存
+func (b *App) saveAppConfig() {
+	conf := b.getConfigName()
+	if conf == "" {
+		return
+	}
+	j, err := json.Marshal(&b.appConfig)
+	if err != nil {
+		wails.LogError(b.ctx, fmt.Sprintf("saveAppConfig err=%v", err))
+		return
+	}
+	wails.LogDebug(b.ctx, string(j))
+	ioutil.WriteFile(conf, j, 0600)
+}
+
+// getConfigName : 設定ファイル名の取得
+func (b *App) getConfigName() string {
+	c, err := os.UserConfigDir()
+	if err != nil {
+		wails.LogError(b.ctx, fmt.Sprintf("getConfigName err=%v", err))
+		return ""
+	}
+	return path.Join(c, "twlogaian.conf")
 }
 
 // OpenURL : ブラウザーで指定してURLを取得する
@@ -62,28 +115,6 @@ func (b *App) OpenURL(url string) {
 	if err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("open url=%s err=%v", url, err))
 	}
-}
-
-// GetWorkDir : 作業フォルダを選択する
-func (b *App) GetWorkDir() string {
-	dir, err := wails.OpenDirectoryDialog(b.ctx, wails.OpenDialogOptions{
-		Title:                "作業フォルダの選択",
-		CanCreateDirectories: true,
-	})
-	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("GetWorkDir err=%v", err))
-	}
-	return dir
-}
-
-// GetLastWorkDirs : 作業フォルダを選択する
-func (b *App) GetLastWorkDirs() []string {
-	return []string{"test1", "test2", "/jsjsjsjjs/shhshs"}
-}
-
-// SetWorkDir : 作業フォルダを設定する
-func (b *App) SetWorkDir(wd string) bool {
-	return true
 }
 
 // SendFeedBack :  フィードバックを送信する
@@ -131,4 +162,18 @@ func calcHash(msg string) string {
 		return ""
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+// GetDark :  ダークモードの取得
+func (b *App) GetDark() bool {
+	return b.appConfig.DarkMode
+}
+
+// SetDark :  ダークモードの切り替え
+func (b *App) SetDark(dark bool) {
+	if b.appConfig.DarkMode == dark {
+		return
+	}
+	b.appConfig.DarkMode = dark
+	b.saveAppConfig()
 }

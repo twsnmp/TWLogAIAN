@@ -2,7 +2,10 @@ module changeme
 
 go 1.17
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.27
+require (
+	github.com/wailsapp/wails/v2 v2.0.0-beta.27
+	go.etcd.io/bbolt v1.3.6
+)
 
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
