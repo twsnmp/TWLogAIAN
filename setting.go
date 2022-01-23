@@ -19,14 +19,6 @@ type Config struct {
 	InMemory  bool
 }
 
-type LogFile struct {
-	ID        int64 // LogSource ID
-	Path      string
-	Size      int64
-	TimeStamp int64
-	Done      int64
-}
-
 type LogSource struct {
 	No       int
 	ID       int64
@@ -37,8 +29,6 @@ type LogSource struct {
 	User     string
 	Password string
 }
-
-var LogFiles = make(map[int64][]LogFile)
 
 // SelectFile : ファイル/フォルダを選択する
 func (b *App) SelectFile(t string) string {

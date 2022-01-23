@@ -3,8 +3,8 @@
   import Feedback from "./pages/Feedback.svelte";
   import WorkDir from "./pages/WorkDir.svelte";
   import Setting from "./pages/Setting/Setting.svelte";
-  // import Search from "./pages/Search.svelte";
-  // import Result from "./pages/Result.svelte";
+  import Processing from "./pages/Processing.svelte";
+  import Search from "./pages/Search/Search.svelte";
   let page = "wellcome";
   const handleDone = (e) => {
     if (e && e.detail  && e.detail.page) {
@@ -23,6 +23,10 @@
      <WorkDir on:done={handleDone}/>
     {:else if page == "setting"}
      <Setting on:done={handleDone}/>
+    {:else if page == "processing"}
+     <Processing on:done={handleDone}/>
+    {:else if page == "search"}
+     <Search on:done={handleDone}/>
     {/if}
   </div>
 </main>

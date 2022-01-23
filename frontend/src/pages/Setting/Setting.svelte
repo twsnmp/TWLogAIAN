@@ -4,6 +4,8 @@
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
   import LogSource from "./LogSource.svelte";
+  import { typeName } from "../../common.js";
+  import { onMount } from 'svelte';
   const dispatch = createEventDispatcher();
   const data = [];
   let config = {
@@ -38,7 +40,7 @@
       if (ds) {
         logSources = ds;
         logSources.forEach((e) => {
-          data.push([e.No, e.Type, e.URL, e.Size, e.Done, ""]);
+          data.push([e.No, e.Type, e.URL, ""]);
         });
         if (ds.length > 5) {
           pagination = {
@@ -53,8 +55,11 @@
       }
     });
   };
-  getConfig();
-  getLogSources();
+
+  onMount(() => {
+    getConfig();
+    getLogSources();
+  });
 
   const editLogSource = (sno) => {
     const no = sno * 1;
@@ -88,22 +93,6 @@
     );
   };
 
-  const typeName = (cell,_) => {
-    switch (cell) {
-      case "folder":
-        return "フォルダー";
-      case "file":
-        return "単一ファイル";
-      case "http":
-        return "Webサーバー";
-      case "scp":
-        return "SCPサーバー";
-      case "sftp":
-        return "SFTPサーバー";
-    }
-    return "";
-  }
-
   const columns = [
     {
       name: "No",
@@ -131,6 +120,13 @@
 
   const start = () => {
     // Index作成を開始
+    window.go.main.App.Start(config).then((e) => {
+      if (e && e != "") {
+        errorMsg = e;
+      } else {
+        dispatch("done", { page: "processing" });
+      }
+    });
   };
 
   const selectGeoIPDB = () => {

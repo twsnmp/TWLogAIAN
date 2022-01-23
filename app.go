@@ -30,6 +30,7 @@ type App struct {
 	db         *bbolt.DB
 	config     Config
 	logSources []LogSource
+	process    ProcessInfo
 }
 
 // NewApp creates a new App application struct
