@@ -36,7 +36,7 @@
   position: relative;
   width: 100%;
   z-index: 5;
-  padding: 6px 12px;
+  padding: 3px 6px;
   border-top: 1px solid #e5e7eb;
   background-color: #fff;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.26);
@@ -75,7 +75,7 @@ input.gridjs-input {
   .gridjs-pagination .gridjs-pages {
     float: right; }
     .gridjs-pagination .gridjs-pages button {
-      padding: 3px 10px;
+      padding: 2px 5px;
       border: 1px solid #d2d6dc;
       background-color: #fff;
       color: #999;
@@ -144,6 +144,7 @@ button.gridjs-sort:focus {
 
 table.gridjs-table {
   max-width: 100%;
+  width: 100%;
   border-collapse: collapse;
   text-align: left;
   display: table;
@@ -157,7 +158,7 @@ table.gridjs-table {
 
 td.gridjs-td {
   border: 1px solid #e5e7eb;
-  padding: 6px 12px;
+  padding: 3px 6px;
   background-color: #fff;
   box-sizing: content-box; }
 
@@ -176,7 +177,7 @@ th.gridjs-th {
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
   border-top: none;
-  padding: 7px 12px;
+  padding: 3px 6px;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;

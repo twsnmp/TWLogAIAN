@@ -5,20 +5,22 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.etcd.io/bbolt"
 )
 
 type Config struct {
-	GeoIPDBPath   string
-	PreFilter     string
-	ExtractorType string
-	Grok          string
-	InMemory      bool
+	GeoIPDB   string
+	Filter    string
+	Extractor string
+	Grok      string
+	InMemory  bool
 }
 
 type LogFile struct {
+	ID        int64 // LogSource ID
 	Path      string
 	Size      int64
 	TimeStamp int64
@@ -26,25 +28,59 @@ type LogFile struct {
 }
 
 type LogSource struct {
-	ID       string // 識別
-	Type     string // ログソースの
+	No       int
+	ID       int64
+	Type     string // ログソースの種類
 	URL      string
 	Pattern  string
+	AuthType string
 	User     string
 	Password string
-	LogFiles map[string]LogFile
 }
 
-// GetWorkDir : 作業フォルダを選択する
-func (b *App) GetWorkDir() string {
-	dir, err := wails.OpenDirectoryDialog(b.ctx, wails.OpenDialogOptions{
-		Title:                "作業フォルダの選択",
-		CanCreateDirectories: true,
+var LogFiles = make(map[int64][]LogFile)
+
+// SelectFile : ファイル/フォルダを選択する
+func (b *App) SelectFile(t string) string {
+	title := ""
+	dir := false
+	sh := false
+	switch t {
+	case "work":
+		dir = true
+		title = "作業フォルダ"
+	case "geoip":
+		dir = false
+		title = "GeoIPデータベース"
+	case "sshkey":
+		dir = false
+		title = "SSHキー"
+		sh = true
+	case "logdir":
+		dir = true
+		title = "ログフォルダ"
+	case "logfile":
+		dir = false
+		title = "ログファイル"
+	}
+	if dir {
+		dir, err := wails.OpenDirectoryDialog(b.ctx, wails.OpenDialogOptions{
+			Title:                title,
+			CanCreateDirectories: true,
+		})
+		if err != nil {
+			wails.LogError(b.ctx, fmt.Sprintf("SelectFile err=%v", err))
+		}
+		return dir
+	}
+	file, err := wails.OpenFileDialog(b.ctx, wails.OpenDialogOptions{
+		Title:           title,
+		ShowHiddenFiles: sh,
 	})
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("GetWorkDir err=%v", err))
+		wails.LogError(b.ctx, fmt.Sprintf("SelectFile err=%v", err))
 	}
-	return dir
+	return file
 }
 
 // GetLastWorkDirs : 作業フォルダを選択する
@@ -61,12 +97,12 @@ func (b *App) SetWorkDir(wd string) string {
 	if !fs.IsDir() {
 		return "指定した作業フォルダはディレクトリではありません"
 	}
-	b.workdir = ""
 	err = b.openDB(wd)
 	if err != nil {
 		return fmt.Sprintf("データベースを開けません err=%v", err)
 	}
 	b.addWorkDirs(wd)
+	b.workdir = wd
 	return ""
 }
 
@@ -161,14 +197,44 @@ func (b *App) SetConfig(c Config) string {
 	return ""
 }
 
-// GetLogSourceList : ログソースリストの取得
-func (b *App) GetLogSourceList() []LogSource {
-	wails.LogDebug(b.ctx, "GetLogSourceList")
+// GetLogSources : ログソースリストの取得
+func (b *App) GetLogSources() []LogSource {
+	wails.LogDebug(b.ctx, "GetLogSources")
 	return b.logSources
 }
 
-// AddLogSource : ログソースの追加
-func (b *App) AddLogSource(s LogSource) string {
-	wails.LogDebug(b.ctx, "AddLogSource")
+// UpdateLogSource : ログソースの更新
+func (b *App) UpdateLogSource(ls LogSource) string {
+	wails.LogDebug(b.ctx, "UpdateLogSource")
+	if ls.No > 0 && ls.No <= len(b.logSources) {
+		// 既存
+		b.logSources[ls.No-1] = ls
+		return ""
+	}
+	// 新規
+	ls.ID = time.Now().UnixNano()
+	ls.No = len(b.logSources) + 1
+	b.logSources = append(b.logSources, ls)
+	return ""
+}
+
+// DeleteLogSource : ログソースの更新
+func (b *App) DeleteLogSource(no int) string {
+	wails.LogDebug(b.ctx, fmt.Sprintf("DeleteLogSource no=%d", no))
+	if no <= 0 || no > len(b.logSources) {
+		return "送信元がありません"
+	}
+	ls := b.logSources
+	b.logSources = []LogSource{}
+	n := 1
+	for i, e := range ls {
+		if i == (no - 1) {
+			// TODO:ここで関連するログファイルを削除する
+			continue
+		}
+		e.No = n
+		n += 1
+		b.logSources = append(b.logSources, e)
+	}
 	return ""
 }

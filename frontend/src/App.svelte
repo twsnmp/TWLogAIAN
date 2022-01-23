@@ -2,7 +2,7 @@
   import Wellcome from "./pages/Wellcome.svelte";
   import Feedback from "./pages/Feedback.svelte";
   import WorkDir from "./pages/WorkDir.svelte";
-  // import Config from "./pages/Config.svelte";
+  import Setting from "./pages/Setting/Setting.svelte";
   // import Search from "./pages/Search.svelte";
   // import Result from "./pages/Result.svelte";
   let page = "wellcome";
@@ -21,6 +21,8 @@
      <Feedback on:done={handleDone}/>
     {:else if page == "workdir"}
      <WorkDir on:done={handleDone}/>
+    {:else if page == "setting"}
+     <Setting on:done={handleDone}/>
     {/if}
   </div>
 </main>

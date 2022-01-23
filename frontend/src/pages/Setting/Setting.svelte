@@ -1,0 +1,320 @@
+<script>
+  import { X16, Plus16, Check16,FileBadge16,File16 } from "svelte-octicons";
+  import { createEventDispatcher } from "svelte";
+  import Grid from "gridjs-svelte";
+  import { h, html } from "gridjs";
+  import LogSource from "./LogSource.svelte";
+  const dispatch = createEventDispatcher();
+  const data = [];
+  let config = {
+    Filter: "",
+    Extractor: "",
+    Grok: "",
+    GeoIPDB: "",
+    SSHKey: "",
+    InMemory: false,
+  };
+  let logSource = {
+    No: 0,
+    Type: "folder",
+    URL: "",
+    Pattern: "",
+    User: "",
+    Password: "",
+  };
+  let logSources = [];
+  let errorMsg = "";
+  let edit = false;
+
+  const getConfig = () => {
+    window.go.main.App.GetConfig().then((c) => {
+      config = c;
+    });
+  };
+  let pagination = false;
+  const getLogSources = () => {
+    window.go.main.App.GetLogSources().then((ds) => {
+      data.length = 0; // 空にする
+      if (ds) {
+        logSources = ds;
+        logSources.forEach((e) => {
+          data.push([e.No, e.Type, e.URL, e.Size, e.Done, ""]);
+        });
+        if (ds.length > 5) {
+          pagination = {
+            limit: 5,
+            enable: true,
+          };
+        } else {
+          pagination = false;
+        }
+      } else {
+        logSources = [];
+      }
+    });
+  };
+  getConfig();
+  getLogSources();
+
+  const editLogSource = (sno) => {
+    const no = sno * 1;
+    if (sno == "" || no < 0 || no > logSources.length) {
+      // 新規
+      logSource = {
+        No: 0,
+        Type: "folder",
+        URL: "",
+        Pattern: "",
+        User: "",
+        Password: "",
+      };
+    } else {
+      logSource = logSources[no - 1];
+    }
+    edit = true;
+  };
+
+  const actionButtons = (_, row) => {
+    const no = row.cells[0].data;
+    return h(
+      "button",
+      {
+        className: "btn btn-sm",
+        onClick: () => editLogSource(no),
+      },
+      html(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>`
+      )
+    );
+  };
+
+  const typeName = (cell,_) => {
+    switch (cell) {
+      case "folder":
+        return "フォルダー";
+      case "file":
+        return "単一ファイル";
+      case "http":
+        return "Webサーバー";
+      case "scp":
+        return "SCPサーバー";
+      case "sftp":
+        return "SFTPサーバー";
+    }
+    return "";
+  }
+
+  const columns = [
+    {
+      name: "No",
+      sort: true,
+      width: "10%",
+    },
+    {
+      name: "タイプ",
+      sort: true,
+      width: "20%",
+      formatter: typeName,
+    },
+    {
+      name: "パス/URL",
+      sort: true,
+      width: "60%",
+    },
+    {
+      name: "編集",
+      sort: false,
+      width: "10%",
+      formatter: actionButtons,
+    },
+  ];
+
+  const start = () => {
+    // Index作成を開始
+  };
+
+  const selectGeoIPDB = () => {
+    window.go.main.App.SelectFile("geoip").then((f) => {
+      config.GeoIPDB = f;
+    });
+  };
+
+  const selectSSHKey = () => {
+    window.go.main.App.SelectFile("sshkey").then((f) => {
+      config.SSHKey = f;
+    });
+  };
+
+  const cancel = () => {
+    window.go.main.App.CloseWorkDir();
+    dispatch("done", { page: "wellcome" });
+  };
+
+  const clearMsg = () => {
+    errorMsg = "";
+  };
+
+  const handleDone = (e) => {
+    if (e && e.detail && e.detail.update) {
+      getLogSources();
+    }
+    edit = false;
+  };
+
+</script>
+
+<div class="Box mx-auto" style="max-width: 800px;">
+  {#if edit }
+    <LogSource {logSource} on:done={handleDone} />
+  {:else}
+    <div class="Box-header">
+      <h3 class="Box-title">ログ分析の設定</h3>
+    </div>
+    {#if errorMsg != ""}
+      <div class="flash flash-error">
+        {errorMsg}
+        <button
+          class="flash-close js-flash-close"
+          type="button"
+          aria-label="Close"
+          on:click={clearMsg}
+        >
+          <X16 />
+        </button>
+      </div>
+    {/if}
+    <div class="Box-body">
+      <form>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>
+              ログソース
+              <button
+                class="btn btn-sm float-right"
+                type="button"
+                on:click={() => editLogSource("")}
+              >
+                <Plus16 />
+              </button>
+            </h5>
+          </div>
+          <div class="form-group-body mt-3">
+            <Grid {data} {pagination} {columns} />
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>フィルター</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control"
+              type="text"
+              placeholder="フィルター"
+              aria-label="フィルター"
+              bind:value={config.Filter}
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>抽出パターン</h5>
+          </div>
+          <div class="form-group-body">
+            <select
+              class="form-select"
+              aria-label="抽出パターン"
+              bind:value={logSource.Extractor}
+            >
+              <option value="timeonly">タイムスタンプのみ</option>
+              <option value="syslog">syslog</option>
+              <option value="apache">Apache</option>
+              <option value="custom">カスタム</option>
+            </select>
+            {#if logSource.Extractor == "custom"}
+              <input
+                class="form-control"
+                type="text"
+                placeholder="GROKパターン"
+                aria-label="GROKパターン"
+                bind:value={config.Grok}
+              />
+            {/if}
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>インデクサー設定</h5>
+          </div>
+          <div class="form-group-body">
+            <div class="form-checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  bind:checked={config.InMemory}
+                  aria-describedby="help-text-for-inmemory"
+                />
+                インデックスをメモリ上に作成
+              </label>
+              <p class="note" id="help-text-for-inmemory">
+                メモリに余裕があればオンにすると多少高速化できます。
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>SSHキーファイル</h5>
+          </div>
+          <div class="form-group-body">
+            <div class="input-group">
+              <input
+                class="form-control"
+                type="text"
+                placeholder="SSHキーファイル"
+                aria-label="SSHキーファイル"
+                bind:value={config.SSHKey}
+              />
+              <span class="input-group-button">
+                <button class="btn" type="button" on:click={selectSSHKey}>
+                  <FileBadge16 />
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>IP位置情報データベース</h5>
+          </div>
+          <div class="form-group-body">
+            <div class="input-group">
+              <input
+                class="form-control"
+                type="text"
+                placeholder="Geo IPデータベース"
+                aria-label="Geo IPデータベース"
+                bind:value={config.GeoIPDB}
+              />
+              <span class="input-group-button">
+                <button class="btn" type="button" on:click={selectGeoIPDB}>
+                  <File16 />
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="Box-footer text-right">
+      <button class="btn  btn-secondary" type="button" on:click={cancel}>
+        <X16 />
+        キャンセル
+      </button>
+      <button class="btn btn-primary ml-2" type="button" on:click={start}>
+        <Check16 />
+        開始
+      </button>
+    </div>
+  {/if}
+</div>

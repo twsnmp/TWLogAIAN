@@ -29,7 +29,7 @@
     const e = document.querySelector("body");
     if (e) {
       e.dataset.colorMode = dark ? "dark" : "light";
-      e.dataset.darkThme = dark ? "dark" : "light";
+      e.dataset.darkTheme = dark ? "dark" : "light";
     }
   };
 </script>

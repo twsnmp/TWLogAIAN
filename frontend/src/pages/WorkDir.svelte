@@ -1,5 +1,5 @@
 <script>
-  import { X16, FileDirectory16, TriangleLeft16, TriangleRight16 } from "svelte-octicons";
+  import { X16, FileDirectory16, Check16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   let workdir = "";
@@ -9,6 +9,10 @@
 
   window.go.main.App.GetLastWorkDirs().then((wds) => {
     lastWorkDirs = wds;
+    if(lastWorkDirs.length > 0 && workdir == "") {
+      // 最後に利用したディレクトリが初期値
+      workdir = lastWorkDirs[0];
+    }
   });
   const setWorkDir = () => {
     if (!workdir) {
@@ -24,9 +28,8 @@
     });
   };
   const selectWorkDir = () => {
-    window.go.main.App.GetWorkDir().then((d) => {
+    window.go.main.App.SelectFile("work").then((d) => {
       workdir = d;
-      console.log(workdir);
     });
   };
   const cancel = () => {
@@ -93,13 +96,13 @@
     </form>
   </div>
   <div class="Box-footer text-right">
-    <button class="btn" type="button btn-secondary" on:click={cancel}>
-      <TriangleLeft16 />
-      戻る
+    <button class="btn btn-secondary" type="button" on:click={cancel}>
+      <X16 />
+      キャンセル
     </button>
     <button class="btn btn-primary ml-2" type="button" on:click={setWorkDir}>
-      次へ
-      <TriangleRight16 />
+      <Check16 />
+      選択
     </button>
   </div>
 </div>
