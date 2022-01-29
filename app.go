@@ -13,6 +13,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -26,11 +27,14 @@ type App struct {
 		DarkMode     bool
 		LastWorkDirs []string
 	}
-	workdir    string
-	db         *bbolt.DB
-	config     Config
-	logSources []LogSource
-	process    ProcessInfo
+	workdir     string
+	db          *bbolt.DB
+	config      Config
+	logSources  []LogSource
+	process     ProcessInfo
+	indexer     LogIndexer
+	stopProcess bool
+	wg          *sync.WaitGroup
 }
 
 // NewApp creates a new App application struct

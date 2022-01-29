@@ -9,6 +9,7 @@
   let errorMsg = "";
   const data = [];
   let pagination = false;
+  let timer;
   const getProcessInfo = () => {
     window.go.main.App.GetProcessInfo().then((r) => {
       data.length = 0; // 空にする
@@ -31,10 +32,11 @@
         }
         if (r.Done) {
           dispatch("done", { page: "search" });
+          return
         }
+        timer = setTimeout(getProcessInfo,1000 * 5);
       }
     });
-    setTimeout(getProcessInfo,1000 * 5);
   };
 
   onMount(() => {
@@ -69,6 +71,7 @@
     // Index作成を停止
     window.go.main.App.Stop().then((r) => {
       if (r === "") {
+        clearTimeout(timer);
         dispatch("done", { page: "setting" });
       } else {
         errorMsg = r;

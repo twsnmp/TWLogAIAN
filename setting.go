@@ -153,6 +153,28 @@ func (b *App) loadSettingsFromDB() error {
 	})
 }
 
+// saveSettingsToDB : 設定をDBに書き込む
+func (b *App) saveSettingsToDB() error {
+	cj, err := json.Marshal(b.config)
+	if err != nil {
+		return err
+	}
+	lsj, err := json.Marshal(b.logSources)
+	if err != nil {
+		return err
+	}
+	return b.db.Update(func(tx *bbolt.Tx) error {
+		b := tx.Bucket([]byte("settings"))
+		if b == nil {
+			return fmt.Errorf("bucket settings is nil")
+		}
+		if err := b.Put([]byte("config"), cj); err != nil {
+			return err
+		}
+		return b.Put([]byte("logSources"), lsj)
+	})
+}
+
 // CloseWorkDir : 作業フォルダを設定する
 func (b *App) CloseWorkDir() string {
 	b.workdir = ""
@@ -219,7 +241,6 @@ func (b *App) DeleteLogSource(no int) string {
 	n := 1
 	for i, e := range ls {
 		if i == (no - 1) {
-			// TODO:ここで関連するログファイルを削除する
 			continue
 		}
 		e.No = n
