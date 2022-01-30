@@ -34,7 +34,7 @@
           dispatch("done", { page: "search" });
           return
         }
-        timer = setTimeout(getProcessInfo,1000 * 5);
+        timer = setTimeout(getProcessInfo,1000);
       }
     });
   };

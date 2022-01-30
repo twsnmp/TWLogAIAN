@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/blugelabs/bluge v0.1.9
+	github.com/blugelabs/query_string v0.3.0
 	github.com/gravwell/gravwell/v3 v3.8.5
 	github.com/wailsapp/wails/v2 v2.0.0-beta.29
 	go.etcd.io/bbolt v1.3.6

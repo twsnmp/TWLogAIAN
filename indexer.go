@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +9,7 @@ import (
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/blugelabs/bluge"
+	querystr "github.com/blugelabs/query_string"
 )
 
 type LogIndexer struct {
@@ -21,10 +21,11 @@ type LogIndexer struct {
 }
 
 type LogEnt struct {
-	ID        string
-	TimeStamp time.Time
-	Raw       string
-	KeyValue  map[string]interface{}
+	ID       string
+	Time     time.Time
+	Raw      string
+	Score    float64
+	KeyValue map[string]interface{}
 }
 
 type LatLong struct {
@@ -83,16 +84,17 @@ func (b *App) addLogToIndex() {
 	if len(b.indexer.logBuffer) < 1 {
 		return
 	}
+	batch_len := 0
 	batch := bluge.NewBatch()
 	for _, l := range b.indexer.logBuffer {
 		doc := bluge.NewDocument(l.ID)
 		if b.config.InMemory {
 			doc.AddField(bluge.NewTextField("raw", l.Raw))
-			doc.AddField(bluge.NewDateTimeField("time", l.TimeStamp))
+			doc.AddField(bluge.NewDateTimeField("time", l.Time))
 			b.indexer.logMap[l.ID] = l
 		} else {
 			doc.AddField(bluge.NewTextField("raw", l.Raw).StoreValue())
-			doc.AddField(bluge.NewDateTimeField("time", l.TimeStamp).StoreValue())
+			doc.AddField(bluge.NewDateTimeField("time", l.Time).StoreValue())
 		}
 		for k, i := range l.KeyValue {
 			switch v := i.(type) {
@@ -109,43 +111,72 @@ func (b *App) addLogToIndex() {
 			}
 		}
 		batch.Insert(doc)
+		batch_len++
 	}
+	wails.LogDebug(b.ctx, fmt.Sprintf("batch len=%d", batch_len))
 	if err := b.indexer.writer.Batch(batch); err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("error executing batch: %v", err))
 	}
 }
 
-func (b *App) seachLog(st, et time.Time) ([]*LogEnt, error) {
+func (b *App) SearchLog(q string) ([]*LogEnt, error) {
+	wails.LogDebug(b.ctx, "SearchLog q="+q)
 	ret := []*LogEnt{}
 	reader, err := b.indexer.writer.Reader()
 	if err != nil {
+		wails.LogError(b.ctx, err.Error())
 		return ret, err
 	}
 	defer func() {
 		reader.Close()
 	}()
-	query := bluge.NewDateRangeQuery(st, et).SetField("time")
-	request := bluge.NewTopNSearch(10, query).WithStandardAggregations()
-	documentMatchIterator, err := reader.Search(context.Background(), request)
+	qo := querystr.DefaultOptions()
+	//  TODO:オプションの考える
+	query, err := querystr.ParseQueryString(q, qo)
 	if err != nil {
+		wails.LogError(b.ctx, err.Error())
+		return ret, err
+	}
+	c, err := reader.Count()
+	if err != nil {
+		wails.LogError(b.ctx, err.Error())
+		return ret, err
+	}
+	f, err := reader.Fields()
+	if err != nil {
+		wails.LogError(b.ctx, err.Error())
+		return ret, err
+	}
+	wails.LogDebug(b.ctx, fmt.Sprintf("c=%d,f=%v", c, f))
+	reader.Count()
+	request := bluge.NewTopNSearch(100, query).WithStandardAggregations()
+	dmi, err := reader.Search(b.ctx, request)
+	if err != nil {
+		wails.LogError(b.ctx, err.Error())
 		return ret, err
 	}
 	for {
-		match, err := documentMatchIterator.Next()
+		match, err := dmi.Next()
 		if err != nil {
+			wails.LogError(b.ctx, err.Error())
 			return ret, err
 		}
 		if match != nil {
 			if b.config.InMemory {
 				match.VisitStoredFields(func(field string, value []byte) bool {
 					if field == "_id" {
-						ret = append(ret, b.indexer.logMap[string(value)])
+						if l, ok := b.indexer.logMap[string(value)]; ok {
+							l.Score = match.Score
+							ret = append(ret, l)
+						}
 						return false
 					}
 					return true
 				})
 			} else {
-				l := LogEnt{}
+				l := LogEnt{
+					Score: match.Score,
+				}
 				match.VisitStoredFields(func(field string, value []byte) bool {
 					switch field {
 					case "_id":
@@ -154,7 +185,7 @@ func (b *App) seachLog(st, et time.Time) ([]*LogEnt, error) {
 						l.Raw = string(value)
 					case "time":
 						if t, err := bluge.DecodeDateTime(value); err == nil {
-							l.TimeStamp = t
+							l.Time = t
 						}
 					}
 					return true
@@ -162,6 +193,7 @@ func (b *App) seachLog(st, et time.Time) ([]*LogEnt, error) {
 				ret = append(ret, &l)
 			}
 		} else {
+			wails.LogDebug(b.ctx, fmt.Sprintf("search ret=%v", ret))
 			return ret, nil
 		}
 	}

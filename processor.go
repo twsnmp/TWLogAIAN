@@ -160,9 +160,9 @@ func (b *App) readOneLogFile(lf *LogFile) {
 			wails.LogError(b.ctx, fmt.Sprintf("failed to get time stamp err=%v:%s", err, l))
 		} else if ok {
 			b.indexer.logCh <- &LogEnt{
-				ID:        fmt.Sprintf("%s:%06d", lf.Path, ln),
-				TimeStamp: ts,
-				Raw:       l,
+				ID:   fmt.Sprintf("%s:%06d", lf.Path, ln),
+				Time: ts,
+				Raw:  l,
 			}
 		} else {
 			wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
