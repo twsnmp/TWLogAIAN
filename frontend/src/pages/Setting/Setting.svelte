@@ -4,7 +4,7 @@
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
   import LogSource from "./LogSource.svelte";
-  import { typeName } from "../../common.js";
+  import { typeName } from "../../js/common.js";
   import { onMount } from 'svelte';
   const dispatch = createEventDispatcher();
   const data = [];

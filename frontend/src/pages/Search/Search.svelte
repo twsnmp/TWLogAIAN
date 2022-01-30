@@ -1,23 +1,39 @@
 <script>
   import { X16, Search16 } from "svelte-octicons";
   import { createEventDispatcher,onMount } from "svelte";
-  import * as echarts from "echarts";
+  import {makeLogCountChart,updateLogCountChart} from "../../js/logchart";
   import Grid from "gridjs-svelte";
+  import * as echarts from 'echarts'
   const dispatch = createEventDispatcher();
   const data = [];
-  let   query = '';
+  let query = '';
   let errorMsg = "";
-
+  let indexInfo = {
+    Total: 0,
+    Fileds: [],
+    Duration: "",
+  };
+  let result = {
+    Logs:[],
+    Hit: 0,
+    Duration: 0.0,
+  };
+  window.go.main.App.GetIndexInfo().then((r) => {
+    if (r) {
+      indexInfo = r;
+    }
+  });
   let pagination = false;
   const search = () => {
     data.length = 0; // 空にする
-    window.go.main.App.SearchLog(query).then((logs) => {
-      if (logs) {
-        logs.forEach((l) => {
-          console.log(l)
+    window.go.main.App.SearchLog(query).then((r) => {
+      if (r) {
+        result = r;
+        r.Logs.forEach((l) => {
           data.push([l.Score, l.Time, l.Raw]);
         });
-        if (logs.length > 20) {
+        updateLogCountChart(r.Logs);
+        if (r.Logs.length > 20) {
           pagination = {
             limit: 10,
             enable: true,
@@ -30,42 +46,21 @@
   };
 
   onMount(() => {
-    echarts.init(document.getElementById("chart")).setOption({
-      title: false,
-      backgroundColor: "#ccc",
-      tooltip: {},
-      xAxis: {},
-      yAxis: {},
-      series: [
-        {
-          type: "bar",
-          smooth: true,
-          data: [
-            [12, 5],
-            [24, 20],
-            [36, 36],
-            [48, 10],
-            [60, 10],
-            [72, 20],
-          ],
-        },
-      ],
-    });
+    makeLogCountChart("chart");
   });
-
 
   const columns = [
     {
       name: "スコア",
       sort: true,
       width: "10%",
-    },
-    {
+      formatter: (cell) => Number.parseFloat(cell).toFixed(2),
+    },{
       name: "日時",
       sort: true,
       width: "20%",
-    },
-    {
+      formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
+    },{
       name: "ログ",
       sort: true,
       width: "70%",
@@ -84,8 +79,14 @@
 </script>
 
 <div class="Box mx-auto" style="max-width: 1600px;">
-    <div class="Box-header">
-      <h3 class="Box-title">ログ分析</h3>
+    <div class="Box-header d-flex flex-items-center">
+      <h3 class="Box-title overflow-hidden flex-auto">ログ分析</h3>
+      <span class="f6">
+        ログ総数:{indexInfo.Total}/項目数:{ indexInfo.Fileds.length}/処理時間:{indexInfo.Duration}
+        {#if result.Hit > 0 }
+          /ヒット数:{result.Hit}/検索時間:{result.Duration}
+        {/if}
+      </span>
     </div>
     {#if errorMsg != ""}
       <div class="flash flash-error">
@@ -106,7 +107,7 @@
     </div>
     <div class="Box-footer">
       <div class="clearfix">
-        <div class="col-10 float-left">
+        <div class="col-9 float-left">
           <input 
             class="form-control input-block"
             type="text"
@@ -115,8 +116,8 @@
             bind:value={query}
           />
         </div>
-        <div class="col-2 float-left text-right">
-          <button class="btn  btn-primary" type="button" on:click={search}>
+        <div class="col-3 float-left">
+          <button class="btn  btn-primary ml-2" type="button" on:click={search}>
             <Search16 />
             検索
           </button>
@@ -133,6 +134,6 @@
   #chart {
     width: 100%;
     height: 150px;
-    margin: 5% auto;
+    margin: 5px auto;
   }
 </style>

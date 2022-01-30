@@ -4,7 +4,7 @@
   import Grid from "gridjs-svelte";
   import { onMount } from 'svelte';
   import { h, html } from "gridjs";
-  import { typeName } from "../common.js";
+  import { typeName } from "../js/common.js";
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   const data = [];

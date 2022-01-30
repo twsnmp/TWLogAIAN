@@ -161,7 +161,7 @@ func (b *App) readOneLogFile(lf *LogFile) {
 		} else if ok {
 			b.indexer.logCh <- &LogEnt{
 				ID:   fmt.Sprintf("%s:%06d", lf.Path, ln),
-				Time: ts,
+				Time: ts.UnixNano(),
 				Raw:  l,
 			}
 		} else {
