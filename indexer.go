@@ -24,7 +24,7 @@ type LogIndexer struct {
 type LogEnt struct {
 	ID       string
 	Time     int64
-	Raw      string
+	All      string
 	Score    float64
 	KeyValue map[string]interface{}
 }
@@ -92,11 +92,11 @@ func (b *App) addLogToIndex() {
 	for _, l := range b.indexer.logBuffer {
 		doc := bluge.NewDocument(l.ID)
 		if b.config.InMemory {
-			doc.AddField(bluge.NewTextField("raw", l.Raw))
+			doc.AddField(bluge.NewTextField("_all", l.All))
 			doc.AddField(bluge.NewDateTimeField("time", time.Unix(0, l.Time)))
 			b.indexer.logMap[l.ID] = l
 		} else {
-			doc.AddField(bluge.NewTextField("raw", l.Raw).StoreValue())
+			doc.AddField(bluge.NewTextField("_all", l.All).StoreValue())
 			doc.AddField(bluge.NewDateTimeField("time", time.Unix(0, l.Time)).StoreValue())
 		}
 		for k, i := range l.KeyValue {
@@ -182,7 +182,8 @@ func (b *App) SearchLog(q string) (SearchResult, error) {
 		wails.LogError(b.ctx, err.Error())
 		return ret, err
 	}
-	req := bluge.NewTopNSearch(100, query).WithStandardAggregations().SortBy([]string{"time"})
+	wails.LogDebug(b.ctx, fmt.Sprintf("query=%#+v", query))
+	req := bluge.NewTopNSearch(1000, query).WithStandardAggregations().SortBy([]string{"time"})
 	dmi, err := reader.Search(b.ctx, req)
 	if err != nil {
 		wails.LogError(b.ctx, err.Error())
@@ -191,7 +192,6 @@ func (b *App) SearchLog(q string) (SearchResult, error) {
 	ret.Hit = dmi.Aggregations().Count()
 	ret.MaxScore = dmi.Aggregations().Metric("max_score")
 	ret.Duration = dmi.Aggregations().Duration().String()
-	dmi.Aggregations()
 	for {
 		match, err := dmi.Next()
 		if err != nil {
@@ -218,8 +218,8 @@ func (b *App) SearchLog(q string) (SearchResult, error) {
 					switch field {
 					case "_id":
 						l.ID = string(value)
-					case "raw":
-						l.Raw = string(value)
+					case "_all":
+						l.All = string(value)
 					case "time":
 						if t, err := bluge.DecodeDateTime(value); err == nil {
 							l.Time = t.UnixNano()
@@ -230,7 +230,6 @@ func (b *App) SearchLog(q string) (SearchResult, error) {
 				ret.Logs = append(ret.Logs, &l)
 			}
 		} else {
-			wails.LogDebug(b.ctx, fmt.Sprintf("search ret=%v", ret))
 			return ret, nil
 		}
 	}
