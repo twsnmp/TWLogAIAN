@@ -8,6 +8,9 @@
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   let limit = conf.limit;
+  let start = conf.start;
+  let end = conf.end;
+  let range = conf.range;
   const cancel = () => {
     dispatch("done", {});
   };
@@ -15,6 +18,10 @@
   const save = () => {
     conf.limit = limit;
     conf.query = "";
+    conf.range = range;
+    conf.start = start;
+    conf.end = end;
+    console.log(conf)
     dispatch("done", {});
   };
 
@@ -60,6 +67,33 @@
           <option value="10000">10000</option>
           <option value="20000">20000</option>
         </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-group-header">
+        <label>
+          <input type="checkbox" bind:checked={range} />
+          検索期間を指定する
+        </label>
+      </div>
+      <div class="form-group-body">
+        {#if range}
+          <input 
+            class="form-control"
+            type="datetime-local"
+            placeholder="開始"
+            aria-label="開始"
+            bind:value={start}
+          />
+          - 
+          <input 
+            class="form-control"
+            type="datetime-local"
+            placeholder="終了"
+            aria-label="終了"
+            bind:value={end}
+          />
+        {/if}
       </div>
     </div>
   </form>

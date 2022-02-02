@@ -11,6 +11,9 @@
   const conf = {
     query: '',
     limit: 1000,
+    range: false,
+    start: "",
+    end: "",
   }
   let data = [];
   let errorMsg = "";
