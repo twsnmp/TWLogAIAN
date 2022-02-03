@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -124,7 +126,7 @@ func (b *App) addLogToIndex() {
 
 type IndexInfo struct {
 	Total    uint64
-	Fileds   []string
+	Fields   []string
 	Duration string
 }
 
@@ -151,7 +153,7 @@ func (b *App) GetIndexInfo() (IndexInfo, error) {
 	}
 	ret.Duration = b.indexer.duration.String()
 	ret.Total = t
-	ret.Fileds = f
+	ret.Fields = f
 	return ret, nil
 }
 
@@ -162,7 +164,7 @@ type SearchResult struct {
 	Logs     []*LogEnt
 }
 
-func (b *App) SearchLog(q string) (SearchResult, error) {
+func (b *App) SearchLog(q string, limit int) (SearchResult, error) {
 	wails.LogDebug(b.ctx, "SearchLog q="+q)
 	ret := SearchResult{
 		Logs: []*LogEnt{},
@@ -175,6 +177,12 @@ func (b *App) SearchLog(q string) (SearchResult, error) {
 	defer func() {
 		reader.Close()
 	}()
+	a := strings.SplitN(q, "geo:", 2)
+	geo := ""
+	if len(a) > 1 {
+		q = a[0]
+		geo = a[1]
+	}
 	qo := querystr.DefaultOptions()
 	//  TODO:オプションの考える
 	query, err := querystr.ParseQueryString(q, qo)
@@ -182,8 +190,26 @@ func (b *App) SearchLog(q string) (SearchResult, error) {
 		wails.LogError(b.ctx, err.Error())
 		return ret, err
 	}
+	if geo != "" {
+		a = strings.Split(geo, ",")
+		if len(a) < 4 {
+			return ret, fmt.Errorf("invalid geo format=%s", geo)
+		}
+		lat, err := strconv.ParseFloat(a[1], 64)
+		if err != nil {
+			wails.LogError(b.ctx, err.Error())
+			return ret, err
+		}
+		long, err := strconv.ParseFloat(a[2], 64)
+		if err != nil {
+			wails.LogError(b.ctx, err.Error())
+			return ret, err
+		}
+		gq := bluge.NewGeoDistanceQuery(lat, long, a[2]).SetField(a[0])
+		query = bluge.NewBooleanQuery().AddMust(query, gq)
+	}
 	wails.LogDebug(b.ctx, fmt.Sprintf("query=%#+v", query))
-	req := bluge.NewTopNSearch(1000, query).WithStandardAggregations().SortBy([]string{"time"})
+	req := bluge.NewTopNSearch(limit, query).WithStandardAggregations().SortBy([]string{"time"})
 	dmi, err := reader.Search(b.ctx, req)
 	if err != nil {
 		wails.LogError(b.ctx, err.Error())

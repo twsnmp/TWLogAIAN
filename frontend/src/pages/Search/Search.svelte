@@ -14,12 +14,20 @@
     range: false,
     start: "",
     end: "",
+    keywords: [],
+    geo: {
+      eable: false,
+      field: '',
+      lat: '',
+      long: '',
+      range: '',
+    },
   }
   let data = [];
   let errorMsg = "";
   let indexInfo = {
     Total: 0,
-    Fileds: [],
+    Fields: [],
     Duration: "",
   };
   let result = {
@@ -35,7 +43,7 @@
   let pagination = false;
   const search = () => {
     data.length = 0; // 空にする
-    window.go.main.App.SearchLog(conf.query).then((r) => {
+    window.go.main.App.SearchLog(conf.query,conf.limit).then((r) => {
       if (r) {
         result = r;
         const d = [];
@@ -107,13 +115,13 @@
 
 <svelte:window on:resize={onResize} />
 {#if page == "query"}
-  <Query {conf} on:done={handleDone}  />
+  <Query {conf} fields={indexInfo.Fields} on:done={handleDone}  />
 {:else}
   <div class="Box mx-auto" style="max-width: 1600px;">
       <div class="Box-header d-flex flex-items-center">
         <h3 class="Box-title overflow-hidden flex-auto">ログ分析</h3>
         <span class="f6">
-          ログ総数:{indexInfo.Total}/項目数:{ indexInfo.Fileds.length}/処理時間:{indexInfo.Duration}
+          ログ総数:{indexInfo.Total}/項目数:{ indexInfo.Fields.length}/処理時間:{indexInfo.Duration}
           {#if result.Hit > 0 }
             /ヒット数:{result.Hit}/検索時間:{result.Duration}
           {/if}
