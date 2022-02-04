@@ -10,9 +10,11 @@
   const data = [];
   let config = {
     Filter: "",
-    Extractor: "",
+    Extractor: "timeonly",
     Grok: "",
+    TimeFeild: "",
     GeoIPDB: "",
+    GeoFeilds: "",
     SSHKey: "",
     InMemory: false,
   };
@@ -204,8 +206,9 @@
           </div>
           <div class="form-group-body">
             <input
-              class="form-control"
+              class="form-control input-block"
               type="text"
+              style="width: 100%;"
               placeholder="フィルター"
               aria-label="フィルター"
               bind:value={config.Filter}
@@ -220,24 +223,62 @@
             <select
               class="form-select"
               aria-label="抽出パターン"
-              bind:value={logSource.Extractor}
+              bind:value={config.Extractor}
             >
               <option value="timeonly">タイムスタンプのみ</option>
               <option value="syslog">syslog</option>
               <option value="apache">Apache</option>
               <option value="custom">カスタム</option>
             </select>
-            {#if logSource.Extractor == "custom"}
+          </div>
+        </div>
+      {#if logSource.Extractor == "custom"}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>カスタム抽出パターン</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control input-block"
+              type="text"
+              placeholder="GROKパターン"
+              aria-label="GROKパターン"
+              style="width: 100%;"
+              bind:value={config.Grok}
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>タイムスタンプ項目</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control mt-2"
+              type="text"
+              placeholder="項目"
+              aria-label="タイムスタンプ項目"
+              bind:value={config.TimeFeild}
+            />
+          </div>
+        </div>
+      {/if}
+      {#if config.GeoIPDB != ""}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>IP位置情報項目</h5>
+          </div>
+          <div class="form-group-body">
               <input
                 class="form-control"
                 type="text"
-                placeholder="GROKパターン"
-                aria-label="GROKパターン"
-                bind:value={config.Grok}
+                placeholder="IP位置情報項目"
+                aria-label="IP位置情報項目"
+                bind:value={config.GeoFeilds}
               />
-            {/if}
           </div>
         </div>
+      {/if}
         <div class="form-group">
           <div class="form-group-header">
             <h5>インデクサー設定</h5>

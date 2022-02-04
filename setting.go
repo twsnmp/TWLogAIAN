@@ -12,10 +12,12 @@ import (
 )
 
 type Config struct {
-	GeoIPDB   string
 	Filter    string
 	Extractor string
 	Grok      string
+	TimeFeild string
+	GeoIPDB   string
+	GeoFeilds string
 	InMemory  bool
 }
 

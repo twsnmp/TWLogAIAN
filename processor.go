@@ -5,16 +5,24 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"sync"
+
+	"github.com/vjeantet/grok"
 
 	"github.com/gravwell/gravwell/v3/timegrinder"
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type ProcessInfo struct {
-	Done     bool
-	ErrorMsg string
-	LogFiles []*LogFile
+	Done        bool
+	ErrorMsg    string
+	LogFiles    []*LogFile
+	TimeGrinder *timegrinder.TimeGrinder
+	Filter      *regexp.Regexp
+	Extractor   *grok.Grok
+	TimeFeild   string
 }
 
 type LogFile struct {
@@ -36,6 +44,9 @@ func (b *App) Start(c Config) string {
 	if len(b.process.LogFiles) < 1 {
 		return "処理するファイルがありません"
 	}
+	if e := b.setupProcess(); e != "" {
+		return e
+	}
 	b.wg = &sync.WaitGroup{}
 	b.stopProcess = false
 	if err := b.StartLogIndexer(); err != nil {
@@ -44,6 +55,26 @@ func (b *App) Start(c Config) string {
 	b.saveSettingsToDB()
 	b.wg.Add(1)
 	go b.logReader()
+	return ""
+}
+
+func (b *App) setupProcess() string {
+	var err error
+	b.process.TimeGrinder, err = b.getTimeGrinder()
+	if err != nil {
+		wails.LogError(b.ctx, fmt.Sprintf("failed to create new timegrinder err=%v", err))
+		return err.Error()
+	}
+	b.process.Filter, err = b.getFilter()
+	if err != nil {
+		wails.LogError(b.ctx, fmt.Sprintf("failed to get filter err=%v", err))
+		return err.Error()
+	}
+	b.process.Extractor, b.process.TimeFeild, err = b.getExtractor()
+	if err != nil {
+		wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
+		return err.Error()
+	}
 	return ""
 }
 
@@ -133,15 +164,6 @@ func (b *App) logReader() {
 
 func (b *App) readOneLogFile(lf *LogFile) {
 	wails.LogDebug(b.ctx, "start readOneLogFile path="+lf.Path)
-	cfg := timegrinder.Config{
-		EnableLeftMostSeed: true,
-	}
-	tg, err := timegrinder.New(cfg)
-	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("failed to create new timegrinder err=%v", err))
-		b.process.ErrorMsg = err.Error()
-		return
-	}
 	file, err := os.Open(lf.Path)
 	if err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to create open log file err=%v", err))
@@ -151,25 +173,115 @@ func (b *App) readOneLogFile(lf *LogFile) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	ln := 0
+	skip := 0
+	send := 0
+	var lastTime int64
 	for scanner.Scan() {
 		l := scanner.Text()
 		lf.Done += int64(len(l))
 		ln++
-		ts, ok, err := tg.Extract([]byte(l))
-		if err != nil {
-			wails.LogError(b.ctx, fmt.Sprintf("failed to get time stamp err=%v:%s", err, l))
-		} else if ok {
-			b.indexer.logCh <- &LogEnt{
-				ID:   fmt.Sprintf("%s:%06d", lf.Path, ln),
-				Time: ts.UnixNano(),
-				All:  l,
-			}
-		} else {
-			wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
+		if b.process.Filter != nil && !b.process.Filter.MatchString(l) {
+			continue
 		}
+		log := LogEnt{
+			ID:       fmt.Sprintf("%s:%06d", lf.Path, ln),
+			KeyValue: make(map[string]interface{}),
+			All:      l,
+		}
+		if b.process.Extractor != nil {
+			values, err := b.process.Extractor.Parse("%{TWLOGAIAN}", l)
+			if err != nil {
+				skip++
+				continue
+			}
+			for k, v := range values {
+				if k == "TWLOGAIAN" {
+					continue
+				}
+				// 数値に変換可能な場合は数値として保存
+				if fv, err := strconv.ParseFloat(v, 64); err == nil {
+					wails.LogDebug(b.ctx, fmt.Sprintf("%s=%s %f", k, v, fv))
+					log.KeyValue[k] = fv
+				} else {
+					log.KeyValue[k] = v
+				}
+			}
+			tfi, ok := log.KeyValue[b.process.TimeFeild]
+			if !ok {
+				skip++
+				continue
+			}
+			tf, ok := tfi.(string)
+			if !ok {
+				skip++
+				continue
+			}
+			ts, ok, err := b.process.TimeGrinder.Extract([]byte(tf))
+			if err != nil || !ok {
+				skip++
+				continue
+			}
+			lastTime = ts.UnixNano()
+		} else {
+			ts, ok, err := b.process.TimeGrinder.Extract([]byte(l))
+			if err != nil {
+				// 複数行は同じタイムスタンプにする
+				if lastTime < 1 {
+					wails.LogError(b.ctx, fmt.Sprintf("failed to get time stamp err=%v:%s", err, l))
+					continue
+				}
+			} else if ok {
+				lastTime = ts.UnixNano()
+			} else {
+				wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
+				continue
+			}
+		}
+		log.Time = lastTime
+		send++
+		b.indexer.logCh <- &log
 	}
 	if err := scanner.Err(); err != nil {
 		b.process.ErrorMsg = err.Error()
 	}
-	wails.LogDebug(b.ctx, "stop readOneLogFile")
+	if send < 1 || skip > (ln/2) {
+		b.process.ErrorMsg = fmt.Sprintf("%s 総数:%d/送信:%d/エラー:%d件", lf.Path, ln, send, skip)
+	}
+	wails.LogDebug(b.ctx, fmt.Sprintf("end readOneLogFile ln=%d send=%d skip=%d", ln, send, skip))
+}
+
+func (b *App) getTimeGrinder() (*timegrinder.TimeGrinder, error) {
+	return timegrinder.New(timegrinder.Config{
+		EnableLeftMostSeed: true,
+	})
+}
+
+func (b *App) getFilter() (*regexp.Regexp, error) {
+	if b.config.Filter == "" {
+		return nil, nil
+	}
+	return regexp.Compile(b.config.Filter)
+}
+
+func (b *App) getExtractor() (*grok.Grok, string, error) {
+	if b.config.Extractor == "timeonly" {
+		return nil, "", nil
+	}
+	timeFeild := ""
+	config := grok.Config{
+		Patterns:          make(map[string]string),
+		NamedCapturesOnly: true,
+	}
+	switch b.config.Extractor {
+	case "syslog":
+		timeFeild = "timestamp"
+		config.Patterns["TWLOGAIAN"] = `%{SYSLOGBASE} %{GREEDYDATA:message}`
+	}
+
+	g, err := grok.NewWithConfig(&config)
+	if err != nil {
+		return nil, "", err
+	}
+	wails.LogDebug(b.ctx, fmt.Sprintf("getExtractor tf=%s p=%s", timeFeild, config.Patterns["TWLOGAIAN"]))
+	return g, timeFeild, nil
 }
