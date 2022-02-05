@@ -31,9 +31,12 @@ type LogEnt struct {
 	KeyValue map[string]interface{}
 }
 
-type LatLong struct {
-	Lat  float64
-	Long float64
+type GeoEnt struct {
+	IP     string
+	Lat    float64
+	Long   float64
+	Contry string
+	City   string
 }
 
 func (b *App) StartLogIndexer() error {
@@ -107,8 +110,11 @@ func (b *App) addLogToIndex() {
 				doc.AddField(bluge.NewTextField(k, v))
 			case float64:
 				doc.AddField(bluge.NewNumericField(k, v))
-			case LatLong:
-				doc.AddField(bluge.NewGeoPointField(k, v.Lat, v.Long))
+			case *GeoEnt:
+				doc.AddField(bluge.NewTextField(k, v.IP))
+				doc.AddField(bluge.NewTextField(k+"_country", v.Contry))
+				doc.AddField(bluge.NewTextField(k+"_city", v.City))
+				doc.AddField(bluge.NewGeoPointField(k+"_latlong", v.Lat, v.Long))
 			default:
 				// Unknown Type
 				wails.LogError(b.ctx, fmt.Sprintf("unnown type %s=%v", k, v))

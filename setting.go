@@ -12,13 +12,14 @@ import (
 )
 
 type Config struct {
-	Filter    string
-	Extractor string
-	Grok      string
-	TimeFeild string
-	GeoIPDB   string
-	GeoFeilds string
-	InMemory  bool
+	Filter     string
+	Extractor  string
+	Grok       string
+	TimeFeild  string
+	GeoIPDB    string
+	GeoFeilds  string
+	HostFeilds string
+	InMemory   bool
 }
 
 type LogSource struct {

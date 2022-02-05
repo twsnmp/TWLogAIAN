@@ -6,6 +6,7 @@ require (
 	github.com/blugelabs/bluge v0.1.9
 	github.com/blugelabs/query_string v0.3.0
 	github.com/gravwell/gravwell/v3 v3.8.5
+	github.com/oschwald/geoip2-golang v1.6.1
 	github.com/vjeantet/grok v1.0.1
 	github.com/wailsapp/wails/v2 v2.0.0-beta.29
 	go.etcd.io/bbolt v1.3.6
@@ -43,6 +44,7 @@ require (
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
 	github.com/leaanthony/winc v0.0.0-20220117090042-fdd739b32c58 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
+	github.com/oschwald/maxminddb-golang v1.8.0 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect

@@ -15,6 +15,7 @@
     TimeFeild: "",
     GeoIPDB: "",
     GeoFeilds: "",
+    HostFeilds: "",
     SSHKey: "",
     InMemory: false,
   };
@@ -232,7 +233,7 @@
             </select>
           </div>
         </div>
-      {#if logSource.Extractor == "custom"}
+      {#if config.Extractor == "custom"}
         <div class="form-group">
           <div class="form-group-header">
             <h5>カスタム抽出パターン</h5>
@@ -263,7 +264,7 @@
           </div>
         </div>
       {/if}
-      {#if config.GeoIPDB != ""}
+      {#if config.GeoIPDB != "" && config.Extractor != "timeonly"}
         <div class="form-group">
           <div class="form-group-header">
             <h5>IP位置情報項目</h5>
@@ -275,6 +276,22 @@
                 placeholder="IP位置情報項目"
                 aria-label="IP位置情報項目"
                 bind:value={config.GeoFeilds}
+              />
+          </div>
+        </div>
+      {/if}
+      {#if config.Extractor != "timeonly"}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>ホスト名解決項目</h5>
+          </div>
+          <div class="form-group-body">
+              <input
+                class="form-control"
+                type="text"
+                placeholder="ホスト名解決項目"
+                aria-label="ホスト名解決項目"
+                bind:value={config.HostFeilds}
               />
           </div>
         </div>

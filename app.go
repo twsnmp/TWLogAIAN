@@ -35,11 +35,16 @@ type App struct {
 	indexer     LogIndexer
 	stopProcess bool
 	wg          *sync.WaitGroup
+	hostMap     map[string]string
+	geoMap      map[string]*GeoEnt
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	return &App{
+		hostMap: make(map[string]string),
+		geoMap:  make(map[string]*GeoEnt),
+	}
 }
 
 // startup is called at application startup

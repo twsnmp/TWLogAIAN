@@ -3,12 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 
+	"github.com/oschwald/geoip2-golang"
 	"github.com/vjeantet/grok"
 
 	"github.com/gravwell/gravwell/v3/timegrinder"
@@ -23,6 +26,9 @@ type ProcessInfo struct {
 	Filter      *regexp.Regexp
 	Extractor   *grok.Grok
 	TimeFeild   string
+	GeoIP       *geoip2.Reader
+	GeoFeilds   []string
+	HostFeilds  []string
 }
 
 type LogFile struct {
@@ -75,7 +81,28 @@ func (b *App) setupProcess() string {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
 		return err.Error()
 	}
+	b.process.GeoFeilds = []string{}
+	for _, f := range strings.Split(b.config.GeoFeilds, ",") {
+		f = strings.TrimSpace(f)
+		if f != "" {
+			b.process.GeoFeilds = append(b.process.GeoFeilds, f)
+		}
+	}
+	b.process.GeoIP, err = b.getGeoIP()
+	if err != nil {
+		if err != nil {
+			wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
+			return err.Error()
+		}
+	}
 	return ""
+}
+
+func (b *App) cleanupProcess() {
+	if b.process.GeoIP != nil {
+		b.process.GeoIP.Close()
+		b.process.GeoIP = nil
+	}
 }
 
 // Stop : インデクス作成を停止する
@@ -83,6 +110,7 @@ func (b *App) Stop() string {
 	wails.LogDebug(b.ctx, "Stop")
 	b.stopProcess = true
 	b.wg.Wait()
+	b.cleanupProcess()
 	return ""
 }
 
@@ -91,6 +119,7 @@ func (b *App) GetProcessInfo() ProcessInfo {
 	wails.LogDebug(b.ctx, "GetProcessInfo")
 	if b.process.Done {
 		b.wg.Wait()
+		b.cleanupProcess()
 	}
 	return b.process
 }
@@ -221,6 +250,24 @@ func (b *App) readOneLogFile(lf *LogFile) {
 				skip++
 				continue
 			}
+			if b.process.GeoIP != nil && len(b.process.GeoFeilds) > 0 {
+				for _, f := range b.process.GeoFeilds {
+					if ip, ok := log.KeyValue[f]; ok {
+						if e := b.findGeo(ip.(string)); e != nil {
+							log.KeyValue[f] = e
+						}
+					}
+				}
+			}
+			if len(b.process.HostFeilds) > 0 {
+				for _, f := range b.process.HostFeilds {
+					if ip, ok := log.KeyValue[f]; ok {
+						if e := b.findHost(ip.(string)); e != "" {
+							log.KeyValue[f+"_host"] = e
+						}
+					}
+				}
+			}
 			lastTime = ts.UnixNano()
 		} else {
 			ts, ok, err := b.process.TimeGrinder.Extract([]byte(l))
@@ -284,4 +331,40 @@ func (b *App) getExtractor() (*grok.Grok, string, error) {
 	}
 	wails.LogDebug(b.ctx, fmt.Sprintf("getExtractor tf=%s p=%s", timeFeild, config.Patterns["TWLOGAIAN"]))
 	return g, timeFeild, nil
+}
+
+func (b *App) getGeoIP() (*geoip2.Reader, error) {
+	if b.config.GeoIPDB == "" {
+		return nil, nil
+	}
+	return geoip2.Open(b.config.GeoIPDB)
+}
+
+func (b *App) findGeo(sip string) *GeoEnt {
+	if e, ok := b.geoMap[sip]; ok {
+		return e
+	}
+	ip := net.ParseIP(sip)
+	if r, err := b.process.GeoIP.City(ip); err == nil {
+		return &GeoEnt{
+			IP:     sip,
+			Lat:    r.Location.Latitude,
+			Long:   r.Location.Longitude,
+			Contry: r.Country.IsoCode,
+			City:   r.City.Names["en"],
+		}
+	}
+	return nil
+}
+
+func (b *App) findHost(ip string) string {
+	if h, ok := b.hostMap[ip]; ok {
+		return h
+	}
+	if names, err := net.LookupAddr(ip); err == nil && len(names) > 0 {
+		b.hostMap[ip] = names[0]
+	} else {
+		b.hostMap[ip] = ""
+	}
+	return b.hostMap[ip]
 }
