@@ -31,7 +31,8 @@ type App struct {
 	db          *bbolt.DB
 	config      Config
 	logSources  []LogSource
-	process     ProcessInfo
+	processStat ProcessStat
+	processConf ProcessConf
 	indexer     LogIndexer
 	stopProcess bool
 	wg          *sync.WaitGroup

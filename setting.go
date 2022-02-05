@@ -16,10 +16,13 @@ type Config struct {
 	Extractor  string
 	Grok       string
 	TimeFeild  string
+	GeoIP      bool
 	GeoIPDB    string
 	GeoFeilds  string
+	HostName   bool
 	HostFeilds string
 	InMemory   bool
+	SampleLog  string
 }
 
 type LogSource struct {
@@ -90,6 +93,8 @@ func (b *App) SetWorkDir(wd string) string {
 	if !fs.IsDir() {
 		return "指定した作業フォルダはディレクトリではありません"
 	}
+	b.logSources = []LogSource{}
+	b.config = Config{}
 	err = b.openDB(wd)
 	if err != nil {
 		return fmt.Sprintf("データベースを開けません err=%v", err)

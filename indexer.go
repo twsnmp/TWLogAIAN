@@ -73,7 +73,7 @@ func (b *App) logIndexer() {
 			if !ok {
 				timer.Stop()
 				b.addLogToIndex()
-				b.process.Done = true
+				b.processStat.Done = true
 				b.indexer.duration = time.Since(st)
 				wails.LogDebug(b.ctx, "stop logindexer")
 				return

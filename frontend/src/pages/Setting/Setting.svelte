@@ -1,11 +1,11 @@
 <script>
-  import { X16, Plus16, Check16,FileBadge16,File16 } from "svelte-octicons";
+  import { X16, Plus16, Check16, FileBadge16, File16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
   import LogSource from "./LogSource.svelte";
   import { typeName } from "../../js/common.js";
-  import { onMount } from 'svelte';
+  import { onMount } from "svelte";
   const dispatch = createEventDispatcher();
   const data = [];
   let config = {
@@ -13,11 +13,14 @@
     Extractor: "timeonly",
     Grok: "",
     TimeFeild: "",
+    GeoIP: false,
     GeoIPDB: "",
     GeoFeilds: "",
+    HostName: false,
     HostFeilds: "",
     SSHKey: "",
     InMemory: false,
+    SampleLog: "",
   };
   let logSource = {
     No: 0,
@@ -29,6 +32,7 @@
   };
   let logSources = [];
   let errorMsg = "";
+  let infoMsg = "";
   let edit = false;
 
   const getConfig = () => {
@@ -58,10 +62,22 @@
       }
     });
   };
-
+  let extractorTypes = [];
+  const hasIPMap = {};
+  const getExtractorTypes = () => {
+    window.go.main.App.GetExtractorTypes().then((r) => {
+      extractorTypes = r;
+      extractorTypes.forEach((e) =>{
+        hasIPMap[e.Key] = e.IP
+      });
+      hasIPMap["timeonly"] = false
+      hasIPMap["custom"] =  true
+    });
+  };
   onMount(() => {
     getConfig();
     getLogSources();
+    getExtractorTypes();
   });
 
   const editLogSource = (sno) => {
@@ -151,6 +167,23 @@
 
   const clearMsg = () => {
     errorMsg = "";
+    infoMsg = "";
+  };
+
+  const testSampleLog = () => {
+    clearMsg();
+    if (config.SampleLog == "") {
+      errorMsg = "サンプルログが空欄では私にはログの種類を判断できません"
+      return
+    }
+    window.go.main.App.TestSampleLog(config).then((et) => {
+      if (!et) {
+        errorMsg = "私にはログの種類を判断できませんでした"
+      } else {
+        infoMsg = "ログの種類を"+ et.Name + "に設定しました。"
+        config.Extractor = et.Key
+      }
+    });
   };
 
   const handleDone = (e) => {
@@ -159,11 +192,10 @@
     }
     edit = false;
   };
-
 </script>
 
 <div class="Box mx-auto" style="max-width: 800px;">
-  {#if edit }
+  {#if edit}
     <LogSource {logSource} on:done={handleDone} />
   {:else}
     <div class="Box-header">
@@ -182,12 +214,25 @@
         </button>
       </div>
     {/if}
+    {#if infoMsg != ""}
+      <div class="flash">
+        {infoMsg}
+        <button
+          class="flash-close js-flash-close"
+          type="button"
+          aria-label="Close"
+          on:click={clearMsg}
+        >
+          <X16 />
+        </button>
+      </div>
+    {/if}
     <div class="Box-body">
       <form>
         <div class="form-group">
           <div class="form-group-header">
             <h5>
-              ログソース
+              ログを読み込む場所
               <button
                 class="btn btn-sm float-right"
                 type="button"
@@ -218,7 +263,7 @@
         </div>
         <div class="form-group">
           <div class="form-group-header">
-            <h5>抽出パターン</h5>
+            <h5>ログの種類</h5>
           </div>
           <div class="form-group-body">
             <select
@@ -227,75 +272,125 @@
               bind:value={config.Extractor}
             >
               <option value="timeonly">タイムスタンプのみ</option>
-              <option value="syslog">syslog</option>
-              <option value="apache">Apache</option>
+              {#each extractorTypes as {Key,Name} }
+                <option value="{Key}">{Name}</option>
+              {/each}
               <option value="custom">カスタム</option>
             </select>
-          </div>
-        </div>
-      {#if config.Extractor == "custom"}
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>カスタム抽出パターン</h5>
-          </div>
-          <div class="form-group-body">
-            <input
-              class="form-control input-block"
-              type="text"
-              placeholder="GROKパターン"
-              aria-label="GROKパターン"
-              style="width: 100%;"
-              bind:value={config.Grok}
-            />
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>タイムスタンプ項目</h5>
-          </div>
-          <div class="form-group-body">
-            <input
-              class="form-control mt-2"
-              type="text"
-              placeholder="項目"
-              aria-label="タイムスタンプ項目"
-              bind:value={config.TimeFeild}
-            />
-          </div>
-        </div>
-      {/if}
-      {#if config.GeoIPDB != "" && config.Extractor != "timeonly"}
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>IP位置情報項目</h5>
-          </div>
-          <div class="form-group-body">
+            <div class="input-group mt-2">
               <input
                 class="form-control"
                 type="text"
-                placeholder="IP位置情報項目"
-                aria-label="IP位置情報項目"
-                bind:value={config.GeoFeilds}
+                placeholder="ログのサンプル"
+                aria-label="ログのサンプル"
+                bind:value={config.SampleLog}
               />
+              <span class="input-group-button">
+                <button class="btn" type="button" on:click={testSampleLog}>
+                  <Check16 />
+                </button>
+              </span>
+            </div>
           </div>
         </div>
-      {/if}
-      {#if config.Extractor != "timeonly"}
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>ホスト名解決項目</h5>
+        {#if hasIPMap[config.Extractor]}
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5>IPアドレス情報</h5>
+            </div>
+            <div class="form-group-body">
+              <div class="form-checkbox">
+                <label>
+                  <input
+                    type="checkbox"
+                    bind:checked={config.HostName}
+                    aria-describedby="help-text-for-hostname"
+                  />
+                  IPアドレスからホスト名を解決する
+                </label>
+                <p class="note" id="help-text-for-hostname">
+                  DNSによる名前解決を実施します。
+                </p>
+              </div>
+              <div class="form-checkbox">
+                <label>
+                  <input
+                    type="checkbox"
+                    bind:checked={config.GeoIP}
+                    aria-describedby="help-text-for-geoip"
+                  />
+                  IPアドレスの位置情報を検索する
+                </label>
+                <p class="note" id="help-text-for-geoip">
+                  GeoIPデータベースが必要です。
+                </p>
+              </div>
+            </div>
           </div>
-          <div class="form-group-body">
+        {/if}
+        {#if config.Extractor == "custom"}
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5>カスタム抽出パターン</h5>
+            </div>
+            <div class="form-group-body">
               <input
-                class="form-control"
+                class="form-control input-block"
                 type="text"
-                placeholder="ホスト名解決項目"
-                aria-label="ホスト名解決項目"
-                bind:value={config.HostFeilds}
+                placeholder="GROKパターン"
+                aria-label="GROKパターン"
+                style="width: 100%;"
+                bind:value={config.Grok}
               />
+            </div>
           </div>
-        </div>
-      {/if}
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5>タイムスタンプ項目</h5>
+            </div>
+            <div class="form-group-body">
+              <input
+                class="form-control mt-2"
+                type="text"
+                placeholder="項目"
+                aria-label="タイムスタンプ項目"
+                bind:value={config.TimeFeild}
+              />
+            </div>
+          </div>
+          {#if config.HostName}
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5>ホスト名解決項目</h5>
+              </div>
+              <div class="form-group-body">
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="ホスト名解決項目"
+                  aria-label="ホスト名解決項目"
+                  bind:value={config.HostFeilds}
+                />
+              </div>
+            </div>
+          {/if}
+          {#if config.GeoIP}
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5>IP位置情報項目</h5>
+              </div>
+              <div class="form-group-body">
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="IP位置情報項目"
+                  aria-label="IP位置情報項目"
+                  bind:value={config.GeoFeilds}
+                />
+              </div>
+            </div>
+          {/if}
+        {/if}
         <div class="form-group">
           <div class="form-group-header">
             <h5>インデクサー設定</h5>
@@ -316,6 +411,29 @@
             </div>
           </div>
         </div>
+        {#if config.GeoIP}
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5>IP位置情報データベース</h5>
+            </div>
+            <div class="form-group-body">
+              <div class="input-group">
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="Geo IPデータベース"
+                  aria-label="Geo IPデータベース"
+                  bind:value={config.GeoIPDB}
+                />
+                <span class="input-group-button">
+                  <button class="btn" type="button" on:click={selectGeoIPDB}>
+                    <File16 />
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        {/if}
         <div class="form-group">
           <div class="form-group-header">
             <h5>SSHキーファイル</h5>
@@ -332,27 +450,6 @@
               <span class="input-group-button">
                 <button class="btn" type="button" on:click={selectSSHKey}>
                   <FileBadge16 />
-                </button>
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>IP位置情報データベース</h5>
-          </div>
-          <div class="form-group-body">
-            <div class="input-group">
-              <input
-                class="form-control"
-                type="text"
-                placeholder="Geo IPデータベース"
-                aria-label="Geo IPデータベース"
-                bind:value={config.GeoIPDB}
-              />
-              <span class="input-group-button">
-                <button class="btn" type="button" on:click={selectGeoIPDB}>
-                  <File16 />
                 </button>
               </span>
             </div>

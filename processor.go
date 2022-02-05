@@ -18,10 +18,13 @@ import (
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-type ProcessInfo struct {
-	Done        bool
-	ErrorMsg    string
-	LogFiles    []*LogFile
+type ProcessStat struct {
+	Done     bool
+	ErrorMsg string
+	LogFiles []*LogFile
+}
+
+type ProcessConf struct {
 	TimeGrinder *timegrinder.TimeGrinder
 	Filter      *regexp.Regexp
 	Extractor   *grok.Grok
@@ -47,7 +50,7 @@ func (b *App) Start(c Config) string {
 	if e := b.makeLogFileList(); e != "" {
 		return e
 	}
-	if len(b.process.LogFiles) < 1 {
+	if len(b.processStat.LogFiles) < 1 {
 		return "処理するファイルがありません"
 	}
 	if e := b.setupProcess(); e != "" {
@@ -65,43 +68,30 @@ func (b *App) Start(c Config) string {
 }
 
 func (b *App) setupProcess() string {
-	var err error
-	b.process.TimeGrinder, err = b.getTimeGrinder()
-	if err != nil {
+	if err := b.setTimeGrinder(); err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to create new timegrinder err=%v", err))
 		return err.Error()
 	}
-	b.process.Filter, err = b.getFilter()
-	if err != nil {
+	if err := b.setFilter(); err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to get filter err=%v", err))
 		return err.Error()
 	}
-	b.process.Extractor, b.process.TimeFeild, err = b.getExtractor()
-	if err != nil {
+	if err := b.setExtractor(); err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
 		return err.Error()
 	}
-	b.process.GeoFeilds = []string{}
-	for _, f := range strings.Split(b.config.GeoFeilds, ",") {
-		f = strings.TrimSpace(f)
-		if f != "" {
-			b.process.GeoFeilds = append(b.process.GeoFeilds, f)
-		}
+	if err := b.setGeoIP(); err != nil {
+		wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
+		return err.Error()
 	}
-	b.process.GeoIP, err = b.getGeoIP()
-	if err != nil {
-		if err != nil {
-			wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
-			return err.Error()
-		}
-	}
+	b.setHostFeilds()
 	return ""
 }
 
 func (b *App) cleanupProcess() {
-	if b.process.GeoIP != nil {
-		b.process.GeoIP.Close()
-		b.process.GeoIP = nil
+	if b.processConf.GeoIP != nil {
+		b.processConf.GeoIP.Close()
+		b.processConf.GeoIP = nil
 	}
 }
 
@@ -115,17 +105,17 @@ func (b *App) Stop() string {
 }
 
 // GetProcessInfo : 処理状態を返す
-func (b *App) GetProcessInfo() ProcessInfo {
+func (b *App) GetProcessInfo() ProcessStat {
 	wails.LogDebug(b.ctx, "GetProcessInfo")
-	if b.process.Done {
+	if b.processStat.Done {
 		b.wg.Wait()
 		b.cleanupProcess()
 	}
-	return b.process
+	return b.processStat
 }
 
 func (b *App) makeLogFileList() string {
-	b.process.LogFiles = []*LogFile{}
+	b.processStat.LogFiles = []*LogFile{}
 	for _, s := range b.logSources {
 		switch s.Type {
 		case "folder":
@@ -165,7 +155,7 @@ func (b *App) addLogFile(t, u, p string) string {
 	if err != nil {
 		return err.Error()
 	}
-	b.process.LogFiles = append(b.process.LogFiles, &LogFile{
+	b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
 		Type:      t,
 		URL:       u,
 		Path:      p,
@@ -182,7 +172,7 @@ func (b *App) logReader() {
 		close(b.indexer.logCh)
 	}()
 	wails.LogDebug(b.ctx, "start logReader")
-	for _, lf := range b.process.LogFiles {
+	for _, lf := range b.processStat.LogFiles {
 		if b.stopProcess {
 			return
 		}
@@ -196,7 +186,7 @@ func (b *App) readOneLogFile(lf *LogFile) {
 	file, err := os.Open(lf.Path)
 	if err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to create open log file err=%v", err))
-		b.process.ErrorMsg = err.Error()
+		b.processStat.ErrorMsg = err.Error()
 		return
 	}
 	defer file.Close()
@@ -209,7 +199,7 @@ func (b *App) readOneLogFile(lf *LogFile) {
 		l := scanner.Text()
 		lf.Done += int64(len(l))
 		ln++
-		if b.process.Filter != nil && !b.process.Filter.MatchString(l) {
+		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
 			continue
 		}
 		log := LogEnt{
@@ -217,8 +207,8 @@ func (b *App) readOneLogFile(lf *LogFile) {
 			KeyValue: make(map[string]interface{}),
 			All:      l,
 		}
-		if b.process.Extractor != nil {
-			values, err := b.process.Extractor.Parse("%{TWLOGAIAN}", l)
+		if b.processConf.Extractor != nil {
+			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
 				skip++
 				continue
@@ -229,13 +219,12 @@ func (b *App) readOneLogFile(lf *LogFile) {
 				}
 				// 数値に変換可能な場合は数値として保存
 				if fv, err := strconv.ParseFloat(v, 64); err == nil {
-					wails.LogDebug(b.ctx, fmt.Sprintf("%s=%s %f", k, v, fv))
 					log.KeyValue[k] = fv
 				} else {
 					log.KeyValue[k] = v
 				}
 			}
-			tfi, ok := log.KeyValue[b.process.TimeFeild]
+			tfi, ok := log.KeyValue[b.processConf.TimeFeild]
 			if !ok {
 				skip++
 				continue
@@ -245,13 +234,13 @@ func (b *App) readOneLogFile(lf *LogFile) {
 				skip++
 				continue
 			}
-			ts, ok, err := b.process.TimeGrinder.Extract([]byte(tf))
+			ts, ok, err := b.processConf.TimeGrinder.Extract([]byte(tf))
 			if err != nil || !ok {
 				skip++
 				continue
 			}
-			if b.process.GeoIP != nil && len(b.process.GeoFeilds) > 0 {
-				for _, f := range b.process.GeoFeilds {
+			if b.config.GeoIP {
+				for _, f := range b.processConf.GeoFeilds {
 					if ip, ok := log.KeyValue[f]; ok {
 						if e := b.findGeo(ip.(string)); e != nil {
 							log.KeyValue[f] = e
@@ -259,8 +248,8 @@ func (b *App) readOneLogFile(lf *LogFile) {
 					}
 				}
 			}
-			if len(b.process.HostFeilds) > 0 {
-				for _, f := range b.process.HostFeilds {
+			if b.config.HostName {
+				for _, f := range b.processConf.HostFeilds {
 					if ip, ok := log.KeyValue[f]; ok {
 						if e := b.findHost(ip.(string)); e != "" {
 							log.KeyValue[f+"_host"] = e
@@ -270,7 +259,7 @@ func (b *App) readOneLogFile(lf *LogFile) {
 			}
 			lastTime = ts.UnixNano()
 		} else {
-			ts, ok, err := b.process.TimeGrinder.Extract([]byte(l))
+			ts, ok, err := b.processConf.TimeGrinder.Extract([]byte(l))
 			if err != nil {
 				// 複数行は同じタイムスタンプにする
 				if lastTime < 1 {
@@ -289,55 +278,175 @@ func (b *App) readOneLogFile(lf *LogFile) {
 		b.indexer.logCh <- &log
 	}
 	if err := scanner.Err(); err != nil {
-		b.process.ErrorMsg = err.Error()
+		b.processStat.ErrorMsg = err.Error()
 	}
 	if send < 1 || skip > (ln/2) {
-		b.process.ErrorMsg = fmt.Sprintf("%s 総数:%d/送信:%d/エラー:%d件", lf.Path, ln, send, skip)
+		b.processStat.ErrorMsg = fmt.Sprintf("%s 総数:%d/送信:%d/エラー:%d件", lf.Path, ln, send, skip)
 	}
 	wails.LogDebug(b.ctx, fmt.Sprintf("end readOneLogFile ln=%d send=%d skip=%d", ln, send, skip))
 }
 
-func (b *App) getTimeGrinder() (*timegrinder.TimeGrinder, error) {
-	return timegrinder.New(timegrinder.Config{
+func (b *App) setTimeGrinder() error {
+	var err error
+	b.processConf.TimeGrinder, err = timegrinder.New(timegrinder.Config{
 		EnableLeftMostSeed: true,
 	})
+	return err
 }
 
-func (b *App) getFilter() (*regexp.Regexp, error) {
+func (b *App) setFilter() error {
 	if b.config.Filter == "" {
-		return nil, nil
+		return nil
 	}
-	return regexp.Compile(b.config.Filter)
+	var err error
+	b.processConf.Filter, err = regexp.Compile(b.config.Filter)
+	return err
 }
 
-func (b *App) getExtractor() (*grok.Grok, string, error) {
-	if b.config.Extractor == "timeonly" {
-		return nil, "", nil
+type ExtractorType struct {
+	Key       string
+	Name      string
+	Grok      string
+	TimeFeild string
+	IP        bool
+	IPFeilds  string
+}
+
+var extractorTypes = []ExtractorType{
+	{
+		Key:       "syslog",
+		Name:      "syslog",
+		TimeFeild: "timestamp",
+		Grok:      `%{SYSLOGBASE} %{GREEDYDATA:message}`,
+		IP:        false,
+	},
+	{
+		Key:       "apacheCommon",
+		Name:      "Apache(Common)",
+		TimeFeild: "timestamp",
+		Grok:      `%{COMMONAPACHELOG}`,
+		IP:        true,
+	},
+	{
+		Key:       "apacheConbined",
+		Name:      "Apache(Conbined)",
+		TimeFeild: "timestamp",
+		Grok:      `%{COMBINEDAPACHELOG}`,
+		IP:        true,
+	},
+}
+
+// GetExtractorTypes : 定義済みのログタイプのリスト情報を提供する
+func (b *App) GetExtractorTypes() []ExtractorType {
+	return extractorTypes
+}
+
+// TestSampleLog : サンプルのログをテストしてログの種類を判別する
+func (b *App) TestSampleLog(c Config) *ExtractorType {
+	max := 0
+	var ret *ExtractorType
+	for i, e := range extractorTypes {
+		s := b.testGrok(c.SampleLog, e.Grok)
+		if s > max {
+			ret = &extractorTypes[i]
+			max = s
+		}
 	}
-	timeFeild := ""
+	if c.Grok != "" && b.testGrok(c.SampleLog, c.Grok) > max {
+		return &ExtractorType{
+			Key:  "custom",
+			Name: "カスタム設定",
+			Grok: c.Grok,
+		}
+	}
+	wails.LogDebug(b.ctx, fmt.Sprintf("testSampleLog  ret=%v", ret))
+	return ret
+}
+
+func (b *App) testGrok(l, p string) int {
 	config := grok.Config{
 		Patterns:          make(map[string]string),
 		NamedCapturesOnly: true,
 	}
-	switch b.config.Extractor {
-	case "syslog":
-		timeFeild = "timestamp"
-		config.Patterns["TWLOGAIAN"] = `%{SYSLOGBASE} %{GREEDYDATA:message}`
-	}
-
+	config.Patterns["TWLOGAIAN"] = p
 	g, err := grok.NewWithConfig(&config)
 	if err != nil {
-		return nil, "", err
+		return -1
 	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("getExtractor tf=%s p=%s", timeFeild, config.Patterns["TWLOGAIAN"]))
-	return g, timeFeild, nil
+	values, err := g.Parse("%{TWLOGAIAN}", l)
+	if err != nil {
+		return -1
+	}
+	wails.LogDebug(b.ctx, fmt.Sprintf("test %s=%d", p, len(values)))
+	return len(values)
 }
 
-func (b *App) getGeoIP() (*geoip2.Reader, error) {
-	if b.config.GeoIPDB == "" {
-		return nil, nil
+func (b *App) findExtractorType() *ExtractorType {
+	for _, e := range extractorTypes {
+		if e.Key == b.config.Extractor {
+			return &e
+		}
 	}
-	return geoip2.Open(b.config.GeoIPDB)
+	return nil
+}
+
+func (b *App) setExtractor() error {
+	if b.config.Extractor == "timeonly" || b.config.Extractor == "" {
+		b.processConf.Extractor = nil
+		return nil
+	}
+	et := b.findExtractorType()
+	if et == nil {
+		return fmt.Errorf("invalid extractor type %s", b.processConf.Extractor)
+	}
+	config := grok.Config{
+		Patterns:          make(map[string]string),
+		NamedCapturesOnly: true,
+	}
+	config.Patterns["TWLOGAIAN"] = et.Grok
+	g, err := grok.NewWithConfig(&config)
+	if err != nil {
+		return err
+	}
+	b.config.GeoFeilds = et.IPFeilds
+	b.config.HostFeilds = et.IPFeilds
+	b.processConf.Extractor = g
+	b.processConf.TimeFeild = et.TimeFeild
+	wails.LogDebug(b.ctx, fmt.Sprintf("getExtractor %s=%#v", b.config.Extractor, et))
+	return nil
+}
+
+func (b *App) setGeoIP() error {
+	b.processConf.GeoFeilds = []string{}
+	if !b.config.GeoIP {
+		return nil
+	}
+	for _, f := range strings.Split(b.config.GeoFeilds, ",") {
+		f = strings.TrimSpace(f)
+		if f != "" {
+			b.processConf.GeoFeilds = append(b.processConf.GeoFeilds, f)
+		}
+	}
+	if len(b.processConf.GeoFeilds) < 1 {
+		b.config.GeoIP = false
+		return nil
+	}
+	var err error
+	b.processConf.GeoIP, err = geoip2.Open(b.config.GeoIPDB)
+	return err
+}
+
+func (b *App) setHostFeilds() {
+	b.processConf.HostFeilds = []string{}
+	if !b.config.HostName {
+		return
+	}
+	for _, f := range strings.Split(b.config.HostFeilds, ",") {
+		f = strings.TrimSpace(f)
+		if f != "" {
+			b.processConf.HostFeilds = append(b.processConf.HostFeilds, f)
+		}
+	}
 }
 
 func (b *App) findGeo(sip string) *GeoEnt {
@@ -345,7 +454,7 @@ func (b *App) findGeo(sip string) *GeoEnt {
 		return e
 	}
 	ip := net.ParseIP(sip)
-	if r, err := b.process.GeoIP.City(ip); err == nil {
+	if r, err := b.processConf.GeoIP.City(ip); err == nil {
 		return &GeoEnt{
 			IP:     sip,
 			Lat:    r.Location.Latitude,
