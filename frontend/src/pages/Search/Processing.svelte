@@ -3,8 +3,8 @@
   import { createEventDispatcher } from "svelte";
   import Grid from "gridjs-svelte";
   import { onMount } from 'svelte';
-  import { h, html } from "gridjs";
-  import { typeName } from "../js/common.js";
+  import { typeName } from "../../js/common.js";
+  export let live = true;
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   const data = [];
@@ -30,9 +30,21 @@
         if (r.ErrorMsg) {
           errorMsg = r.ErrorMsg;
         }
-        if (r.Done) {
-          dispatch("done", { page: "search" });
+        if (!live) {
           return
+        }
+        if (r.Done) {
+          switch (r.View){
+            case "syslog":
+              dispatch("done", { page: "syslog" });
+              return
+            case "access":
+              dispatch("done", { page: "access" });
+              return
+            default:
+              dispatch("done", { page: "timeonly" });
+              return
+          }
         }
         timer = setTimeout(getProcessInfo,1000);
       }
@@ -79,11 +91,19 @@
     });
   };
 
+  const back = () => {
+    dispatch("back", {});
+  }
+
 </script>
 
 <div class="Box mx-auto" style="max-width: 800px;">
     <div class="Box-header">
-      <h3 class="Box-title">ログ分析中....</h3>
+      {#if live}
+        <h3 class="Box-title">ログ読み込み中....</h3>
+      {:else}
+        <h3 class="Box-title">ログ読み込み結果</h3>
+      {/if}
     </div>
     {#if errorMsg != ""}
       <div class="flash flash-error">
@@ -94,9 +114,16 @@
         <Grid {data} {pagination} {columns} />
     </div>
     <div class="Box-footer text-right">
-      <button class="btn  btn-danger" type="button" on:click={stop}>
-        <X16 />
-        停止
-      </button>
+      {#if live}
+        <button class="btn  btn-danger" type="button" on:click={stop}>
+          <X16 />
+          停止
+        </button>
+      {:else}
+        <button class="btn  btn-danger" type="button" on:click={back}>
+          <X16 />
+          戻る
+        </button>
+      {/if}
     </div>
 </div>

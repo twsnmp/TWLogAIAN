@@ -22,6 +22,7 @@ type ProcessStat struct {
 	Done     bool
 	ErrorMsg string
 	LogFiles []*LogFile
+	View     string
 }
 
 type ProcessConf struct {
@@ -310,6 +311,7 @@ type ExtractorType struct {
 	TimeFeild string
 	IP        bool
 	IPFeilds  string
+	View      string
 }
 
 var extractorTypes = []ExtractorType{
@@ -319,6 +321,7 @@ var extractorTypes = []ExtractorType{
 		TimeFeild: "timestamp",
 		Grok:      `%{SYSLOGBASE} %{GREEDYDATA:message}`,
 		IP:        false,
+		View:      "syslog",
 	},
 	{
 		Key:       "apacheCommon",
@@ -326,6 +329,7 @@ var extractorTypes = []ExtractorType{
 		TimeFeild: "timestamp",
 		Grok:      `%{COMMONAPACHELOG}`,
 		IP:        true,
+		View:      "access",
 	},
 	{
 		Key:       "apacheConbined",
@@ -333,6 +337,7 @@ var extractorTypes = []ExtractorType{
 		TimeFeild: "timestamp",
 		Grok:      `%{COMBINEDAPACHELOG}`,
 		IP:        true,
+		View:      "access",
 	},
 }
 
@@ -391,6 +396,7 @@ func (b *App) findExtractorType() *ExtractorType {
 }
 
 func (b *App) setExtractor() error {
+	b.processStat.View = ""
 	if b.config.Extractor == "timeonly" || b.config.Extractor == "" {
 		b.processConf.Extractor = nil
 		return nil
@@ -412,6 +418,7 @@ func (b *App) setExtractor() error {
 	b.config.HostFeilds = et.IPFeilds
 	b.processConf.Extractor = g
 	b.processConf.TimeFeild = et.TimeFeild
+	b.processStat.View = et.View
 	wails.LogDebug(b.ctx, fmt.Sprintf("getExtractor %s=%#v", b.config.Extractor, et))
 	return nil
 }
