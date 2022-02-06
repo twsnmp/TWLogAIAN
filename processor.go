@@ -244,7 +244,7 @@ func (b *App) readOneLogFile(lf *LogFile) {
 				for _, f := range b.processConf.GeoFeilds {
 					if ip, ok := log.KeyValue[f]; ok {
 						if e := b.findGeo(ip.(string)); e != nil {
-							log.KeyValue[f] = e
+							log.KeyValue[f+"_geo"] = e
 						}
 					}
 				}
@@ -329,6 +329,7 @@ var extractorTypes = []ExtractorType{
 		TimeFeild: "timestamp",
 		Grok:      `%{COMMONAPACHELOG}`,
 		IP:        true,
+		IPFeilds:  "clientip",
 		View:      "access",
 	},
 	{
@@ -337,6 +338,7 @@ var extractorTypes = []ExtractorType{
 		TimeFeild: "timestamp",
 		Grok:      `%{COMBINEDAPACHELOG}`,
 		IP:        true,
+		IPFeilds:  "clientip",
 		View:      "access",
 	},
 }
@@ -462,15 +464,21 @@ func (b *App) findGeo(sip string) *GeoEnt {
 	}
 	ip := net.ParseIP(sip)
 	if r, err := b.processConf.GeoIP.City(ip); err == nil {
-		return &GeoEnt{
-			IP:     sip,
-			Lat:    r.Location.Latitude,
-			Long:   r.Location.Longitude,
-			Contry: r.Country.IsoCode,
-			City:   r.City.Names["en"],
+		b.geoMap[sip] = &GeoEnt{
+			Lat:     r.Location.Latitude,
+			Long:    r.Location.Longitude,
+			Country: r.Country.IsoCode,
+			City:    r.City.Names["en"],
+		}
+	} else {
+		b.geoMap[sip] = &GeoEnt{
+			Lat:     0.0,
+			Long:    0.0,
+			Country: "",
+			City:    "",
 		}
 	}
-	return nil
+	return b.geoMap[sip]
 }
 
 func (b *App) findHost(ip string) string {

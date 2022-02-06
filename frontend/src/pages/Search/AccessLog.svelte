@@ -1,11 +1,13 @@
 <script>
-  import { X16, Search16,Gear16 } from "svelte-octicons";
+  import { X16, Search16,Gear16,Check16 } from "svelte-octicons";
   import Query from "./Query.svelte"
   import { createEventDispatcher,onMount, tick } from "svelte";
   import {makeLogCountChart,updateLogCountChart} from "../../js/logchart";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
-  import * as echarts from 'echarts'
+  import * as echarts from 'echarts';
+  import { html } from "gridjs";
+
   const dispatch = createEventDispatcher();
   let page = "";
   const conf = {
@@ -48,7 +50,21 @@
         result = r;
         const d = [];
         r.Logs.forEach((l) => {
-          d.push([l.Score, l.Time, l.All]);
+          console.log(l);
+          let cl = l.KeyValue.clientip;
+          if (l.KeyValue.clientip_host) {
+            cl += "(" + l.KeyValue.clientip_host +")"
+          }
+          let country = l.KeyValue.clientip_geo ? l.KeyValue.clientip_geo.Country :"";
+          d.push([
+            l.KeyValue.response,
+            l.Time,
+            l.KeyValue.verb,
+            l.KeyValue.bytes,
+            cl,
+            country,
+            l.KeyValue.request,
+          ]);
         });
         data = d
         updateLogCountChart(r.Logs);
@@ -68,24 +84,51 @@
     makeLogCountChart("chart");
   });
 
+  const formatCode = (code) => {
+    if (code < 300) {
+      return html(`<div class="color-bg-default">${code}</div>`);
+    } else if (code < 400) {
+      return html(`<div class="color-bg-attention">${code}</div>`);
+    } else if (code < 500) {
+      return html(`<div class="color-bg-danger">${code}</div>`);
+    }
+    return html(`<div class="color-bg-danger-emphasis">${code}</div>`);
+  }
+
   const columns = [
     {
-      name: "スコア",
-      width: "10%",
-      formatter: (cell) => Number.parseFloat(cell).toFixed(2),
+      name: "コード",
+      width: "5%",
+      formatter: (cell) => formatCode(cell),
     },{
       name: "日時",
-      width: "20%",
-      formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
+      width: "15%",
+      formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
     },{
-      name: "ログ",
-      width: "70%",
+      name: "リクエスト",
+      width: "10%",
+    },{
+      name: "サイズ",
+      width: "5%",
+    },{
+      name: "クライアント",
+      width: "25%",
+    },{
+      name: "国",
+      width: "5%",
+    },{
+      name: "パス",
+      width: "35%",
     },
   ];
 
   const cancel = () => {
     window.go.main.App.CloseWorkDir();
     dispatch("done", { page: "wellcome" });
+  };
+
+  const showResult = () => {
+    dispatch("done", { page: "result" });
   };
 
   const clearMsg = () => {
@@ -166,6 +209,10 @@
         <Grid {data} sort search {pagination} {columns} language={jaJP} />
       </div>
       <div class="Box-footer text-right">
+        <button class="btn  btn-secondary" type="button" on:click={showResult}>
+          <Check16 />
+          処理結果
+        </button>
         <button class="btn  btn-secondary" type="button" on:click={cancel}>
           <X16 />
           終了

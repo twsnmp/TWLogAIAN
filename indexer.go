@@ -32,11 +32,10 @@ type LogEnt struct {
 }
 
 type GeoEnt struct {
-	IP     string
-	Lat    float64
-	Long   float64
-	Contry string
-	City   string
+	Lat     float64
+	Long    float64
+	Country string
+	City    string
 }
 
 func (b *App) StartLogIndexer() error {
@@ -111,8 +110,7 @@ func (b *App) addLogToIndex() {
 			case float64:
 				doc.AddField(bluge.NewNumericField(k, v))
 			case *GeoEnt:
-				doc.AddField(bluge.NewTextField(k, v.IP))
-				doc.AddField(bluge.NewTextField(k+"_country", v.Contry))
+				doc.AddField(bluge.NewTextField(k+"_country", v.Country))
 				doc.AddField(bluge.NewTextField(k+"_city", v.City))
 				doc.AddField(bluge.NewGeoPointField(k+"_latlong", v.Lat, v.Long))
 			default:
