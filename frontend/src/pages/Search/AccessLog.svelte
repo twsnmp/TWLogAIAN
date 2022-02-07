@@ -1,6 +1,7 @@
 <script>
   import { X16, Search16,Gear16,Check16 } from "svelte-octicons";
   import Query from "./Query.svelte"
+  import Result from "./Result.svelte"
   import { createEventDispatcher,onMount, tick } from "svelte";
   import {makeLogCountChart,updateLogCountChart} from "../../js/logchart";
   import Grid from "gridjs-svelte";
@@ -127,16 +128,9 @@
     dispatch("done", { page: "wellcome" });
   };
 
-  const showResult = () => {
-    dispatch("done", { page: "result" });
-  };
 
   const clearMsg = () => {
     errorMsg = "";
-  };
-
-  const setting = () => {
-    page = "query";
   };
 
   const handleDone = (e) => {
@@ -158,7 +152,9 @@
 
 <svelte:window on:resize={onResize} />
 {#if page == "query"}
-  <Query {conf} fields={indexInfo.Fields} on:done={handleDone}  />
+  <Query {conf} fields={indexInfo.Fields} on:done={handleDone} />
+{:else if page == "result" }
+  <Result {indexInfo} on:done={handleDone} />
 {:else}
   <div class="Box mx-auto" style="max-width: 1600px;">
       <div class="Box-header d-flex flex-items-center">
@@ -199,7 +195,7 @@
               <Search16 />
               検索
             </button>
-            <button class="btn  btn-secondary" type="button" on:click={setting}>
+            <button class="btn  btn-secondary" type="button" on:click={() => { page="query"}}>
               <Gear16 />
               条件
             </button>
@@ -209,7 +205,7 @@
         <Grid {data} sort search {pagination} {columns} language={jaJP} />
       </div>
       <div class="Box-footer text-right">
-        <button class="btn  btn-secondary" type="button" on:click={showResult}>
+        <button class="btn  btn-secondary" type="button" on:click={()=> { page = "result"}}>
           <Check16 />
           処理結果
         </button>

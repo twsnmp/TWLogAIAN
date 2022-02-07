@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/oschwald/geoip2-golang"
 	"github.com/vjeantet/grok"
@@ -36,12 +37,13 @@ type ProcessConf struct {
 }
 
 type LogFile struct {
-	Type      string
-	URL       string
-	Path      string
-	TimeStamp int64
-	Size      int64
-	Done      int64
+	Type     string
+	URL      string
+	Path     string
+	Size     int64
+	Read     int64
+	Send     int64
+	Duration string
 }
 
 // Start : インデックス作成を開始する
@@ -157,12 +159,12 @@ func (b *App) addLogFile(t, u, p string) string {
 		return err.Error()
 	}
 	b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
-		Type:      t,
-		URL:       u,
-		Path:      p,
-		TimeStamp: s.ModTime().Unix(),
-		Size:      s.Size(),
-		Done:      0,
+		Type: t,
+		URL:  u,
+		Path: p,
+		Size: s.Size(),
+		Read: 0,
+		Send: 0,
 	})
 	return ""
 }
@@ -183,6 +185,7 @@ func (b *App) logReader() {
 }
 
 func (b *App) readOneLogFile(lf *LogFile) {
+	st := time.Now()
 	wails.LogDebug(b.ctx, "start readOneLogFile path="+lf.Path)
 	file, err := os.Open(lf.Path)
 	if err != nil {
@@ -193,12 +196,10 @@ func (b *App) readOneLogFile(lf *LogFile) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	ln := 0
-	skip := 0
-	send := 0
 	var lastTime int64
 	for scanner.Scan() {
 		l := scanner.Text()
-		lf.Done += int64(len(l))
+		lf.Read += int64(len(l))
 		ln++
 		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
 			continue
@@ -211,7 +212,6 @@ func (b *App) readOneLogFile(lf *LogFile) {
 		if b.processConf.Extractor != nil {
 			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
-				skip++
 				continue
 			}
 			for k, v := range values {
@@ -227,17 +227,14 @@ func (b *App) readOneLogFile(lf *LogFile) {
 			}
 			tfi, ok := log.KeyValue[b.processConf.TimeFeild]
 			if !ok {
-				skip++
 				continue
 			}
 			tf, ok := tfi.(string)
 			if !ok {
-				skip++
 				continue
 			}
 			ts, ok, err := b.processConf.TimeGrinder.Extract([]byte(tf))
 			if err != nil || !ok {
-				skip++
 				continue
 			}
 			if b.config.GeoIP {
@@ -275,16 +272,14 @@ func (b *App) readOneLogFile(lf *LogFile) {
 			}
 		}
 		log.Time = lastTime
-		send++
 		b.indexer.logCh <- &log
+		lf.Send += int64(len(l))
 	}
 	if err := scanner.Err(); err != nil {
 		b.processStat.ErrorMsg = err.Error()
 	}
-	if send < 1 || skip > (ln/2) {
-		b.processStat.ErrorMsg = fmt.Sprintf("%s 総数:%d/送信:%d/エラー:%d件", lf.Path, ln, send, skip)
-	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("end readOneLogFile ln=%d send=%d skip=%d", ln, send, skip))
+	lf.Duration = time.Since(st).String()
+	wails.LogDebug(b.ctx, fmt.Sprintf("end readOneLogFile ln=%d", ln))
 }
 
 func (b *App) setTimeGrinder() error {

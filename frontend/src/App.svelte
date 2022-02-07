@@ -38,8 +38,6 @@
      <Syslog on:done={handleDone}/>
     {:else if page == "access"}
      <AccessLog on:done={handleDone}/>
-    {:else if page == "result"}
-     <Processing live={false} on:back={handleBack}/>
     {/if}
   </div>
 </main>
