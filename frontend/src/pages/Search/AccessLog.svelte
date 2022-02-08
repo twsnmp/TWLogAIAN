@@ -1,5 +1,5 @@
 <script>
-  import { X16, Search16,Gear16,Check16 } from "svelte-octicons";
+  import { X16, Search16,TriangleDown16,TriangleUp16,Check16,Trash16 } from "svelte-octicons";
   import Query from "./Query.svelte"
   import Result from "./Result.svelte"
   import { createEventDispatcher,onMount, tick } from "svelte";
@@ -11,19 +11,24 @@
 
   const dispatch = createEventDispatcher();
   let page = "";
+  let showQuery = false;
   const conf = {
     query: '',
     limit: 1000,
-    range: false,
-    start: "",
-    end: "",
-    keywords: [],
-    geo: {
-      eable: false,
-      field: '',
-      lat: '',
-      long: '',
-      range: '',
+    history: [],
+    keyword: {
+      field: "",
+      mode: "",
+      key: "",
+    },
+    range:{
+      start: "",
+      end: "",
+    },
+    geo:{
+      lat: "",
+      long: "",
+      range: "",
     },
   }
   let data = [];
@@ -77,6 +82,7 @@
         } else {
           pagination = false;
         }
+        conf.history.push(conf.query);
       }
     });
   };
@@ -148,15 +154,27 @@
     updateLogCountChart(result.Logs);
   };
 
+  const handleUpdateQuery = (e) => {
+    if (e && e.detail && e.detail.query) {
+      if (e.detail.add) {
+        conf.query += e.detail.query;
+      } else {
+        conf.query = e.detail.query;
+      }
+    }
+  }
+
+  const clear = () => {
+    conf.query = "";
+  }
+
 </script>
 
 <svelte:window on:resize={onResize} />
-{#if page == "query"}
-  <Query {conf} fields={indexInfo.Fields} on:done={handleDone} />
-{:else if page == "result" }
+{#if page == "result"}
   <Result {indexInfo} on:done={handleDone} />
 {:else}
-  <div class="Box mx-auto" style="max-width: 1600px;">
+  <div class="Box mx-auto Box--condensed" style="max-width: 1600px;">
       <div class="Box-header d-flex flex-items-center">
         <h3 class="Box-title overflow-hidden flex-auto">アクセスログ分析</h3>
         <span class="f6">
@@ -179,7 +197,7 @@
           </button>
         </div>
       {/if}
-      <div class="Box-body log">
+      <div class="Box-row">
         <div class="clearfix">
           <div class="col-9 float-left">
             <input 
@@ -191,17 +209,36 @@
             />
           </div>
           <div class="col-3 float-left">
+            {#if conf.query != ""}
+              <button class="btn btn-danger" type="button" on:click={clear}>
+                <Trash16 />
+              </button>
+            {/if}
+            {#if !showQuery}
+              <button class="btn  btn-secondary" type="button" on:click={() => { showQuery= true}}>
+                <TriangleDown16 />
+              </button>
+            {:else}
+              <button class="btn  btn-secondary" type="button" on:click={() => { showQuery= false}}>
+                <TriangleUp16 />
+              </button>
+            {/if}
             <button class="btn  btn-primary ml-2" type="button" on:click={search}>
               <Search16 />
               検索
             </button>
-            <button class="btn  btn-secondary" type="button" on:click={() => { page="query"}}>
-              <Gear16 />
-              条件
-            </button>
           </div>
         </div>
+      </div>
+      {#if showQuery}
+      <div class="Box-row">
+        <Query {conf} fields={indexInfo.Fields} on:update={handleUpdateQuery}/>
+      </div>
+      {/if}
+      <div class="Box-row">
         <div id="chart" />
+      </div>
+      <div class="Box-row log">
         <Grid {data} sort search {pagination} {columns} language={jaJP} />
       </div>
       <div class="Box-footer text-right">
