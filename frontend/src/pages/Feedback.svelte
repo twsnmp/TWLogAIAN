@@ -31,7 +31,7 @@
   };
 </script>
 
-<div class="Box mx-auto" style="max-width: 500px;">
+<div class="Box mx-auto" style="max-width: 800px;">
   <div class="Box-header">
     <h3 class="Box-title">フィードバック</h3>
   </div>

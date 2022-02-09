@@ -29,7 +29,7 @@
 
 </script>
 
-<div class="Box mx-auto" style="max-width: 95%;">
+<div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
       <h3 class="Box-title">ログ読み込み結果</h3>
     </div>
@@ -81,7 +81,7 @@
           <tbody>
           {#each logFiles as f }
               <tr class:color-bg-danger={(f.Read ? (100.0 * f.Send/f.Read) : 0) < 50.0}>
-              <td>{f.Read ? (100.0 * f.Send/f.Read) : 0}%</td>
+              <td>{f.Read ? (100.0 * f.Send/f.Read).toFixed(2) : 0}%</td>
               <td>{f.Read}</td>
               <td>{f.Send}</td>
               <td>{f.Duration}</td>

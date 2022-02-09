@@ -4,7 +4,6 @@
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
   import LogSource from "./LogSource.svelte";
-  import { typeName } from "../../js/common.js";
   import { onMount } from "svelte";
   const dispatch = createEventDispatcher();
   const data = [];
@@ -67,11 +66,11 @@
   const getExtractorTypes = () => {
     window.go.main.App.GetExtractorTypes().then((r) => {
       extractorTypes = r;
-      extractorTypes.forEach((e) =>{
-        hasIPMap[e.Key] = e.IP
+      extractorTypes.forEach((e) => {
+        hasIPMap[e.Key] = e.IP;
       });
-      hasIPMap["timeonly"] = false
-      hasIPMap["custom"] =  true
+      hasIPMap["timeonly"] = false;
+      hasIPMap["custom"] = true;
     });
   };
   onMount(() => {
@@ -98,6 +97,22 @@
     edit = true;
   };
 
+  const formatLogSourceType = (t) => {
+    switch (t) {
+      case "folder":
+        return "フォルダー";
+      case "file":
+        return "単一ファイル";
+      case "http":
+        return "Webサーバー";
+      case "scp":
+        return "SCPサーバー";
+      case "sftp":
+        return "SFTPサーバー";
+    }
+    return "";
+  }
+
   const actionButtons = (_, row) => {
     const no = row.cells[0].data;
     return h(
@@ -122,7 +137,7 @@
       name: "タイプ",
       sort: true,
       width: "20%",
-      formatter: typeName,
+      formatter: formatLogSourceType,
     },
     {
       name: "パス/URL",
@@ -173,15 +188,15 @@
   const testSampleLog = () => {
     clearMsg();
     if (config.SampleLog == "") {
-      errorMsg = "サンプルログが空欄では私にはログの種類を判断できません"
-      return
+      errorMsg = "サンプルログが空欄では私にはログの種類を判断できません";
+      return;
     }
     window.go.main.App.TestSampleLog(config).then((et) => {
       if (!et) {
-        errorMsg = "私にはログの種類を判断できませんでした"
+        errorMsg = "私にはログの種類を判断できませんでした";
       } else {
-        infoMsg = "ログの種類を"+ et.Name + "に設定しました。"
-        config.Extractor = et.Key
+        infoMsg = "ログの種類を" + et.Name + "に設定しました。";
+        config.Extractor = et.Key;
       }
     });
   };
@@ -194,7 +209,7 @@
   };
 </script>
 
-<div class="Box mx-auto" style="max-width: 800px;">
+<div class="Box mx-auto Box--condensed" style="max-width: 800px;">
   {#if edit}
     <LogSource {logSource} on:done={handleDone} />
   {:else}
@@ -272,8 +287,8 @@
               bind:value={config.Extractor}
             >
               <option value="timeonly">タイムスタンプのみ</option>
-              {#each extractorTypes as {Key,Name} }
-                <option value="{Key}">{Name}</option>
+              {#each extractorTypes as { Key, Name }}
+                <option value={Key}>{Name}</option>
               {/each}
               <option value="custom">カスタム</option>
             </select>
@@ -299,32 +314,21 @@
               <h5>IPアドレス情報</h5>
             </div>
             <div class="form-group-body">
-              <div class="form-checkbox">
-                <label>
-                  <input
-                    type="checkbox"
-                    bind:checked={config.HostName}
-                    aria-describedby="help-text-for-hostname"
-                  />
-                  IPアドレスからホスト名を解決する
-                </label>
-                <p class="note" id="help-text-for-hostname">
-                  DNSによる名前解決を実施します。
-                </p>
-              </div>
-              <div class="form-checkbox">
-                <label>
-                  <input
-                    type="checkbox"
-                    bind:checked={config.GeoIP}
-                    aria-describedby="help-text-for-geoip"
-                  />
-                  IPアドレスの位置情報を検索する
-                </label>
-                <p class="note" id="help-text-for-geoip">
-                  GeoIPデータベースが必要です。
-                </p>
-              </div>
+              <label>
+                <input
+                  type="checkbox"
+                  bind:checked={config.HostName}
+                />
+                ホスト名を調べる
+              </label>
+              <label>
+                <input
+                  class="ml-2"
+                  type="checkbox"
+                  bind:checked={config.GeoIP}
+                />
+                位置情報を検索
+              </label>
             </div>
           </div>
         {/if}

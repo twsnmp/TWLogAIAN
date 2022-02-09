@@ -117,7 +117,7 @@
 {#if page == "query"}
   <Query {conf} fields={indexInfo.Fields} on:done={handleDone}  />
 {:else}
-  <div class="Box mx-auto" style="max-width: 1600px;">
+  <div class="Box mx-auto Box--condensed" style="max-width: 95%;">
       <div class="Box-header d-flex flex-items-center">
         <h3 class="Box-title overflow-hidden flex-auto">Syslog分析</h3>
         <span class="f6">

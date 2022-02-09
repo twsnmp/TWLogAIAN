@@ -1,5 +1,5 @@
 <script>
-  import { Plus16, Trash16 } from "svelte-octicons";
+  import { Plus16 } from "svelte-octicons";
   import { createEventDispatcher,onMount, tick } from "svelte";
   export let conf;
   export let fields = [];
@@ -30,6 +30,30 @@
   const addGeo = () =>{
     const q = " geo:" + conf.geo.field + "," + conf.geo.lat + "," + conf.geo.long + "," + conf.geo.range;
     dispatch("update",{query: q,add:true})
+  }
+  const fieldNameMap = {
+    "_all":"ログの行全体" ,
+    "httpversion":"HTTPバージョン",
+    "ident": "識別子",
+    "request": "パス",
+    "response": "応答コード",
+    "agent":"ユーザーエージェント" ,
+    "bytes": "サイズ" ,
+    "clientip_geo_latlong":"クラアンと位置" ,
+    "timestamp": "タイムスタンプ",
+    "rawrequest": "元のリクエスト",
+    "referrer": "リファラー",
+    "time": "日時" ,
+    "verb": "リクエスト",
+    "_id": "内部ID",
+    "auth": "ユーザー名",
+    "clientip": "クライアントIP",
+    "clientip_geo_city": "クライアント都市" ,
+    "clientip_geo_country": "クライアントの国" ,
+    "clientip_host": "クライアントのホスト名",
+  }
+  const getFieldName  = (f) => {
+    return fieldNameMap[f] || f +"(未定義)";
   }
 
 </script>
@@ -82,7 +106,7 @@
       >
         <option value="" >全体</option>
         {#each fields as f }
-          <option value="{f}">{f}</option>
+          <option value="{f}">{getFieldName(f)}</option>
         {/each}
       </select>
       に
@@ -115,7 +139,7 @@
         IP位置情報:
         <select class="form-select" aria-label="項目" bind:value={conf.geo.field}>
           {#each geoFields as f }
-            <option value="{f}">{f}</option>
+            <option value="{f}">{getFieldName(f)}</option>
           {/each}
         </select>
         が

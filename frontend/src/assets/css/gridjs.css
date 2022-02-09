@@ -162,14 +162,6 @@ td.gridjs-td {
   background-color: #fff;
   box-sizing: content-box; }
 
-.log td.gridjs-td {
-  font-family: "Menlo", "Monaco", "Consolas", monospace;
-  font-size: 10px;
-  padding: 1px 1px;
-  overflow-x: scroll;
-  word-break: keep-all;
-}
-
 td.gridjs-td:first-child {
   border-left: none; }
 
@@ -416,3 +408,16 @@ th.gridjs-th:last-child {
   background-color: #9bc2f7;
 }
 
+.log td.gridjs-td {
+  font-family: "Menlo", "Monaco", "Consolas", monospace;
+  font-size: 10px;
+  padding: 1px 1px;
+  overflow-x: scroll;
+  word-break: keep-all;
+}
+
+.log th.gridjs-th {
+  font-family: "Menlo", "Monaco", "Consolas", monospace;
+  font-size: 12px;
+  padding: 1px 1px;
+}

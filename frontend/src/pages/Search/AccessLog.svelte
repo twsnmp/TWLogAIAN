@@ -104,8 +104,8 @@
 
   const columns = [
     {
-      name: "コード",
-      width: "5%",
+      name: "応答",
+      width: "8%",
       formatter: (cell) => formatCode(cell),
     },{
       name: "日時",
@@ -116,16 +116,16 @@
       width: "10%",
     },{
       name: "サイズ",
-      width: "5%",
+      width: "8%",
     },{
-      name: "クライアント",
+      name: "アクセス元",
       width: "25%",
     },{
       name: "国",
-      width: "5%",
+      width: "8%",
     },{
       name: "パス",
-      width: "35%",
+      width: "26%",
     },
   ];
 
@@ -174,7 +174,7 @@
 {#if page == "result"}
   <Result {indexInfo} on:done={handleDone} />
 {:else}
-  <div class="Box mx-auto Box--condensed" style="max-width: 1600px;">
+  <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
         <h3 class="Box-title overflow-hidden flex-auto">アクセスログ分析</h3>
         <span class="f6">
