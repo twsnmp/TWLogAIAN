@@ -15,12 +15,12 @@ type Config struct {
 	Filter     string
 	Extractor  string
 	Grok       string
-	TimeFeild  string
+	TimeField  string
 	GeoIP      bool
 	GeoIPDB    string
-	GeoFeilds  string
+	GeoFields  string
 	HostName   bool
-	HostFeilds string
+	HostFields string
 	InMemory   bool
 	SampleLog  string
 }

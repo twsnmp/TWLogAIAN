@@ -21,6 +21,11 @@
       mode: "",
       key: "",
     },
+    number: {
+      field: "",
+      oper: "<",
+      value: "0.0",
+    },
     range:{
       start: "",
       end: "",
@@ -93,13 +98,13 @@
 
   const formatCode = (code) => {
     if (code < 300) {
-      return html(`<div class="color-bg-default">${code}</div>`);
+      return html(`<div class="color-fg-default">${code}</div>`);
     } else if (code < 400) {
-      return html(`<div class="color-bg-attention">${code}</div>`);
+      return html(`<div class="color-fg-attention">${code}</div>`);
     } else if (code < 500) {
-      return html(`<div class="color-bg-danger">${code}</div>`);
+      return html(`<div class="color-fg-danger">${code}</div>`);
     }
-    return html(`<div class="color-bg-danger-emphasis">${code}</div>`);
+    return html(`<div class="color-fg-danger-emphasis">${code}</div>`);
   }
 
   const columns = [
@@ -238,7 +243,7 @@
       <div class="Box-row">
         <div id="chart" />
       </div>
-      <div class="Box-row log">
+      <div class="Box-row markdown-body log">
         <Grid {data} sort search {pagination} {columns} language={jaJP} />
       </div>
       <div class="Box-footer text-right">

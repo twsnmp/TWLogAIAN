@@ -30,10 +30,10 @@ type ProcessConf struct {
 	TimeGrinder *timegrinder.TimeGrinder
 	Filter      *regexp.Regexp
 	Extractor   *grok.Grok
-	TimeFeild   string
+	TimeField   string
 	GeoIP       *geoip2.Reader
-	GeoFeilds   []string
-	HostFeilds  []string
+	GeoFields   []string
+	HostFields  []string
 }
 
 type LogFile struct {
@@ -70,6 +70,28 @@ func (b *App) Start(c Config) string {
 	return ""
 }
 
+// TestSampleLog : サンプルのログをテストしてログの種類を判別する
+func (b *App) TestSampleLog(c Config) *ExtractorType {
+	max := 0
+	var ret *ExtractorType
+	for i, e := range extractorTypes {
+		s := b.testGrok(c.SampleLog, e.Grok)
+		if s > max {
+			ret = &extractorTypes[i]
+			max = s
+		}
+	}
+	if c.Grok != "" && b.testGrok(c.SampleLog, c.Grok) > max {
+		return &ExtractorType{
+			Key:  "custom",
+			Name: "カスタム設定",
+			Grok: c.Grok,
+		}
+	}
+	wails.LogDebug(b.ctx, fmt.Sprintf("testSampleLog  ret=%v", ret))
+	return ret
+}
+
 func (b *App) setupProcess() string {
 	if err := b.setTimeGrinder(); err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to create new timegrinder err=%v", err))
@@ -87,7 +109,7 @@ func (b *App) setupProcess() string {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
 		return err.Error()
 	}
-	b.setHostFeilds()
+	b.setHostFields()
 	return ""
 }
 
@@ -225,7 +247,7 @@ func (b *App) readOneLogFile(lf *LogFile) {
 					log.KeyValue[k] = v
 				}
 			}
-			tfi, ok := log.KeyValue[b.processConf.TimeFeild]
+			tfi, ok := log.KeyValue[b.processConf.TimeField]
 			if !ok {
 				continue
 			}
@@ -238,7 +260,7 @@ func (b *App) readOneLogFile(lf *LogFile) {
 				continue
 			}
 			if b.config.GeoIP {
-				for _, f := range b.processConf.GeoFeilds {
+				for _, f := range b.processConf.GeoFields {
 					if ip, ok := log.KeyValue[f]; ok {
 						if e := b.findGeo(ip.(string)); e != nil {
 							log.KeyValue[f+"_geo"] = e
@@ -247,7 +269,7 @@ func (b *App) readOneLogFile(lf *LogFile) {
 				}
 			}
 			if b.config.HostName {
-				for _, f := range b.processConf.HostFeilds {
+				for _, f := range b.processConf.HostFields {
 					if ip, ok := log.KeyValue[f]; ok {
 						if e := b.findHost(ip.(string)); e != "" {
 							log.KeyValue[f+"_host"] = e
@@ -299,72 +321,6 @@ func (b *App) setFilter() error {
 	return err
 }
 
-type ExtractorType struct {
-	Key       string
-	Name      string
-	Grok      string
-	TimeFeild string
-	IP        bool
-	IPFeilds  string
-	View      string
-}
-
-var extractorTypes = []ExtractorType{
-	{
-		Key:       "syslog",
-		Name:      "syslog",
-		TimeFeild: "timestamp",
-		Grok:      `%{SYSLOGBASE} %{GREEDYDATA:message}`,
-		IP:        false,
-		View:      "syslog",
-	},
-	{
-		Key:       "apacheCommon",
-		Name:      "Apache(Common)",
-		TimeFeild: "timestamp",
-		Grok:      `%{COMMONAPACHELOG}`,
-		IP:        true,
-		IPFeilds:  "clientip",
-		View:      "access",
-	},
-	{
-		Key:       "apacheConbined",
-		Name:      "Apache(Conbined)",
-		TimeFeild: "timestamp",
-		Grok:      `%{COMBINEDAPACHELOG}`,
-		IP:        true,
-		IPFeilds:  "clientip",
-		View:      "access",
-	},
-}
-
-// GetExtractorTypes : 定義済みのログタイプのリスト情報を提供する
-func (b *App) GetExtractorTypes() []ExtractorType {
-	return extractorTypes
-}
-
-// TestSampleLog : サンプルのログをテストしてログの種類を判別する
-func (b *App) TestSampleLog(c Config) *ExtractorType {
-	max := 0
-	var ret *ExtractorType
-	for i, e := range extractorTypes {
-		s := b.testGrok(c.SampleLog, e.Grok)
-		if s > max {
-			ret = &extractorTypes[i]
-			max = s
-		}
-	}
-	if c.Grok != "" && b.testGrok(c.SampleLog, c.Grok) > max {
-		return &ExtractorType{
-			Key:  "custom",
-			Name: "カスタム設定",
-			Grok: c.Grok,
-		}
-	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("testSampleLog  ret=%v", ret))
-	return ret
-}
-
 func (b *App) testGrok(l, p string) int {
 	config := grok.Config{
 		Patterns:          make(map[string]string),
@@ -411,27 +367,27 @@ func (b *App) setExtractor() error {
 	if err != nil {
 		return err
 	}
-	b.config.GeoFeilds = et.IPFeilds
-	b.config.HostFeilds = et.IPFeilds
+	b.config.GeoFields = et.IPFields
+	b.config.HostFields = et.IPFields
 	b.processConf.Extractor = g
-	b.processConf.TimeFeild = et.TimeFeild
+	b.processConf.TimeField = et.TimeField
 	b.processStat.View = et.View
 	wails.LogDebug(b.ctx, fmt.Sprintf("getExtractor %s=%#v", b.config.Extractor, et))
 	return nil
 }
 
 func (b *App) setGeoIP() error {
-	b.processConf.GeoFeilds = []string{}
+	b.processConf.GeoFields = []string{}
 	if !b.config.GeoIP {
 		return nil
 	}
-	for _, f := range strings.Split(b.config.GeoFeilds, ",") {
+	for _, f := range strings.Split(b.config.GeoFields, ",") {
 		f = strings.TrimSpace(f)
 		if f != "" {
-			b.processConf.GeoFeilds = append(b.processConf.GeoFeilds, f)
+			b.processConf.GeoFields = append(b.processConf.GeoFields, f)
 		}
 	}
-	if len(b.processConf.GeoFeilds) < 1 {
+	if len(b.processConf.GeoFields) < 1 {
 		b.config.GeoIP = false
 		return nil
 	}
@@ -440,15 +396,15 @@ func (b *App) setGeoIP() error {
 	return err
 }
 
-func (b *App) setHostFeilds() {
-	b.processConf.HostFeilds = []string{}
+func (b *App) setHostFields() {
+	b.processConf.HostFields = []string{}
 	if !b.config.HostName {
 		return
 	}
-	for _, f := range strings.Split(b.config.HostFeilds, ",") {
+	for _, f := range strings.Split(b.config.HostFields, ",") {
 		f = strings.TrimSpace(f)
 		if f != "" {
-			b.processConf.HostFeilds = append(b.processConf.HostFeilds, f)
+			b.processConf.HostFields = append(b.processConf.HostFields, f)
 		}
 	}
 }

@@ -1,60 +1,76 @@
 <script>
+  import { fieldTypes } from "../../js/define";
   import { Plus16 } from "svelte-octicons";
-  import { createEventDispatcher,onMount, tick } from "svelte";
+  import { createEventDispatcher, onMount, tick } from "svelte";
   export let conf;
   export let fields = [];
+  let hasStringField = false;
+  let hasNumberField = false;
   const geoFields = [];
-  fields.forEach((f) =>{
-    if (f.includes("_geo_latlong")) {
-      geoFields.push(f);
-    }
-  });
+
   let history = "";
   const dispatch = createEventDispatcher();
 
   const setHistory = () => {
-    if (history){
-      dispatch("update",{query: history ,add:false})
+    if (history) {
+      dispatch("update", { query: history, add: false });
     }
-  }
+  };
 
   const addKeyword = () => {
-    const  q =  " " + conf.keyword.mode + conf.keyword.field + ":" + conf.keyword.key;
-    dispatch("update",{query: q ,add:true})
-  }
+    const q =
+      " " + conf.keyword.mode + conf.keyword.field + ":" + conf.keyword.key;
+    dispatch("update", { query: q, add: true });
+  };
 
-  const addRange  = () => {
-    const q = ` time:>="` + conf.range.start + `:00Z09:00" time:<="` + conf.range.end + `:00Z09:00" `;
-    dispatch("update",{query: q,add:true})
-  }
-  const addGeo = () =>{
-    const q = " geo:" + conf.geo.field + "," + conf.geo.lat + "," + conf.geo.long + "," + conf.geo.range;
-    dispatch("update",{query: q,add:true})
-  }
-  const fieldNameMap = {
-    "_all":"ログの行全体" ,
-    "httpversion":"HTTPバージョン",
-    "ident": "識別子",
-    "request": "パス",
-    "response": "応答コード",
-    "agent":"ユーザーエージェント" ,
-    "bytes": "サイズ" ,
-    "clientip_geo_latlong":"クラアンと位置" ,
-    "timestamp": "タイムスタンプ",
-    "rawrequest": "元のリクエスト",
-    "referrer": "リファラー",
-    "time": "日時" ,
-    "verb": "リクエスト",
-    "_id": "内部ID",
-    "auth": "ユーザー名",
-    "clientip": "クライアントIP",
-    "clientip_geo_city": "クライアント都市" ,
-    "clientip_geo_country": "クライアントの国" ,
-    "clientip_host": "クライアントのホスト名",
-  }
-  const getFieldName  = (f) => {
-    return fieldNameMap[f] || f +"(未定義)";
-  }
+  const addNumber = () => {
+    const q = " " + conf.number.field + conf.number.oper + conf.number.value;
+    dispatch("update", { query: q, add: true });
+  };
+
+  const addRange = () => {
+    const q =
+      ` time:>="` +
+      conf.range.start +
+      `:00Z09:00" time:<="` +
+      conf.range.end +
+      `:00Z09:00" `;
+    dispatch("update", { query: q, add: true });
+  };
+  const addGeo = () => {
+    const q =
+      " geo:" +
+      conf.geo.field +
+      "," +
+      conf.geo.lat +
+      "," +
+      conf.geo.long +
+      "," +
+      conf.geo.range;
+    dispatch("update", { query: q, add: true });
+  };
+
+  const getFieldName = (f) => {
+    return fieldTypes[f] ? fieldTypes[f].Name : f + "(未定義)";
+  };
+  const getFieldType = (f) => {
+    return fieldTypes[f] ? fieldTypes[f].Type : "unknown";
+  };
+
+  fields.forEach((f) => {
+    if (f.includes("_geo_latlong")) {
+      geoFields.push(f);
+    }
+    if (f.startsWith("_")) {
+      return;
+    }
+    if (getFieldType(f) == "string") {
+      hasStringField = true;
+    }
+    if (getFieldType(f) == "number") {
+      hasNumberField = true;
+    }
+  });
 
 </script>
 
@@ -64,10 +80,16 @@
       <label>
         検索履歴:
         <!-- svelte-ignore a11y-no-onchange -->
-        <select style="width: 80%;" class="form-select" aria-label="履歴" bind:value={history} on:change="{setHistory}">
+        <select
+          style="width: 80%;"
+          class="form-select"
+          aria-label="履歴"
+          bind:value={history}
+          on:change={setHistory}
+        >
           <option value="">履歴を選択してください</option>
-          {#each conf.history as h }
-            <option value="{h}">{h}</option>
+          {#each conf.history as h}
+            <option value={h}>{h}</option>
           {/each}
         </select>
       </label>
@@ -96,50 +118,88 @@
       <Plus16 />
     </button>
   </div>
-  <div class="mt-2">
-    <label>
-      キーワード:
-      <select
-        class="form-select"
-        aria-label="項目"
-        bind:value={conf.keyword.field}
-      >
-        <option value="" >全体</option>
-        {#each fields as f }
-          <option value="{f}">{getFieldName(f)}</option>
-        {/each}
-      </select>
-      に
-      <input
-        class="form-control input-sm"
-        type="text"
-        style="width: 100px;"
-        placeholder="キーワード"
-        aria-label="キーワード"
-        bind:value={conf.keyword.key}
-      />
-      が
-      <select
-        class="form-select"
-        aria-label="有無"
-        bind:value={conf.keyword.mode}
-      >
-        <option value="">含まれる</option>
-        <option value="+">必須</option>
-        <option value="-">含まれない</option>
-      </select>
-    </label>
-    <button class="btn" type="button" on:click={addKeyword}>
-      <Plus16 />
-    </button>
-  </div>
-  {#if geoFields.length > 0 }
+  {#if hasStringField}
+    <div class="mt-2">
+      <label>
+        キーワード:
+        <select
+          class="form-select"
+          aria-label="項目"
+          bind:value={conf.keyword.field}
+        >
+          <option value="">全体</option>
+          {#each fields as f}
+            {#if !f.startsWith("_") && getFieldType(f) == "string"}
+              <option value={f}>{getFieldName(f)}</option>
+            {/if}
+          {/each}
+        </select>
+        に
+        <input
+          class="form-control input-sm"
+          type="text"
+          style="width: 100px;"
+          placeholder="キーワード"
+          aria-label="キーワード"
+          bind:value={conf.keyword.key}
+        />
+        が
+        <select class="form-select" bind:value={conf.keyword.mode}>
+          <option value="">含まれる</option>
+          <option value="+">必須</option>
+          <option value="-">含まれない</option>
+        </select>
+      </label>
+      <button class="btn" type="button" on:click={addKeyword}>
+        <Plus16 />
+      </button>
+    </div>
+  {/if}
+  {#if hasNumberField}
+    <div class="mt-2">
+      <label>
+        数値判定:
+        <select
+          class="form-select"
+          aria-label="項目"
+          bind:value={conf.number.field}
+        >
+          {#each fields as f}
+            {#if !f.startsWith("_") && getFieldType(f) == "number"}
+              <option value={f}>{getFieldName(f)}</option>
+            {/if}
+          {/each}
+        </select>
+        <select class="form-select" bind:value={conf.number.oper}>
+          <option value="<">&lt;</option>
+          <option value=">">&gt;</option>
+          <option value="=">=</option>
+        </select>
+        <input
+          class="form-control input-sm"
+          type="text"
+          style="width: 100px;"
+          placeholder="数値"
+          aria-label="数値"
+          bind:value={conf.number.value}
+        />
+      </label>
+      <button class="btn" type="button" on:click={addNumber}>
+        <Plus16 />
+      </button>
+    </div>
+  {/if}
+  {#if geoFields.length > 0}
     <div class="mt-2">
       <label>
         IP位置情報:
-        <select class="form-select" aria-label="項目" bind:value={conf.geo.field}>
-          {#each geoFields as f }
-            <option value="{f}">{getFieldName(f)}</option>
+        <select
+          class="form-select"
+          aria-label="項目"
+          bind:value={conf.geo.field}
+        >
+          {#each geoFields as f}
+            <option value={f}>{getFieldName(f)}</option>
           {/each}
         </select>
         が

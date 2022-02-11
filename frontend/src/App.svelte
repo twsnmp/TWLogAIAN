@@ -15,9 +15,6 @@
       page = e.detail.page;
     }
   }
-  const handleBack = (e) => {
-    page = back;
-  }
 </script>
 
 <main>
