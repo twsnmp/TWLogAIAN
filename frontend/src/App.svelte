@@ -4,14 +4,10 @@
   import WorkDir from "./pages/Setting/WorkDir.svelte";
   import Setting from "./pages/Setting/Setting.svelte";
   import Processing from "./pages/Search/Processing.svelte";
-  import TimeOnly from "./pages/Search/TimeOnly.svelte";
-  import Syslog   from "./pages/Search/Syslog.svelte";
-  import AccessLog   from "./pages/Search/AccessLog.svelte";
+  import LogView from "./pages/Search/LogView.svelte";
   let page = "wellcome";
-  let back = "";
   const handleDone = (e) => {
     if (e && e.detail  && e.detail.page) {
-      back = page;
       page = e.detail.page;
     }
   }
@@ -29,12 +25,8 @@
      <Setting on:done={handleDone}/>
     {:else if page == "processing"}
      <Processing on:done={handleDone}/>
-    {:else if page == "timeonly"}
-     <TimeOnly on:done={handleDone}/>
-    {:else if page == "syslog"}
-     <Syslog on:done={handleDone}/>
-    {:else if page == "access"}
-     <AccessLog on:done={handleDone}/>
+    {:else if page == "logview"}
+     <LogView on:done={handleDone}/>
     {/if}
   </div>
 </main>

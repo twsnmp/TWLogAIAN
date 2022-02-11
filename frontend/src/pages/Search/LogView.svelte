@@ -3,11 +3,10 @@
   import Query from "./Query.svelte"
   import Result from "./Result.svelte"
   import { createEventDispatcher,onMount, tick } from "svelte";
-  import {makeLogCountChart,updateLogCountChart} from "../../js/logchart";
+  import {showLogChart,resizeLogChart} from "../../js/logchart";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
-  import * as echarts from 'echarts';
-  import { html } from "gridjs";
+  import { getLogData,getLogColums } from "../../js/logview";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -37,6 +36,7 @@
     },
   }
   let data = [];
+  let columns = [];
   let errorMsg = "";
   let indexInfo = {
     Total: 0,
@@ -45,6 +45,7 @@
   };
   let result = {
     Logs:[],
+    View: "",
     Hit: 0,
     Duration: 0.0,
   };
@@ -59,26 +60,9 @@
     window.go.main.App.SearchLog(conf.query,conf.limit).then((r) => {
       if (r) {
         result = r;
-        const d = [];
-        r.Logs.forEach((l) => {
-          console.log(l);
-          let cl = l.KeyValue.clientip;
-          if (l.KeyValue.clientip_host) {
-            cl += "(" + l.KeyValue.clientip_host +")"
-          }
-          let country = l.KeyValue.clientip_geo ? l.KeyValue.clientip_geo.Country :"";
-          d.push([
-            l.KeyValue.response,
-            l.Time,
-            l.KeyValue.verb,
-            l.KeyValue.bytes,
-            cl,
-            country,
-            l.KeyValue.request,
-          ]);
-        });
-        data = d
-        updateLogCountChart(r.Logs);
+        columns = getLogColums(r.View);
+        data = getLogData(r);
+        showLogChart("chart",r);
         if (r.Logs.length > 20) {
           pagination = {
             limit: 10,
@@ -93,46 +77,8 @@
   };
 
   onMount(() => {
-    makeLogCountChart("chart");
+    showLogChart("chart",result);
   });
-
-  const formatCode = (code) => {
-    if (code < 300) {
-      return html(`<div class="color-fg-default">${code}</div>`);
-    } else if (code < 400) {
-      return html(`<div class="color-fg-attention">${code}</div>`);
-    } else if (code < 500) {
-      return html(`<div class="color-fg-danger">${code}</div>`);
-    }
-    return html(`<div class="color-fg-danger-emphasis">${code}</div>`);
-  }
-
-  const columns = [
-    {
-      name: "応答",
-      width: "8%",
-      formatter: (cell) => formatCode(cell),
-    },{
-      name: "日時",
-      width: "15%",
-      formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
-    },{
-      name: "リクエスト",
-      width: "10%",
-    },{
-      name: "サイズ",
-      width: "8%",
-    },{
-      name: "アクセス元",
-      width: "25%",
-    },{
-      name: "国",
-      width: "8%",
-    },{
-      name: "パス",
-      width: "26%",
-    },
-  ];
 
   const cancel = () => {
     window.go.main.App.CloseWorkDir();
@@ -151,12 +97,11 @@
 
   const updateChart = async () => {
     await tick();
-    makeLogCountChart("chart");
-    updateLogCountChart(result.Logs);
+    showLogChart("chart",result);
   };
 
   const onResize = () => {
-    updateLogCountChart(result.Logs);
+    resizeLogChart();
   };
 
   const handleUpdateQuery = (e) => {

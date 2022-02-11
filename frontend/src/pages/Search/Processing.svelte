@@ -14,17 +14,8 @@
           errorMsg = r.ErrorMsg;
         }
         if (r.Done) {
-          switch (r.View){
-            case "syslog":
-              dispatch("done", { page: "syslog" });
-              return
-            case "access":
-              dispatch("done", { page: "access" });
-              return
-            default:
-              dispatch("done", { page: "timeonly" });
-              return
-          }
+          dispatch("done", { page: "logview" });
+          return
         }
         timer = setTimeout(getProcessInfo,1000);
       }

@@ -53,16 +53,18 @@
   const getFieldName = (f) => {
     return fieldTypes[f] ? fieldTypes[f].Name : f + "(未定義)";
   };
+
   const getFieldType = (f) => {
-    return fieldTypes[f] ? fieldTypes[f].Type : "unknown";
+    return fieldTypes[f] ? fieldTypes[f].Type : "string";
   };
 
   fields.forEach((f) => {
     if (f.includes("_geo_latlong")) {
       geoFields.push(f);
+      return
     }
     if (f.startsWith("_")) {
-      return;
+      return
     }
     if (getFieldType(f) == "string") {
       hasStringField = true;

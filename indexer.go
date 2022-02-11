@@ -166,12 +166,18 @@ type SearchResult struct {
 	Duration string
 	MaxScore float64
 	Logs     []*LogEnt
+	View     string
 }
 
 func (b *App) SearchLog(q string, limit int) (SearchResult, error) {
 	wails.LogDebug(b.ctx, "SearchLog q="+q)
+	view := "timeonly"
+	if et := b.findExtractorType(); et != nil {
+		view = et.View
+	}
 	ret := SearchResult{
 		Logs: []*LogEnt{},
+		View: view,
 	}
 	reader, err := b.indexer.writer.Reader()
 	if err != nil {

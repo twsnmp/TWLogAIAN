@@ -23,7 +23,6 @@ type ProcessStat struct {
 	Done     bool
 	ErrorMsg string
 	LogFiles []*LogFile
-	View     string
 }
 
 type ProcessConf struct {
@@ -349,7 +348,6 @@ func (b *App) findExtractorType() *ExtractorType {
 }
 
 func (b *App) setExtractor() error {
-	b.processStat.View = ""
 	if b.config.Extractor == "timeonly" || b.config.Extractor == "" {
 		b.processConf.Extractor = nil
 		return nil
@@ -371,7 +369,6 @@ func (b *App) setExtractor() error {
 	b.config.HostFields = et.IPFields
 	b.processConf.Extractor = g
 	b.processConf.TimeField = et.TimeField
-	b.processStat.View = et.View
 	wails.LogDebug(b.ctx, fmt.Sprintf("getExtractor %s=%#v", b.config.Extractor, et))
 	return nil
 }

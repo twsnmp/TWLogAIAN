@@ -2,7 +2,7 @@ import * as echarts from 'echarts'
 
 let chart;
 
-export const makeLogCountChart = (div) => {
+const makeLogCountChart = (div) => {
   if (chart) {
     chart.dispose()
   }
@@ -29,8 +29,8 @@ export const makeLogCountChart = (div) => {
       },
     },
     grid: {
-      left: '2%',
-      right: '2%',
+      left: '5%',
+      right: '5%',
       top: 10,
       buttom: 0,
     },
@@ -109,7 +109,7 @@ const addChartData = (data, count, ctm, newCtm) => {
   return ctm
 }
 
-export const updateLogCountChart = (logs) => {
+const updateLogCountChart = (logs) => {
   const data = []
   let count = 0
   let ctm
@@ -133,4 +133,19 @@ export const updateLogCountChart = (logs) => {
     ],
   })
   chart.resize()
+}
+
+export const showLogChart = (div,r) => {
+  switch (r.View) {
+  case "access":
+  case "syslog":
+  }
+  makeLogCountChart(div);
+  updateLogCountChart(r.Logs);
+}
+
+export const resizeLogChart = () => {
+  if(chart) {
+    chart.resize()
+  }
 }
