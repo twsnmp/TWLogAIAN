@@ -71,14 +71,13 @@
       hasNumberField = true;
     }
   });
-
 </script>
 
 <form>
   {#if conf.history.length > 0}
-    <div class="mb-2">
-      <label>
-        検索履歴:
+    <div class="container-lg clearfix mb-1">
+      <div class="col-2 float-left">検索履歴</div>
+      <div class="col-8 float-left">
         <!-- svelte-ignore a11y-no-onchange -->
         <select
           style="width: 80%;"
@@ -92,12 +91,13 @@
             <option value={h}>{h}</option>
           {/each}
         </select>
-      </label>
+      </div>
+      <div class="col-2 float-left" />
     </div>
   {/if}
-  <div>
-    <label>
-      検索期間:
+  <div class="container-lg clearfix">
+    <div class="col-2 float-left">検索期間</div>
+    <div class="col-8 float-left">
       <input
         class="form-control input-sm"
         type="datetime-local"
@@ -113,15 +113,17 @@
         aria-label="終了"
         bind:value={conf.range.end}
       />
-    </label>
-    <button class="btn" type="button" on:click={addRange}>
-      <Plus16 />
-    </button>
+    </div>
+    <div class="col-2 float-left">
+      <button class="btn" type="button" on:click={addRange}>
+        <Plus16 />
+      </button>
+    </div>
   </div>
   {#if hasStringField}
-    <div class="mt-2">
-      <label>
-        キーワード:
+    <div class="container-lg clearfix mt-1">
+      <div class="col-2 float-left">キーワード</div>
+      <div class="col-8 float-left">
         <select
           class="form-select"
           aria-label="項目"
@@ -149,16 +151,18 @@
           <option value="+">必須</option>
           <option value="-">含まれない</option>
         </select>
-      </label>
-      <button class="btn" type="button" on:click={addKeyword}>
-        <Plus16 />
-      </button>
+      </div>
+      <div class="col-2 float-left">
+        <button class="btn" type="button" on:click={addKeyword}>
+          <Plus16 />
+        </button>
+      </div>
     </div>
   {/if}
   {#if hasNumberField}
-    <div class="mt-2">
-      <label>
-        数値判定:
+    <div class="container-lg clearfix mt-1">
+      <div class="col-2 float-left">数値判定</div>
+      <div class="col-8 float-left">
         <select
           class="form-select"
           aria-label="項目"
@@ -183,16 +187,18 @@
           aria-label="数値"
           bind:value={conf.number.value}
         />
-      </label>
-      <button class="btn" type="button" on:click={addNumber}>
-        <Plus16 />
-      </button>
+      </div>
+      <div class="col-2 float-left">
+        <button class="btn" type="button" on:click={addNumber}>
+          <Plus16 />
+        </button>
+      </div>
     </div>
   {/if}
   {#if geoFields.length > 0}
-    <div class="mt-2">
-      <label>
-        IP位置情報:
+    <div class="container-lg clearfix mt-1">
+      <div class="col-2 float-left">IP位置情報</div>
+      <div class="col-8 float-left">
         <select
           class="form-select"
           aria-label="項目"
@@ -233,15 +239,17 @@
           bind:value={conf.geo.range}
         />
         Kmの範囲
-      </label>
-      <button class="btn" type="button" on:click={addGeo}>
-        <Plus16 />
-      </button>
+      </div>
+      <div class="col-2 float-left">
+        <button class="btn" type="button" on:click={addGeo}>
+          <Plus16 />
+        </button>
+      </div>
     </div>
   {/if}
-  <div class="mt-2">
-    <label>
-      最大件数:
+  <div class="container-lg clearfix mt-1">
+    <div class="col-2 float-left">最大件数</div>
+    <div class="col-10 float-left">
       <select class="form-select" aria-label="最大件数" bind:value={conf.limit}>
         <option value="100">100</option>
         <option value="500">500</option>
@@ -251,7 +259,7 @@
         <option value="10000">10000</option>
         <option value="20000">20000</option>
       </select>
-    </label>
+    </div>
   </div>
 </form>
 
