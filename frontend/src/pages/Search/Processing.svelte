@@ -72,8 +72,8 @@
         </thead>
         <tbody>
         {#each logFiles as f }
-            <tr class:color-bg-danger={(f.Read ? (100.0 * f.Send/f.Read) : 100) < 50.0}>
-            <td>{f.Read ? (100.0 * f.Send/f.Read).toFixed(2) : 0}%</td>
+            <tr>
+            <td class:color-fg-danger={(f.Read ? (100.0 * f.Send/f.Read) : 100) < 50.0}>{f.Read ? (100.0 * f.Send/f.Read).toFixed(2) : 0}%</td>
             <td>{f.Read}</td>
             <td>{f.Send}</td>
             <td>{f.Duration}</td>
