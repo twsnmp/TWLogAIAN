@@ -18,26 +18,38 @@
   };
 
   const addKeyword = () => {
+    if( !conf.keyword.field || !conf.keyword.oper || !conf.keyword.value){
+      return
+    }
     const q =
       " " + conf.keyword.mode + conf.keyword.field + ":" + conf.keyword.key;
     dispatch("update", { query: q, add: true });
   };
 
   const addNumber = () => {
+    if( !conf.number.field || !conf.number.oper || !conf.number.value){
+      return
+    }
     const q = " " + conf.number.field + conf.number.oper + conf.number.value;
     dispatch("update", { query: q, add: true });
   };
 
   const addRange = () => {
+    if(!conf.range.start || !conf.range.end ){
+      return
+    }
     const q =
       ` time:>="` +
       conf.range.start +
-      `:00Z09:00" time:<="` +
+      `:00+09:00" time:<="` +
       conf.range.end +
-      `:00Z09:00" `;
+      `:00+09:00" `;
     dispatch("update", { query: q, add: true });
   };
   const addGeo = () => {
+    if( !conf.geo.field || conf.geo.lat || conf.geo.long || conf.geo.range ){
+      return
+    }
     const q =
       " geo:" +
       conf.geo.field +
@@ -68,9 +80,15 @@
     }
     if (getFieldType(f) == "string") {
       hasStringField = true;
+      if(conf.keyword.field=="" ){
+        conf.keyword.field = f;
+      }
     }
     if (getFieldType(f) == "number") {
       hasNumberField = true;
+      if(conf.number.field=="" ){
+        conf.number.field = f;
+      }
     }
   });
 </script>

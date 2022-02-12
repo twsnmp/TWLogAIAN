@@ -37,7 +37,6 @@
   }
   let data = [];
   let columns = [];
-  let errorMsg = "";
   let indexInfo = {
     Total: 0,
     Fields: [],
@@ -48,6 +47,7 @@
     View: "",
     Hit: 0,
     Duration: 0.0,
+    ErrorMsg: "",
   };
   window.go.main.App.GetIndexInfo().then((r) => {
     if (r) {
@@ -71,7 +71,9 @@
         } else {
           pagination = false;
         }
-        conf.history.push(conf.query);
+        if (r.ErrorMsg == ""){
+          conf.history.push(conf.query);
+        }
       }
     });
   };
@@ -85,9 +87,8 @@
     dispatch("done", { page: "wellcome" });
   };
 
-
   const clearMsg = () => {
-    errorMsg = "";
+    result.ErrorMsg = "";
   };
 
   const handleDone = (e) => {
@@ -126,7 +127,7 @@
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
-        <h3 class="Box-title overflow-hidden flex-auto">アクセスログ分析</h3>
+        <h3 class="Box-title overflow-hidden flex-auto">ログ分析</h3>
         <span class="f6">
           ログ総数:{indexInfo.Total}/項目数:{ indexInfo.Fields.length}/処理時間:{indexInfo.Duration}
           {#if result.Hit > 0 }
@@ -134,9 +135,9 @@
           {/if}
         </span>
       </div>
-      {#if errorMsg != ""}
+      {#if result.ErrorMsg != ""}
         <div class="flash flash-error">
-          {errorMsg}
+          {result.ErrorMsg}
           <button
             class="flash-close js-flash-close"
             type="button"

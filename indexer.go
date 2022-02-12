@@ -166,10 +166,11 @@ type SearchResult struct {
 	Duration string
 	MaxScore float64
 	Logs     []*LogEnt
+	ErrorMsg string
 	View     string
 }
 
-func (b *App) SearchLog(q string, limit int) (SearchResult, error) {
+func (b *App) SearchLog(q string, limit int) SearchResult {
 	wails.LogDebug(b.ctx, "SearchLog q="+q)
 	view := "timeonly"
 	if et := b.findExtractorType(); et != nil {
@@ -182,7 +183,8 @@ func (b *App) SearchLog(q string, limit int) (SearchResult, error) {
 	reader, err := b.indexer.writer.Reader()
 	if err != nil {
 		wails.LogError(b.ctx, err.Error())
-		return ret, err
+		ret.ErrorMsg = err.Error()
+		return ret
 	}
 	defer func() {
 		reader.Close()
@@ -198,22 +200,25 @@ func (b *App) SearchLog(q string, limit int) (SearchResult, error) {
 	query, err := querystr.ParseQueryString(q, qo)
 	if err != nil {
 		wails.LogError(b.ctx, err.Error())
-		return ret, err
+		ret.ErrorMsg = err.Error()
+		return ret
 	}
 	if geo != "" {
 		a = strings.Split(geo, ",")
 		if len(a) < 4 {
-			return ret, fmt.Errorf("invalid geo format=%s", geo)
+			ret.ErrorMsg = fmt.Sprintf("invalid geo format=%s", geo)
+			return ret
 		}
 		lat, err := strconv.ParseFloat(a[1], 64)
 		if err != nil {
 			wails.LogError(b.ctx, err.Error())
-			return ret, err
+			return ret
 		}
 		long, err := strconv.ParseFloat(a[2], 64)
 		if err != nil {
 			wails.LogError(b.ctx, err.Error())
-			return ret, err
+			ret.ErrorMsg = err.Error()
+			return ret
 		}
 		gq := bluge.NewGeoDistanceQuery(lat, long, a[2]).SetField(a[0])
 		query = bluge.NewBooleanQuery().AddMust(query, gq)
@@ -223,7 +228,8 @@ func (b *App) SearchLog(q string, limit int) (SearchResult, error) {
 	dmi, err := reader.Search(b.ctx, req)
 	if err != nil {
 		wails.LogError(b.ctx, err.Error())
-		return ret, err
+		ret.ErrorMsg = err.Error()
+		return ret
 	}
 	ret.Hit = dmi.Aggregations().Count()
 	ret.MaxScore = dmi.Aggregations().Metric("max_score")
@@ -232,7 +238,8 @@ func (b *App) SearchLog(q string, limit int) (SearchResult, error) {
 		match, err := dmi.Next()
 		if err != nil {
 			wails.LogError(b.ctx, err.Error())
-			return ret, err
+			ret.ErrorMsg = err.Error()
+			return ret
 		}
 		if match != nil {
 			if b.config.InMemory {
@@ -266,7 +273,7 @@ func (b *App) SearchLog(q string, limit int) (SearchResult, error) {
 				ret.Logs = append(ret.Logs, &l)
 			}
 		} else {
-			return ret, nil
+			return ret
 		}
 	}
 }
