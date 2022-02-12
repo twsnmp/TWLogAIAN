@@ -30,16 +30,24 @@ const columnsTimeOnly = [
 
 const columnsSyslog = [
   {
-    name: "スコア",
+    name: "レベル",
     width: "10%",
-    formatter: (cell) => Number.parseFloat(cell).toFixed(2),
   },{
     name: "日時",
-    width: "20%",
+    width: "15%",
     formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
   },{
-    name: "ログ",
-    width: "70%",
+    name: "送信元",
+    width: "15%",
+  },{
+    name: "タグ",
+    width: "15%",
+  },{
+    name: "PID",
+    width: "5%",
+  },{
+    name: "メッセージ",
+    width: "40%",
   },
 ];
 
@@ -112,7 +120,12 @@ const getTimeOnlyLogData = (r) => {
 const getSyslogData = (r) => {
   const d = [];
   r.Logs.forEach((l) => {
-    d.push([l.Score, l.Time, l.All]);
+    const message = l.KeyValue.message || "";
+    const pid = l.KeyValue.pid || "";
+    const tag = l.KeyValue.program || "";
+    const src = l.KeyValue.logsource || "";
+    const pri = l.KeyValue.priority || "";
+    d.push([pri,l.Time,src,tag,pid,message ]);
   });
   return d;
 }
