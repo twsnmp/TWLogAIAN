@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.etcd.io/bbolt"
@@ -27,13 +26,13 @@ type Config struct {
 
 type LogSource struct {
 	No       int
-	ID       int64
 	Type     string // ログソースの種類
-	URL      string
+	Server   string
+	Path     string
 	Pattern  string
-	AuthType string
 	User     string
 	Password string
+	SSHKey   string
 }
 
 // SelectFile : ファイル/フォルダを選択する
@@ -232,7 +231,6 @@ func (b *App) UpdateLogSource(ls LogSource) string {
 		return ""
 	}
 	// 新規
-	ls.ID = time.Now().UnixNano()
 	ls.No = len(b.logSources) + 1
 	b.logSources = append(b.logSources, ls)
 	return ""

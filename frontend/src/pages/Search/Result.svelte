@@ -75,7 +75,7 @@
               <th>対象</th>
               <th>処理時間</th>
               <th>サイズ</th>
-              <th>パス/URL</th>
+              <th>パス</th>
             </tr>
           </thead>
           <tbody>
@@ -86,7 +86,7 @@
               <td>{f.Send}</td>
               <td>{f.Duration}</td>
               <td>{f.Size}</td>
-              <td>{f.URL}</td>
+              <td>{f.Path}</td>
             </tr>
           {/each}
           </tbody>

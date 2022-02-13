@@ -1,5 +1,5 @@
 <script>
-  import { X16, Plus16, Check16, FileBadge16, File16 } from "svelte-octicons";
+  import { X16, Plus16, Check16, File16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
@@ -17,17 +17,18 @@
     GeoFields: "",
     HostName: false,
     HostFields: "",
-    SSHKey: "",
     InMemory: false,
     SampleLog: "",
   };
   let logSource = {
     No: 0,
     Type: "folder",
-    URL: "",
+    Path: "",
     Pattern: "",
     User: "",
     Password: "",
+    Server: "",
+    KeyPath: "",
   };
   let logSources = [];
   let errorMsg = "";
@@ -46,7 +47,8 @@
       if (ds) {
         logSources = ds;
         logSources.forEach((e) => {
-          data.push([e.No, e.Type, e.URL, ""]);
+          const path = e.Type == "scp" ? e.Server + ":" +e.Path : e.Path;
+          data.push([e.No, e.Type, path, ""]);
         });
         if (ds.length > 5) {
           pagination = {
@@ -86,10 +88,12 @@
       logSource = {
         No: 0,
         Type: "folder",
-        URL: "",
+        Path: "",
         Pattern: "",
+        Server: "",
         User: "",
         Password: "",
+        KeyPath: "",
       };
     } else {
       logSource = logSources[no - 1];
@@ -103,12 +107,8 @@
         return "フォルダー";
       case "file":
         return "単一ファイル";
-      case "http":
-        return "Webサーバー";
       case "scp":
-        return "SCPサーバー";
-      case "sftp":
-        return "SFTPサーバー";
+        return "SCP";
     }
     return "";
   }
@@ -140,7 +140,7 @@
       formatter: formatLogSourceType,
     },
     {
-      name: "パス/URL",
+      name: "パス",
       sort: true,
       width: "60%",
     },
@@ -166,12 +166,6 @@
   const selectGeoIPDB = () => {
     window.go.main.App.SelectFile("geoip").then((f) => {
       config.GeoIPDB = f;
-    });
-  };
-
-  const selectSSHKey = () => {
-    window.go.main.App.SelectFile("sshkey").then((f) => {
-      config.SSHKey = f;
     });
   };
 
@@ -438,27 +432,6 @@
             </div>
           </div>
         {/if}
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>SSHキーファイル</h5>
-          </div>
-          <div class="form-group-body">
-            <div class="input-group">
-              <input
-                class="form-control"
-                type="text"
-                placeholder="SSHキーファイル"
-                aria-label="SSHキーファイル"
-                bind:value={config.SSHKey}
-              />
-              <span class="input-group-button">
-                <button class="btn" type="button" on:click={selectSSHKey}>
-                  <FileBadge16 />
-                </button>
-              </span>
-            </div>
-          </div>
-        </div>
       </form>
     </div>
     <div class="Box-footer text-right">

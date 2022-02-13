@@ -2,9 +2,13 @@ package main
 
 import (
 	"bufio"
+	"compress/gzip"
+	"context"
 	"fmt"
+	"io"
 	"net"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -13,6 +17,8 @@ import (
 	"time"
 
 	"github.com/oschwald/geoip2-golang"
+	"github.com/viant/afs/scp"
+	"github.com/viant/afs/storage"
 	"github.com/vjeantet/grok"
 
 	"github.com/gravwell/gravwell/v3/timegrinder"
@@ -36,13 +42,14 @@ type ProcessConf struct {
 }
 
 type LogFile struct {
-	Type     string
-	URL      string
+	Name     string
 	Path     string
 	Size     int64
 	Read     int64
 	Send     int64
 	Duration string
+	LogSrc   *LogSource
+	handle   interface{}
 }
 
 // Start : インデックス作成を開始する
@@ -92,6 +99,7 @@ func (b *App) TestSampleLog(c Config) *ExtractorType {
 }
 
 func (b *App) setupProcess() string {
+	b.processStat.ErrorMsg = ""
 	if err := b.setTimeGrinder(); err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to create new timegrinder err=%v", err))
 		return err.Error()
@@ -147,9 +155,14 @@ func (b *App) makeLogFileList() string {
 				return e
 			}
 		case "file":
-			if e := b.addLogFile("file", s.URL, s.URL); e != "" {
+			if e := b.addLogFile(&s, s.Path); e != "" {
 				return e
 			}
+		case "scp":
+			if e := b.addLogFromSCP(&s); e != "" {
+				return e
+			}
+		//twsnmp
 		default:
 			return "まだサポートしていません！"
 		}
@@ -162,31 +175,84 @@ func (b *App) addLogFolder(s *LogSource) string {
 	if s.Pattern != "" {
 		pat = s.Pattern
 	}
-	files, err := filepath.Glob(filepath.Join(s.URL, pat))
+	files, err := filepath.Glob(filepath.Join(s.Path, pat))
 	if err != nil {
 		return err.Error()
 	}
 	for _, f := range files {
-		if e := b.addLogFile("folder", f, f); e != "" {
+		if e := b.addLogFile(s, f); e != "" {
 			return e
 		}
 	}
 	return ""
 }
 
-func (b *App) addLogFile(t, u, p string) string {
+func (b *App) addLogFile(src *LogSource, p string) string {
 	s, err := os.Stat(p)
 	if err != nil {
 		return err.Error()
 	}
+	n := filepath.Base(p)
 	b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
-		Type: t,
-		URL:  u,
-		Path: p,
-		Size: s.Size(),
-		Read: 0,
-		Send: 0,
+		Name:   n,
+		Path:   p,
+		Size:   s.Size(),
+		Read:   0,
+		Send:   0,
+		LogSrc: src,
 	})
+	return ""
+}
+
+func (b *App) addLogFromSCP(src *LogSource) string {
+	kpath := src.SSHKey
+	if kpath == "" {
+		kpath = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
+	}
+	auth := scp.NewKeyAuth(kpath, src.User, src.Password)
+	provider := scp.NewAuthProvider(auth, nil)
+	config, err := provider.ClientConfig()
+	if err != nil {
+		return err.Error()
+	}
+	sv := src.Server
+	if !strings.Contains(sv, ":") {
+		sv += ":22"
+	}
+	service, err := scp.NewStorager(sv, time.Duration(time.Second)*3, config)
+	if err != nil {
+		return err.Error()
+	}
+	files, err := service.List(context.Background(), src.Path)
+	if err != nil {
+		return err.Error()
+	}
+	var filter *regexp.Regexp
+	if src.Pattern != "" {
+		pat := src.Pattern
+		pat = strings.ReplaceAll(pat, "*", ".*")
+		pat = strings.ReplaceAll(pat, "?", ".")
+		filter, err = regexp.Compile(pat)
+		if err != nil {
+			return err.Error()
+		}
+	}
+
+	for _, file := range files {
+		path := file.Name()
+		if filter != nil && !filter.Match([]byte(path)) {
+			continue
+		}
+		b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+			Name:   path,
+			Path:   src.Path + path,
+			Size:   file.Size(),
+			Read:   0,
+			Send:   0,
+			LogSrc: src,
+			handle: service,
+		})
+	}
 	return ""
 }
 
@@ -205,10 +271,27 @@ func (b *App) logReader() {
 	wails.LogDebug(b.ctx, "stop logReader")
 }
 
+func (b *App) openLogFile(lf *LogFile) (io.ReadCloser, error) {
+	var r io.ReadCloser
+	var err error
+	if lf.LogSrc.Type == "scp" {
+		r, err = lf.handle.(storage.Storager).Open(context.Background(), lf.Path)
+	} else {
+		r, err = os.Open(lf.Path)
+	}
+	if err != nil {
+		return r, err
+	}
+	if strings.HasSuffix(lf.Path, ".gz") {
+		return gzip.NewReader(r)
+	}
+	return r, nil
+}
+
 func (b *App) readOneLogFile(lf *LogFile) {
 	st := time.Now()
 	wails.LogDebug(b.ctx, "start readOneLogFile path="+lf.Path)
-	file, err := os.Open(lf.Path)
+	file, err := b.openLogFile(lf)
 	if err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("failed to create open log file err=%v", err))
 		b.processStat.ErrorMsg = err.Error()
