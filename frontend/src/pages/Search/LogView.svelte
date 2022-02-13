@@ -208,7 +208,7 @@
 <style>
   #chart {
     width: 100%;
-    height: 150px;
+    height: 180px;
     margin: 5px auto;
   }
 </style>
