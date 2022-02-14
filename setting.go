@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/viant/afs/storage"
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.etcd.io/bbolt"
 )
@@ -25,14 +26,16 @@ type Config struct {
 }
 
 type LogSource struct {
-	No       int
-	Type     string // ログソースの種類
-	Server   string
-	Path     string
-	Pattern  string
-	User     string
-	Password string
-	SSHKey   string
+	No              int
+	Type            string // ログソースの種類
+	Server          string
+	Path            string
+	Pattern         string
+	InternalPattern string
+	User            string
+	Password        string
+	SSHKey          string
+	scpSvc          storage.Storager
 }
 
 // SelectFile : ファイル/フォルダを選択する
@@ -92,7 +95,7 @@ func (b *App) SetWorkDir(wd string) string {
 	if !fs.IsDir() {
 		return "指定した作業フォルダはディレクトリではありません"
 	}
-	b.logSources = []LogSource{}
+	b.logSources = []*LogSource{}
 	b.config = Config{}
 	err = b.openDB(wd)
 	if err != nil {
@@ -217,7 +220,7 @@ func (b *App) SetConfig(c Config) string {
 }
 
 // GetLogSources : ログソースリストの取得
-func (b *App) GetLogSources() []LogSource {
+func (b *App) GetLogSources() []*LogSource {
 	wails.LogDebug(b.ctx, "GetLogSources")
 	return b.logSources
 }
@@ -227,12 +230,12 @@ func (b *App) UpdateLogSource(ls LogSource) string {
 	wails.LogDebug(b.ctx, "UpdateLogSource")
 	if ls.No > 0 && ls.No <= len(b.logSources) {
 		// 既存
-		b.logSources[ls.No-1] = ls
+		b.logSources[ls.No-1] = &ls
 		return ""
 	}
 	// 新規
 	ls.No = len(b.logSources) + 1
-	b.logSources = append(b.logSources, ls)
+	b.logSources = append(b.logSources, &ls)
 	return ""
 }
 
@@ -243,7 +246,7 @@ func (b *App) DeleteLogSource(no int) string {
 		return "送信元がありません"
 	}
 	ls := b.logSources
-	b.logSources = []LogSource{}
+	b.logSources = []*LogSource{}
 	n := 1
 	for i, e := range ls {
 		if i == (no - 1) {

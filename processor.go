@@ -1,6 +1,8 @@
 package main
 
 import (
+	"archive/tar"
+	"archive/zip"
 	"bufio"
 	"compress/gzip"
 	"context"
@@ -18,7 +20,6 @@ import (
 
 	"github.com/oschwald/geoip2-golang"
 	"github.com/viant/afs/scp"
-	"github.com/viant/afs/storage"
 	"github.com/vjeantet/grok"
 
 	"github.com/gravwell/gravwell/v3/timegrinder"
@@ -26,9 +27,10 @@ import (
 )
 
 type ProcessStat struct {
-	Done     bool
-	ErrorMsg string
-	LogFiles []*LogFile
+	Done        bool
+	ErrorMsg    string
+	LogFiles    []*LogFile
+	IntLogFiles []*LogFile
 }
 
 type ProcessConf struct {
@@ -49,7 +51,6 @@ type LogFile struct {
 	Send     int64
 	Duration string
 	LogSrc   *LogSource
-	handle   interface{}
 }
 
 // Start : インデックス作成を開始する
@@ -121,9 +122,17 @@ func (b *App) setupProcess() string {
 }
 
 func (b *App) cleanupProcess() {
+	wails.LogDebug(b.ctx, "cleanupProcess")
 	if b.processConf.GeoIP != nil {
 		b.processConf.GeoIP.Close()
 		b.processConf.GeoIP = nil
+	}
+	for _, s := range b.logSources {
+		wails.LogDebug(b.ctx, fmt.Sprintf("%p=%v", s, s))
+		if s.scpSvc != nil {
+			wails.LogDebug(b.ctx, "Close scp="+s.Path)
+			s.scpSvc.Close()
+		}
 	}
 }
 
@@ -148,18 +157,19 @@ func (b *App) GetProcessInfo() ProcessStat {
 
 func (b *App) makeLogFileList() string {
 	b.processStat.LogFiles = []*LogFile{}
+	b.processStat.IntLogFiles = []*LogFile{}
 	for _, s := range b.logSources {
 		switch s.Type {
 		case "folder":
-			if e := b.addLogFolder(&s); e != "" {
+			if e := b.addLogFolder(s); e != "" {
 				return e
 			}
 		case "file":
-			if e := b.addLogFile(&s, s.Path); e != "" {
+			if e := b.addLogFile(s, s.Path); e != "" {
 				return e
 			}
 		case "scp":
-			if e := b.addLogFromSCP(&s); e != "" {
+			if e := b.addLogFileFromSCP(s); e != "" {
 				return e
 			}
 		//twsnmp
@@ -204,7 +214,18 @@ func (b *App) addLogFile(src *LogSource, p string) string {
 	return ""
 }
 
-func (b *App) addLogFromSCP(src *LogSource) string {
+// getFileNameFilter : ファイル名のパターンチェックする正規表現を返す
+func getFileNameFilter(f string) (*regexp.Regexp, error) {
+	if f != "" {
+		pat := f
+		pat = strings.ReplaceAll(pat, "*", ".*")
+		pat = strings.ReplaceAll(pat, "?", ".")
+		return regexp.Compile(pat)
+	}
+	return nil, nil
+}
+
+func (b *App) addLogFileFromSCP(src *LogSource) string {
 	kpath := src.SSHKey
 	if kpath == "" {
 		kpath = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
@@ -227,20 +248,15 @@ func (b *App) addLogFromSCP(src *LogSource) string {
 	if err != nil {
 		return err.Error()
 	}
-	var filter *regexp.Regexp
-	if src.Pattern != "" {
-		pat := src.Pattern
-		pat = strings.ReplaceAll(pat, "*", ".*")
-		pat = strings.ReplaceAll(pat, "?", ".")
-		filter, err = regexp.Compile(pat)
-		if err != nil {
-			return err.Error()
-		}
+	filter, err := getFileNameFilter(src.Pattern)
+	if err != nil {
+		return err.Error()
 	}
-
+	src.scpSvc = service
+	wails.LogDebug(b.ctx, fmt.Sprintf("set %p=%v", src, src.scpSvc))
 	for _, file := range files {
 		path := file.Name()
-		if filter != nil && !filter.Match([]byte(path)) {
+		if filter != nil && !filter.MatchString(path) {
 			continue
 		}
 		b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
@@ -250,7 +266,6 @@ func (b *App) addLogFromSCP(src *LogSource) string {
 			Read:   0,
 			Send:   0,
 			LogSrc: src,
-			handle: service,
 		})
 	}
 	return ""
@@ -266,16 +281,141 @@ func (b *App) logReader() {
 		if b.stopProcess {
 			return
 		}
-		b.readOneLogFile(lf)
+		ext := strings.ToLower(filepath.Ext(lf.Path))
+		wails.LogDebug(b.ctx, "ext="+ext)
+		if ext == ".zip" {
+			if err := b.readLogFromZIP(lf); err != nil {
+				wails.LogError(b.ctx, fmt.Sprintf("failed to read zip log file err=%v", err))
+			}
+			continue
+		} else if (ext == ".gz" && strings.HasSuffix(lf.Path, "tar.gz")) ||
+			ext == ".tgz" ||
+			ext == ".bin" {
+			if err := b.readLogFromTarGZ(lf); err != nil {
+				wails.LogError(b.ctx, fmt.Sprintf("failed to read tar gz log file err=%v", err))
+			}
+			continue
+		}
+		file, err := b.openLogFile(lf)
+		if err != nil {
+			wails.LogError(b.ctx, fmt.Sprintf("failed to open log file err=%v", err))
+			b.processStat.ErrorMsg = err.Error()
+			continue
+		}
+		defer file.Close()
+		b.readOneLogFile(lf, file)
 	}
+	b.processStat.LogFiles = append(b.processStat.LogFiles, b.processStat.IntLogFiles...)
 	wails.LogDebug(b.ctx, "stop logReader")
+}
+
+func (b *App) readLogFromZIP(lf *LogFile) error {
+	r, err := zip.OpenReader(lf.Path)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	filter, err := getFileNameFilter(lf.LogSrc.InternalPattern)
+	if err != nil {
+		return err
+	}
+	for _, f := range r.File {
+		p := filepath.Base(f.Name)
+		if filter != nil && !filter.MatchString(p) {
+			continue
+		}
+		file, err := f.Open()
+		if err != nil {
+			continue
+		}
+		ilf := &LogFile{
+			Name:   f.Name,
+			Path:   lf.Name + "->" + f.Name,
+			Size:   int64(f.UncompressedSize64),
+			Read:   0,
+			Send:   0,
+			LogSrc: lf.LogSrc,
+		}
+		b.processStat.IntLogFiles = append(b.processStat.IntLogFiles, ilf)
+		if strings.HasSuffix(p, ".gz") {
+			gzr, err := gzip.NewReader(file)
+			if err != nil {
+				wails.LogError(b.ctx, fmt.Sprintf("read gz log file err=%v", err))
+				continue
+			}
+			b.readOneLogFile(ilf, gzr)
+		} else {
+			b.readOneLogFile(ilf, file)
+		}
+	}
+	return nil
+}
+
+func (b *App) readLogFromTarGZ(lf *LogFile) error {
+	filter, err := getFileNameFilter(lf.LogSrc.InternalPattern)
+	if err != nil {
+		return err
+	}
+	r, err := os.Open(lf.Path)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	return b.readLogFromTarGZSub(lf, r, filter)
+}
+
+func (b *App) readLogFromTarGZSub(lf *LogFile, r io.Reader, filter *regexp.Regexp) error {
+	gzr, err := gzip.NewReader(r)
+	if err != nil {
+		return err
+	}
+	tgzr := tar.NewReader(gzr)
+	for {
+		f, err := tgzr.Next()
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		ext := strings.ToLower(filepath.Ext(f.Name))
+		if (ext == ".gz" && strings.HasSuffix(lf.Path, "tar.gz")) ||
+			ext == ".tgz" {
+			err := b.readLogFromTarGZSub(lf, tgzr, filter)
+			if err != nil {
+				wails.LogError(b.ctx, fmt.Sprintf("read sub tar gz log file err=%v", err))
+			}
+			continue
+		}
+		if filter != nil && !filter.MatchString(f.Name) {
+			continue
+		}
+		ilf := &LogFile{
+			Name:   f.Name,
+			Path:   lf.Name + "->" + f.Name,
+			Size:   f.Size,
+			Read:   0,
+			Send:   0,
+			LogSrc: lf.LogSrc,
+		}
+		b.processStat.IntLogFiles = append(b.processStat.IntLogFiles, ilf)
+		if strings.HasSuffix(f.Name, ".gz") {
+			gzr, err := gzip.NewReader(tgzr)
+			if err != nil {
+				continue
+			}
+			b.readOneLogFile(ilf, gzr)
+		} else {
+			b.readOneLogFile(ilf, tgzr)
+		}
+	}
 }
 
 func (b *App) openLogFile(lf *LogFile) (io.ReadCloser, error) {
 	var r io.ReadCloser
 	var err error
 	if lf.LogSrc.Type == "scp" {
-		r, err = lf.handle.(storage.Storager).Open(context.Background(), lf.Path)
+		r, err = lf.LogSrc.scpSvc.Open(context.Background(), lf.Path)
 	} else {
 		r, err = os.Open(lf.Path)
 	}
@@ -288,17 +428,10 @@ func (b *App) openLogFile(lf *LogFile) (io.ReadCloser, error) {
 	return r, nil
 }
 
-func (b *App) readOneLogFile(lf *LogFile) {
+func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 	st := time.Now()
 	wails.LogDebug(b.ctx, "start readOneLogFile path="+lf.Path)
-	file, err := b.openLogFile(lf)
-	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("failed to create open log file err=%v", err))
-		b.processStat.ErrorMsg = err.Error()
-		return
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(reader)
 	ln := 0
 	var lastTime int64
 	for scanner.Scan() {
@@ -365,13 +498,13 @@ func (b *App) readOneLogFile(lf *LogFile) {
 			if err != nil {
 				// 複数行は同じタイムスタンプにする
 				if lastTime < 1 {
-					wails.LogError(b.ctx, fmt.Sprintf("failed to get time stamp err=%v:%s", err, l))
+					// wails.LogError(b.ctx, fmt.Sprintf("failed to get time stamp err=%v:%s", err, l))
 					continue
 				}
 			} else if ok {
 				lastTime = ts.UnixNano()
 			} else {
-				wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
+				// wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
 				continue
 			}
 		}

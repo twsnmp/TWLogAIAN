@@ -253,7 +253,21 @@
         </div>
       </div>
     {/if}
-  </form>
+    <div class="form-group">
+      <div class="form-group-header">
+        <h5>アーカイブ内ファイル名パターン</h5>
+      </div>
+      <div class="form-group-body">
+        <input
+          class="form-control"
+          type="text"
+          placeholder="パターン"
+          aria-label="パターン"
+          bind:value={logSource.InternalPattern}
+        />
+      </div>
+    </div>
+</form>
 </div>
 <div class="Box-footer text-right">
   <button class="btn btn-secondary" type="button" on:click={cancel}>

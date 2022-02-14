@@ -25,6 +25,7 @@
     Type: "folder",
     Path: "",
     Pattern: "",
+    InternalPattern: "",
     User: "",
     Password: "",
     Server: "",

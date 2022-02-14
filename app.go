@@ -30,7 +30,7 @@ type App struct {
 	workdir     string
 	db          *bbolt.DB
 	config      Config
-	logSources  []LogSource
+	logSources  []*LogSource
 	processStat ProcessStat
 	processConf ProcessConf
 	indexer     LogIndexer
