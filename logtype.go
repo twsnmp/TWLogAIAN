@@ -24,9 +24,16 @@ type ExtractorType struct {
 var extractorTypes = []ExtractorType{
 	{
 		Key:       "syslog",
-		Name:      "syslog",
+		Name:      "syslog(BSD)",
 		TimeField: "timestamp",
 		Grok:      `%{SYSLOGBASE} %{GREEDYDATA:message}`,
+		View:      "syslog",
+	},
+	{
+		Key:       "syslogIETF",
+		Name:      "syslog(IETF)",
+		TimeField: "timestamp",
+		Grok:      `%{TIMESTAMP_ISO8601:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG} %{GREEDYDATA:message}`,
 		View:      "syslog",
 	},
 	{

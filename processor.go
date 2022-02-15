@@ -471,17 +471,27 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 					log.KeyValue[k] = v
 				}
 			}
-			tfi, ok := log.KeyValue[b.processConf.TimeField]
-			if !ok {
-				continue
-			}
-			tf, ok := tfi.(string)
-			if !ok {
-				continue
-			}
-			ts, ok, err := b.processConf.TimeGrinder.Extract([]byte(tf))
-			if err != nil || !ok {
-				continue
+			var ts time.Time
+			if b.processConf.TimeField != "" {
+				tfi, ok := log.KeyValue[b.processConf.TimeField]
+				if !ok {
+					continue
+				}
+				tf, ok := tfi.(string)
+				if !ok {
+					continue
+				}
+				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(tf))
+				if err != nil || !ok {
+					continue
+				}
+			} else {
+				// 日時のフィールドがない場合は全体から取得する
+				var ok bool
+				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(l))
+				if err != nil || !ok {
+					continue
+				}
 			}
 			if b.config.GeoIP {
 				for _, f := range b.processConf.GeoFields {
