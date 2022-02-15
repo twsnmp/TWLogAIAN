@@ -17,6 +17,9 @@
     GeoFields: "",
     HostName: false,
     HostFields: "",
+    VendorName: false,
+    MACFields: "",
+    Recursive: false,
     InMemory: false,
     SampleLog: "",
   };
@@ -48,7 +51,7 @@
       if (ds) {
         logSources = ds;
         logSources.forEach((e) => {
-          const path = e.Type == "scp" ? e.Server + ":" +e.Path : e.Path;
+          const path = e.Type == "scp" ? e.Server + ":" + e.Path : e.Path;
           data.push([e.No, e.Type, path, ""]);
         });
         if (ds.length > 5) {
@@ -66,14 +69,18 @@
   };
   let extractorTypes = [];
   const hasIPMap = {};
+  const hasMACMap = {};
   const getExtractorTypes = () => {
     window.go.main.App.GetExtractorTypes().then((r) => {
       extractorTypes = r;
       extractorTypes.forEach((e) => {
-        hasIPMap[e.Key] = e.IP;
+        hasIPMap[e.Key] = e.IPFields != "";
+        hasMACMap[e.Key] = e.MACFields != "";
       });
       hasIPMap["timeonly"] = false;
+      hasMACMap["timeonly"] = false;
       hasIPMap["custom"] = true;
+      hasMACMap["custom"] = true;
     });
   };
   onMount(() => {
@@ -112,7 +119,7 @@
         return "SCP";
     }
     return "";
-  }
+  };
 
   const actionButtons = (_, row) => {
     const no = row.cells[0].data;
@@ -258,6 +265,17 @@
         </div>
         <div class="form-group">
           <div class="form-group-header">
+            <h5>読み込み時の動作</h5>
+          </div>
+          <div class="form-group-body">
+            <label>
+              <input type="checkbox" bind:checked={config.Recursive} />
+              tar.gzの再帰読み込み
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
             <h5>フィルター</h5>
           </div>
           <div class="form-group-body">
@@ -303,27 +321,36 @@
             </div>
           </div>
         </div>
-        {#if hasIPMap[config.Extractor]}
+        {#if hasIPMap[config.Extractor] || hasMACMap[config.Extractor]}
           <div class="form-group">
             <div class="form-group-header">
-              <h5>IPアドレス情報</h5>
+              <h5>アドレス情報</h5>
             </div>
             <div class="form-group-body">
-              <label>
-                <input
-                  type="checkbox"
-                  bind:checked={config.HostName}
-                />
-                ホスト名を調べる
-              </label>
-              <label>
-                <input
-                  class="ml-2"
-                  type="checkbox"
-                  bind:checked={config.GeoIP}
-                />
-                位置情報を検索
-              </label>
+              {#if hasIPMap[config.Extractor]}
+                <label>
+                  <input type="checkbox" bind:checked={config.HostName} />
+                  ホスト名を調べる
+                </label>
+                <label>
+                  <input
+                    class="ml-2"
+                    type="checkbox"
+                    bind:checked={config.GeoIP}
+                  />
+                  位置情報を調べる
+                </label>
+              {/if}
+              {#if hasMACMap[config.Extractor]}
+                <label>
+                  <input
+                    class="ml-2"
+                    type="checkbox"
+                    bind:checked={config.VendorName}
+                  />
+                  ベンダー名を調べる
+                </label>
+              {/if}
             </div>
           </div>
         {/if}
@@ -385,6 +412,22 @@
                   placeholder="IP位置情報項目"
                   aria-label="IP位置情報項目"
                   bind:value={config.GeoFields}
+                />
+              </div>
+            </div>
+          {/if}
+          {#if config.VendorName}
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5>MACアドレス項目</h5>
+              </div>
+              <div class="form-group-body">
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="MACアドレス項目"
+                  aria-label="MACアドレス項目"
+                  bind:value={config.MACFields}
                 />
               </div>
             </div>

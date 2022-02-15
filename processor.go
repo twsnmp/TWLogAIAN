@@ -41,6 +41,8 @@ type ProcessConf struct {
 	GeoIP       *geoip2.Reader
 	GeoFields   []string
 	HostFields  []string
+	MACFields   []string
+	OuiMap      map[string]string
 }
 
 type LogFile struct {
@@ -117,6 +119,7 @@ func (b *App) setupProcess() string {
 		return err.Error()
 	}
 	b.setHostFields()
+	b.setMACFields()
 	return ""
 }
 
@@ -127,7 +130,6 @@ func (b *App) cleanupProcess() {
 		b.processConf.GeoIP = nil
 	}
 	for _, s := range b.logSources {
-		wails.LogDebug(b.ctx, fmt.Sprintf("%p=%v", s, s))
 		if s.scpSvc != nil {
 			s.scpSvc.Close()
 		}
@@ -383,9 +385,12 @@ func (b *App) readLogFromTarGZSub(lf *LogFile, r io.Reader, filter *regexp.Regex
 		ext := strings.ToLower(filepath.Ext(f.Name))
 		if (ext == ".gz" && strings.HasSuffix(lf.Path, "tar.gz")) ||
 			ext == ".tgz" {
-			err := b.readLogFromTarGZSub(lf, tgzr, filter, p+"->"+f.Name)
-			if err != nil {
-				wails.LogError(b.ctx, fmt.Sprintf("read sub tar gz log file err=%v", err))
+			if b.config.Recursive {
+				// 再帰読み込み
+				err := b.readLogFromTarGZSub(lf, tgzr, filter, p+"->"+f.Name)
+				if err != nil {
+					wails.LogError(b.ctx, fmt.Sprintf("read sub tar gz log file err=%v", err))
+				}
 			}
 			continue
 		}
@@ -496,6 +501,15 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 					}
 				}
 			}
+			if b.config.VendorName {
+				for _, f := range b.processConf.MACFields {
+					if ip, ok := log.KeyValue[f]; ok {
+						if e := b.findVendor(ip.(string)); e != "" {
+							log.KeyValue[f+"_vendor"] = e
+						}
+					}
+				}
+			}
 			lastTime = ts.UnixNano()
 		} else {
 			ts, ok, err := b.processConf.TimeGrinder.Extract([]byte(l))
@@ -586,6 +600,7 @@ func (b *App) setExtractor() error {
 	}
 	b.config.GeoFields = et.IPFields
 	b.config.HostFields = et.IPFields
+	b.config.MACFields = et.MACFields
 	b.processConf.Extractor = g
 	b.processConf.TimeField = et.TimeField
 	return nil

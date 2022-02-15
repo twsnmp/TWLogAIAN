@@ -16,11 +16,14 @@ type Config struct {
 	Extractor  string
 	Grok       string
 	TimeField  string
+	Recursive  bool
 	GeoIP      bool
 	GeoIPDB    string
 	GeoFields  string
 	HostName   bool
 	HostFields string
+	VendorName bool
+	MACFields  string
 	InMemory   bool
 	SampleLog  string
 }

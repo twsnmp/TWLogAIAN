@@ -16,8 +16,8 @@ type ExtractorType struct {
 	Name      string
 	Grok      string
 	TimeField string
-	IP        bool
 	IPFields  string
+	MACFields string
 	View      string
 }
 
@@ -27,7 +27,6 @@ var extractorTypes = []ExtractorType{
 		Name:      "syslog",
 		TimeField: "timestamp",
 		Grok:      `%{SYSLOGBASE} %{GREEDYDATA:message}`,
-		IP:        false,
 		View:      "syslog",
 	},
 	{
@@ -35,7 +34,6 @@ var extractorTypes = []ExtractorType{
 		Name:      "Apache(Common)",
 		TimeField: "timestamp",
 		Grok:      `%{COMMONAPACHELOG}`,
-		IP:        true,
 		IPFields:  "clientip",
 		View:      "access",
 	},
@@ -44,7 +42,6 @@ var extractorTypes = []ExtractorType{
 		Name:      "Apache(Conbined)",
 		TimeField: "timestamp",
 		Grok:      `%{COMBINEDAPACHELOG}`,
-		IP:        true,
 		IPFields:  "clientip",
 		View:      "access",
 	},
