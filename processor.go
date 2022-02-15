@@ -95,7 +95,6 @@ func (b *App) TestSampleLog(c Config) *ExtractorType {
 			Grok: c.Grok,
 		}
 	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("testSampleLog  ret=%v", ret))
 	return ret
 }
 
@@ -130,7 +129,6 @@ func (b *App) cleanupProcess() {
 	for _, s := range b.logSources {
 		wails.LogDebug(b.ctx, fmt.Sprintf("%p=%v", s, s))
 		if s.scpSvc != nil {
-			wails.LogDebug(b.ctx, "Close scp="+s.Path)
 			s.scpSvc.Close()
 		}
 	}
@@ -202,6 +200,9 @@ func (b *App) addLogFile(src *LogSource, p string) string {
 	if err != nil {
 		return err.Error()
 	}
+	if s.IsDir() {
+		return ""
+	}
 	n := filepath.Base(p)
 	b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
 		Name:   n,
@@ -253,7 +254,6 @@ func (b *App) addLogFileFromSCP(src *LogSource) string {
 		return err.Error()
 	}
 	src.scpSvc = service
-	wails.LogDebug(b.ctx, fmt.Sprintf("set %p=%v", src, src.scpSvc))
 	for _, file := range files {
 		path := file.Name()
 		if filter != nil && !filter.MatchString(path) {
@@ -282,7 +282,6 @@ func (b *App) logReader() {
 			return
 		}
 		ext := strings.ToLower(filepath.Ext(lf.Path))
-		wails.LogDebug(b.ctx, "ext="+ext)
 		if ext == ".zip" {
 			if err := b.readLogFromZIP(lf); err != nil {
 				wails.LogError(b.ctx, fmt.Sprintf("failed to read zip log file err=%v", err))
@@ -306,6 +305,7 @@ func (b *App) logReader() {
 		b.readOneLogFile(lf, file)
 	}
 	b.processStat.LogFiles = append(b.processStat.LogFiles, b.processStat.IntLogFiles...)
+	b.processStat.IntLogFiles = []*LogFile{}
 	wails.LogDebug(b.ctx, "stop logReader")
 }
 
@@ -347,6 +347,8 @@ func (b *App) readLogFromZIP(lf *LogFile) error {
 		} else {
 			b.readOneLogFile(ilf, file)
 		}
+		lf.Read += ilf.Read
+		lf.Send += ilf.Send
 	}
 	return nil
 }
@@ -361,10 +363,10 @@ func (b *App) readLogFromTarGZ(lf *LogFile) error {
 		return err
 	}
 	defer r.Close()
-	return b.readLogFromTarGZSub(lf, r, filter)
+	return b.readLogFromTarGZSub(lf, r, filter, lf.Name)
 }
 
-func (b *App) readLogFromTarGZSub(lf *LogFile, r io.Reader, filter *regexp.Regexp) error {
+func (b *App) readLogFromTarGZSub(lf *LogFile, r io.Reader, filter *regexp.Regexp, p string) error {
 	gzr, err := gzip.NewReader(r)
 	if err != nil {
 		return err
@@ -381,7 +383,7 @@ func (b *App) readLogFromTarGZSub(lf *LogFile, r io.Reader, filter *regexp.Regex
 		ext := strings.ToLower(filepath.Ext(f.Name))
 		if (ext == ".gz" && strings.HasSuffix(lf.Path, "tar.gz")) ||
 			ext == ".tgz" {
-			err := b.readLogFromTarGZSub(lf, tgzr, filter)
+			err := b.readLogFromTarGZSub(lf, tgzr, filter, p+"->"+f.Name)
 			if err != nil {
 				wails.LogError(b.ctx, fmt.Sprintf("read sub tar gz log file err=%v", err))
 			}
@@ -392,7 +394,7 @@ func (b *App) readLogFromTarGZSub(lf *LogFile, r io.Reader, filter *regexp.Regex
 		}
 		ilf := &LogFile{
 			Name:   f.Name,
-			Path:   lf.Name + "->" + f.Name,
+			Path:   p + "->" + f.Name,
 			Size:   f.Size,
 			Read:   0,
 			Send:   0,
@@ -408,6 +410,8 @@ func (b *App) readLogFromTarGZSub(lf *LogFile, r io.Reader, filter *regexp.Regex
 		} else {
 			b.readOneLogFile(ilf, tgzr)
 		}
+		lf.Read += ilf.Read
+		lf.Send += ilf.Send
 	}
 }
 
@@ -550,7 +554,6 @@ func (b *App) testGrok(l, p string) int {
 	if err != nil {
 		return -1
 	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("test %s=%d", p, len(values)))
 	return len(values)
 }
 
@@ -585,7 +588,6 @@ func (b *App) setExtractor() error {
 	b.config.HostFields = et.IPFields
 	b.processConf.Extractor = g
 	b.processConf.TimeField = et.TimeField
-	wails.LogDebug(b.ctx, fmt.Sprintf("getExtractor %s=%#v", b.config.Extractor, et))
 	return nil
 }
 

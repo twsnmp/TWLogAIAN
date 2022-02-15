@@ -13,6 +13,11 @@
         if (r.ErrorMsg) {
           errorMsg = r.ErrorMsg;
         }
+        if (r.IntLogFiles) {
+          r.IntLogFiles.forEach((lf) => {
+            logFiles.push(lf);
+          });
+        }
         if (r.Done) {
           dispatch("done", { page: "logview" });
           return

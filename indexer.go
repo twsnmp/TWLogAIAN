@@ -64,7 +64,7 @@ func (b *App) logIndexer() {
 	defer b.wg.Done()
 	wails.LogDebug(b.ctx, "start logindexer")
 	st := time.Now()
-	timer := time.NewTicker(time.Second * 10)
+	timer := time.NewTicker(time.Millisecond * 200)
 	b.indexer.logBuffer = []*LogEnt{}
 	for {
 		select {
@@ -72,6 +72,7 @@ func (b *App) logIndexer() {
 			if !ok {
 				timer.Stop()
 				b.addLogToIndex()
+				b.indexer.logBuffer = []*LogEnt{}
 				b.processStat.Done = true
 				b.indexer.duration = time.Since(st)
 				wails.LogDebug(b.ctx, "stop logindexer")
@@ -79,15 +80,17 @@ func (b *App) logIndexer() {
 			}
 			b.indexer.logBuffer = append(b.indexer.logBuffer, l)
 		case <-timer.C:
-			if len(b.indexer.logBuffer) > 0 {
+			if len(b.indexer.logBuffer) > 10000 {
 				// Index作成
 				b.addLogToIndex()
+				b.indexer.logBuffer = []*LogEnt{}
 			}
 		}
 	}
 }
 
 func (b *App) addLogToIndex() {
+	st := time.Now()
 	if len(b.indexer.logBuffer) < 1 {
 		return
 	}
@@ -122,10 +125,11 @@ func (b *App) addLogToIndex() {
 		batch.Insert(doc)
 		batch_len++
 	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("batch len=%d", batch_len))
+	wails.LogDebug(b.ctx, fmt.Sprintf("batch len=%d %s", batch_len, time.Since(st)))
 	if err := b.indexer.writer.Batch(batch); err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("error executing batch: %v", err))
 	}
+	wails.LogDebug(b.ctx, fmt.Sprintf("end batch %s", time.Since(st)))
 }
 
 type IndexInfo struct {

@@ -13,7 +13,7 @@
   let showQuery = false;
   const conf = {
     query: '',
-    limit: 1000,
+    limit: "1000",
     history: [],
     keyword: {
       field: "",
@@ -57,7 +57,8 @@
   let pagination = false;
   const search = () => {
     data.length = 0; // 空にする
-    window.go.main.App.SearchLog(conf.query,conf.limit).then((r) => {
+    const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
+    window.go.main.App.SearchLog(conf.query,limit).then((r) => {
       if (r) {
         result = r;
         columns = getLogColums(r.View);
