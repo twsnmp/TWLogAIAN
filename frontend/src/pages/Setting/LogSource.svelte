@@ -95,7 +95,9 @@
         >
           <option value="folder">フォルダー</option>
           <option value="file">単一ファイル</option>
-          <option value="scp">SCP</option>
+          <option value="scp">SCP転送</option>
+          <option value="cmd">コマンド実行</option>
+          <option value="ssh">SSHコマンド実行</option>
         </select>
       </div>
     </div>
@@ -153,7 +155,27 @@
         </div>
       </div>
     {/if}
-    {#if logSource.Type == "scp" }
+    {#if logSource.Type == "cmd" || logSource.Type == "ssh" }
+      <div class="form-group" class:errored={pathError}>
+        <div class="form-group-header">
+          <h5>コマンド</h5>
+        </div>
+        <div class="form-group-body">
+          <input
+            class="form-control input-block"
+            type="text"
+            placeholder="コマンド"
+            aria-label="コマンド"
+            bind:value={logSource.Path}
+            aria-describedby="scppath-input-validation"
+          />
+        </div>
+        <p class="note error" id="scppath-input-validation">
+          コマンドを指定してください
+        </p>
+      </div>
+    {/if}
+    {#if logSource.Type == "scp" || logSource.Type == "ssh" }
       <div class="form-group" class:errored={pathError}>
         <div class="form-group-header">
           <h5>サーバー</h5>
@@ -172,24 +194,26 @@
            サーバーが空欄か形式が正しくありません
         </p>
       </div>
-      <div class="form-group" class:errored={pathError}>
-        <div class="form-group-header">
-          <h5>パス</h5>
+      {#if logSource.Type == "scp" }
+        <div class="form-group" class:errored={pathError}>
+          <div class="form-group-header">
+            <h5>パス</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control input-block"
+              type="text"
+              placeholder="パス"
+              aria-label="パス"
+              bind:value={logSource.Path}
+              aria-describedby="scppath-input-validation"
+            />
+          </div>
+          <p class="note error" id="scppath-input-validation">
+            パスを指定してください
+          </p>
         </div>
-        <div class="form-group-body">
-          <input
-            class="form-control input-block"
-            type="text"
-            placeholder="パス"
-            aria-label="パス"
-            bind:value={logSource.Path}
-            aria-describedby="scppath-input-validation"
-          />
-        </div>
-        <p class="note error" id="scppath-input-validation">
-           パスを指定してください
-        </p>
-      </div>
+      {/if}
       <div class="form-group">
         <div class="form-group-header">
           <h5>アクセス設定</h5>
@@ -253,20 +277,22 @@
         </div>
       </div>
     {/if}
-    <div class="form-group">
-      <div class="form-group-header">
-        <h5>アーカイブ内ファイル名パターン</h5>
+    {#if logSource.Type != "cmd" && logSource.Type != "ssh"}
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5>アーカイブ内ファイル名パターン</h5>
+        </div>
+        <div class="form-group-body">
+          <input
+            class="form-control"
+            type="text"
+            placeholder="パターン"
+            aria-label="パターン"
+            bind:value={logSource.InternalPattern}
+          />
+        </div>
       </div>
-      <div class="form-group-body">
-        <input
-          class="form-control"
-          type="text"
-          placeholder="パターン"
-          aria-label="パターン"
-          bind:value={logSource.InternalPattern}
-        />
-      </div>
-    </div>
+    {/if}
 </form>
 </div>
 <div class="Box-footer text-right">

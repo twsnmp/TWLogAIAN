@@ -3,6 +3,7 @@ module changeme
 go 1.17
 
 require (
+	github.com/Songmu/timeout v0.4.0
 	github.com/blugelabs/bluge v0.1.9
 	github.com/blugelabs/query_string v0.3.0
 	github.com/gravwell/gravwell/v3 v3.8.5
@@ -11,10 +12,12 @@ require (
 	github.com/vjeantet/grok v1.0.1
 	github.com/wailsapp/wails/v2 v2.0.0-beta.30
 	go.etcd.io/bbolt v1.3.6
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 )
 
 require (
 	github.com/RoaringBitmap/roaring v0.9.4 // indirect
+	github.com/Songmu/wrapcommander v0.1.0 // indirect
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/axiomhq/hyperloglog v0.0.0-20220105174342-98591331716a // indirect
 	github.com/bits-and-blooms/bitset v1.2.1 // indirect
@@ -54,7 +57,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.28.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
 	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
 	golang.org/x/text v0.3.7 // indirect

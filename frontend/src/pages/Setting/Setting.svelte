@@ -116,7 +116,11 @@
       case "file":
         return "単一ファイル";
       case "scp":
-        return "SCP";
+        return "SCP転送";
+      case "cmd":
+        return "コマンド実行";
+      case "ssh":
+        return "SSHコマンド実行";
     }
     return "";
   };

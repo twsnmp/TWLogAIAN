@@ -172,6 +172,19 @@ func (b *App) makeLogFileList() string {
 			if e := b.addLogFileFromSCP(s); e != "" {
 				return e
 			}
+		case "cmd", "ssh":
+			n := s.Path
+			if s.Server != "" {
+				n = s.Server + ":" + s.Path
+			}
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   n,
+				Path:   s.Path,
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: s,
+			})
 		//twsnmp
 		default:
 			return "まだサポートしていません！"
@@ -282,6 +295,14 @@ func (b *App) logReader() {
 	for _, lf := range b.processStat.LogFiles {
 		if b.stopProcess {
 			return
+		}
+		if lf.LogSrc.Type == "cmd" {
+			b.readLogFromCommand(lf)
+			continue
+		}
+		if lf.LogSrc.Type == "ssh" {
+			b.readLogFromSSH(lf)
+			continue
 		}
 		ext := strings.ToLower(filepath.Ext(lf.Path))
 		if ext == ".zip" {
