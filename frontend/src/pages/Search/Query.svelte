@@ -1,5 +1,5 @@
 <script>
-  import { fieldTypes } from "../../js/define";
+  import { getFieldName,getFieldType } from "../../js/define";
   import { Plus16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   export let conf;
@@ -60,14 +60,6 @@
       "," +
       conf.geo.range;
     dispatch("update", { query: q, add: true });
-  };
-
-  const getFieldName = (f) => {
-    return fieldTypes[f] ? fieldTypes[f].Name : f + "(未定義)";
-  };
-
-  const getFieldType = (f) => {
-    return fieldTypes[f] ? fieldTypes[f].Type : "string";
   };
 
   fields.forEach((f) => {

@@ -7,6 +7,7 @@
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { getLogData,getLogColums } from "../../js/logview";
+  import TopNList from "../Report/TopNList.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -91,11 +92,17 @@
   const clearMsg = () => {
     result.ErrorMsg = "";
   };
+  let report = "";
 
   const handleDone = (e) => {
     page = "";
+    report = "";
     updateChart();
   };
+
+  const showReport = () => {
+    page = report;
+  }
 
   const updateChart = async () => {
     await tick();
@@ -125,6 +132,8 @@
 <svelte:window on:resize={onResize} />
 {#if page == "result"}
   <Result {indexInfo} on:done={handleDone} />
+{:else if page == "topNList"}
+  <TopNList fields ={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
@@ -194,6 +203,13 @@
         <Grid {data} sort search {pagination} {columns} language={jaJP} />
       </div>
       <div class="Box-footer text-right">
+        {#if result && result.Hit > 0}
+          <!-- svelte-ignore a11y-no-onchange -->
+          <select class="form-select" bind:value={report} on:change="{showReport}">
+            <option value="">レポート選択</option>
+            <option value="topNList">Topリスト</option>
+          </select>
+        {/if}
         <button class="btn  btn-secondary" type="button" on:click={()=> { page = "result"}}>
           <Check16 />
           処理結果

@@ -91,18 +91,13 @@ export const getLogColums = (view) => {
 const getAccessLogData = (r) =>{
   const d = [];
   r.Logs.forEach((l) => {
-    let cl = l.KeyValue.clientip;
-    if (l.KeyValue.clientip_host) {
-      cl += "(" + l.KeyValue.clientip_host +")"
-    }
-    let country = l.KeyValue.clientip_geo ? l.KeyValue.clientip_geo.Country :"";
     d.push([
       l.KeyValue.response,
       l.Time,
       l.KeyValue.verb,
       l.KeyValue.bytes,
-      cl,
-      country,
+      l.KeyValue.clientip_host ? l.KeyValue.clientip + "(" + l.KeyValue.clientip_host +")" : l.KeyValue.clientip,
+      l.KeyValue.clientip_geo_country || "",
       l.KeyValue.request,
     ]);
   });

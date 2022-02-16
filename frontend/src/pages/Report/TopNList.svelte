@@ -1,0 +1,109 @@
+<script>
+  import { getFieldName } from "../../js/define";
+  import { X16 } from "svelte-octicons";
+  import { createEventDispatcher, onMount, tick } from "svelte";
+  import { getTopList, showTopNChart, resizeTopNChart } from "../../js/topNList";
+  import Grid from "gridjs-svelte";
+  import jaJP from "../../js/gridjsJaJP";
+
+  export let fields = [];
+  export let logs = [];
+  let validFields = [];
+  let list = [];
+  let selected = "";
+
+  const dispatch = createEventDispatcher();
+  let data = [];
+  let columns = [
+    {
+      name: "順位",
+      width: "10%",
+    },
+    {
+      name: "項目",
+      width: "80%",
+    },
+    {
+      name: "件数",
+      width: "10%",
+    },
+  ];
+  let pagination = false;
+
+  const updateTopList = async () => {
+    await tick();
+    list = getTopList(logs, selected);
+    showTopNChart("chart", list, 50);
+    if (list.length > 10) {
+      pagination = {
+        limit: 10,
+        enable: true,
+      };
+    }
+    data = [];
+    for (let i = 0; i < list.length; i++) {
+      data.push([i + 1, list[i].Name, list[i].Total]);
+    }
+  };
+
+  onMount(() => {
+    const tmp = [];
+    fields.forEach((f) => {
+      if (!f.startsWith("_") && f != "time") {
+        tmp.push(f);
+      }
+    });
+    if (tmp.length > 0) {
+      selected = tmp[0];
+    }
+    validFields = tmp;
+    updateTopList();
+  });
+
+  const onResize = () => {
+    resizeTopNChart();
+  };
+
+  const back = () => {
+    dispatch("done", {});
+  };
+
+</script>
+
+<svelte:window on:resize={onResize} />
+<div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+  <div class="Box-header d-flex flex-items-center">
+    <h3 class="Box-title overflow-hidden flex-auto">Top N集計</h3>
+    <!-- svelte-ignore a11y-no-onchange -->
+    <select
+      class="form-select"
+      aria-label="項目"
+      bind:value={selected}
+      on:change={updateTopList}
+    >
+      {#each validFields as f}
+        <option value={f}>{getFieldName(f)}</option>
+      {/each}
+    </select>
+  </div>
+  <div class="Box-row">
+    <div id="chart" />
+  </div>
+  <div class="Box-row markdown-body log">
+    <Grid {data} sort search {pagination} {columns} language={jaJP} />
+  </div>
+  <div class="Box-footer text-right">
+    <button class="btn  btn-secondary" type="button" on:click={back}>
+      <X16 />
+      戻る
+    </button>
+  </div>
+</div>
+
+<style>
+  #chart {
+    width: 100%;
+    height: 350px;
+    margin: 5px auto;
+  }
+</style>

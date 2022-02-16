@@ -95,6 +95,7 @@ func (b *App) addLogToIndex() {
 		return
 	}
 	batch_len := 0
+	numCount := 0
 	batch := bluge.NewBatch()
 	for _, l := range b.indexer.logBuffer {
 		doc := bluge.NewDocument(l.ID)
@@ -111,14 +112,18 @@ func (b *App) addLogToIndex() {
 			case string:
 				doc.AddField(bluge.NewTextField(k, v))
 			case float64:
+				numCount++
 				doc.AddField(bluge.NewNumericField(k, v))
 			case *GeoEnt:
+				l.KeyValue[k+"_country"] = v.Country
+				l.KeyValue[k+"_city"] = v.City
+				l.KeyValue[k+"_latlong"] = fmt.Sprintf("%0.3f,%0.3f", v.Lat, v.Long)
 				doc.AddField(bluge.NewTextField(k+"_country", v.Country))
 				doc.AddField(bluge.NewTextField(k+"_city", v.City))
 				doc.AddField(bluge.NewGeoPointField(k+"_latlong", v.Lat, v.Long))
 			default:
 				// Unknown Type
-				wails.LogError(b.ctx, fmt.Sprintf("unnown type %s=%v", k, v))
+				wails.LogError(b.ctx, fmt.Sprintf("unknown type %s=%v", k, v))
 				continue
 			}
 		}
@@ -129,7 +134,7 @@ func (b *App) addLogToIndex() {
 	if err := b.indexer.writer.Batch(batch); err != nil {
 		wails.LogError(b.ctx, fmt.Sprintf("error executing batch: %v", err))
 	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("end batch %s", time.Since(st)))
+	wails.LogDebug(b.ctx, fmt.Sprintf("end batch %s numCount=%d", time.Since(st), numCount))
 }
 
 type IndexInfo struct {
