@@ -47,7 +47,7 @@
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
-      <h3 class="Box-title">ログ読み込み処理中....</h3>
+      <h3 class="Box-title">ログを読み込み中<span class="AnimatedEllipsis"></span></h3>
     </div>
     {#if errorMsg != ""}
       <div class="flash flash-error">

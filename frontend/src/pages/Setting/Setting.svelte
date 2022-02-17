@@ -5,6 +5,7 @@
   import { h, html } from "gridjs";
   import LogSource from "./LogSource.svelte";
   import { onMount } from "svelte";
+  import jaJP from "../../js/gridjsJaJP";
   const dispatch = createEventDispatcher();
   const data = [];
   let config = {
@@ -264,7 +265,7 @@
             </h5>
           </div>
           <div class="form-group-body markdown-body mt-3">
-            <Grid {data} {pagination} {columns} />
+            <Grid {data} {pagination} {columns} language={jaJP}/>
           </div>
         </div>
         <div class="form-group">

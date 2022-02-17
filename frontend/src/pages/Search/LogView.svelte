@@ -6,12 +6,14 @@
   import {showLogChart,resizeLogChart} from "../../js/logchart";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
-  import { getLogData,getLogColums } from "../../js/logview";
+  import { getLogData,getLogColums, getValidFeilds } from "../../js/logview";
   import TopNList from "../Report/TopNList.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
   let showQuery = false;
+  let busy = false;
+  let fields = [];
   const conf = {
     query: '',
     limit: "1000",
@@ -53,13 +55,16 @@
   window.go.main.App.GetIndexInfo().then((r) => {
     if (r) {
       indexInfo = r;
+      fields = getValidFeilds(r.Fields);
     }
   });
   let pagination = false;
   const search = () => {
     data.length = 0; // 空にする
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
+    busy = true;
     window.go.main.App.SearchLog(conf.query,limit).then((r) => {
+      busy = false;
       if (r) {
         result = r;
         columns = getLogColums(r.View);
@@ -133,7 +138,7 @@
 {#if page == "result"}
   <Result {indexInfo} on:done={handleDone} />
 {:else if page == "topNList"}
-  <TopNList fields ={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+  <TopNList fields ={fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
@@ -184,17 +189,24 @@
                 <TriangleUp16 />
               </button>
             {/if}
-            <button class="btn  btn-primary ml-2" type="button" on:click={search}>
-              <Search16 />
-              検索
-            </button>
+            {#if !busy }
+              <button class="btn btn-primary ml-2" type="button" on:click={search}>
+                <Search16 />
+                検索
+              </button>
+            {:else }
+              <button class="btn btn-primary ml-2" aria-disabled="true">
+                <Search16 />
+                <span>検索</span><span class="AnimatedEllipsis"></span>
+              </button>
+            {/if}
           </div>
         </div>
       </div>
       {#if showQuery}
-      <div class="Box-row">
-        <Query {conf} fields={indexInfo.Fields} on:update={handleUpdateQuery}/>
-      </div>
+        <div class="Box-row">
+          <Query {conf} fields={indexInfo.Fields} on:update={handleUpdateQuery}/>
+        </div>
       {/if}
       <div class="Box-row">
         <div id="chart" />
@@ -203,7 +215,7 @@
         <Grid {data} sort search {pagination} {columns} language={jaJP} />
       </div>
       <div class="Box-footer text-right">
-        {#if result && result.Hit > 0}
+        {#if result && result.Hit > 0 && fields.length > 0}
           <!-- svelte-ignore a11y-no-onchange -->
           <select class="form-select" bind:value={report} on:change="{showReport}">
             <option value="">レポート選択</option>

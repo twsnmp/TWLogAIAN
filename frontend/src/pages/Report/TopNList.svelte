@@ -8,7 +8,6 @@
 
   export let fields = [];
   export let logs = [];
-  let validFields = [];
   let list = [];
   let selected = "";
 
@@ -47,16 +46,6 @@
   };
 
   onMount(() => {
-    const tmp = [];
-    fields.forEach((f) => {
-      if (!f.startsWith("_") && f != "time") {
-        tmp.push(f);
-      }
-    });
-    if (tmp.length > 0) {
-      selected = tmp[0];
-    }
-    validFields = tmp;
     updateTopList();
   });
 
@@ -81,7 +70,7 @@
       bind:value={selected}
       on:change={updateTopList}
     >
-      {#each validFields as f}
+      {#each fields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
     </select>
