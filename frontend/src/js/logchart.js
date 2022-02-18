@@ -6,16 +6,6 @@ const baseOption = {
   title: {
     show: false,
   },
-  backgroundColor: new echarts.graphic.RadialGradient(0.5, 0.5, 0.4, [
-    {
-      offset: 0,
-      color: '#4b5769',
-    },
-    {
-      offset: 1,
-      color: '#404a59',
-    },
-  ]),
   dataZoom: [{}],
   tooltip: {
     trigger: 'axis',
@@ -33,7 +23,6 @@ const baseOption = {
     type: 'time',
     name: 'Time',
     axisLabel: {
-      color: '#ccc',
       fontSize: '8px',
       formatter: (value, index) => {
         const date = new Date(value)
@@ -41,14 +30,8 @@ const baseOption = {
       },
     },
     nameTextStyle: {
-      color: '#ccc',
       fontSize: 8,
       margin: 2,
-    },
-    axisLine: {
-      lineStyle: {
-        color: '#ccc',
-      },
     },
     splitLine: {
       show: false,
@@ -58,17 +41,10 @@ const baseOption = {
     type: 'value',
     name: 'Count',
     nameTextStyle: {
-      color: '#ccc',
       fontSize: 8,
       margin: 2,
     },
-    axisLine: {
-      lineStyle: {
-        color: '#ccc',
-      },
-    },
     axisLabel: {
-      color: '#ccc',
       fontSize: 8,
       margin: 2,
     },
@@ -92,7 +68,7 @@ const addChartData = (data, count, ctm, newCtm) => {
   return ctm
 }
 
-const showLogCountChart = (div,logs) => {
+const showLogCountChart = (div,logs,dark) => {
   if (chart) {
     chart.dispose()
   }
@@ -163,11 +139,11 @@ const getSyslogLevel = (pri) => {
   return "other";
 }
 
-const showAccessLogChart = (div,logs) => {
+const showAccessLogChart = (div,logs,dark) => {
   if (chart) {
     chart.dispose()
   }
-  chart = echarts.init(document.getElementById(div))
+  chart = echarts.init(document.getElementById(div),dark ? "dark" : "");
   chart.setOption(baseOption);
   const data = {
     normal: [],
@@ -232,7 +208,6 @@ const showAccessLogChart = (div,logs) => {
     legend: {
       textStyle: {
         fontSize: 10,
-        color: '#ccc',
       },
       data: ['正常', '注意', 'エラー'],
     },
@@ -240,11 +215,11 @@ const showAccessLogChart = (div,logs) => {
   chart.resize()
 }
 
-const showSyslogChart = (div,logs) => {
+const showSyslogChart = (div,logs,dark) => {
   if (chart) {
     chart.dispose()
   }
-  chart = echarts.init(document.getElementById(div))
+  chart = echarts.init(document.getElementById(div),dark ? "dark" : "")
   chart.setOption(baseOption);
   const data = {
     high: [],
@@ -326,16 +301,16 @@ const showSyslogChart = (div,logs) => {
   chart.resize()
 }
 
-export const showLogChart = (div,r) => {
+export const showLogChart = (div,r,dark) => {
   switch (r.View) {
   case "access":
-    showAccessLogChart(div,r.Logs);
+    showAccessLogChart(div,r.Logs,dark);
     return
   case "syslog":
-    showSyslogChart(div,r.Logs);
+    showSyslogChart(div,r.Logs,dark);
     return
   }
-  showLogCountChart(div,r.Logs);
+  showLogCountChart(div,r.Logs,dark);
 }
 
 export const resizeLogChart = () => {

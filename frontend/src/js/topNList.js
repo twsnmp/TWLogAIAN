@@ -26,7 +26,7 @@ export const getTopList = (logs, type) => {
   return r
 }
 
-export const showTopNChart = (div, list, max) => {
+export const showTopNChart = (div, list, max,dark) => {
   const total = []
   const category = []
   for (let i = list.length > max ? max - 1 : list.length - 1; i >= 0; i--) {
@@ -36,26 +36,12 @@ export const showTopNChart = (div, list, max) => {
   if (chart) {
     chart.dispose()
   }
-  chart = echarts.init(document.getElementById(div))
+  chart = echarts.init(document.getElementById(div),dark ? "dark" : "");
   chart.setOption({
     title: {
       show: false,
     },
-    backgroundColor: new echarts.graphic.RadialGradient(0.5, 0.5, 0.4, [
-      {
-        offset: 0,
-        color: '#4b5769',
-      },
-      {
-        offset: 1,
-        color: '#404a59',
-      },
-    ]),
-    toolbox: {
-      iconStyle: {
-        color: '#ccc',
-      },
-    },
+    toolbox: {},
     tooltip: {
       trigger: 'axis',
       axisPointer: {
@@ -77,17 +63,14 @@ export const showTopNChart = (div, list, max) => {
       type: 'category',
       data: category,
       nameTextStyle: {
-        color: '#ccc',
         fontSize: 10,
         margin: 2,
       },
       axisLine: {
         lineStyle: {
-          color: '#ccc',
         },
       },
       axisLabel: {
-        color: '#ccc',
         fontSize: 8,
         margin: 2,
       },

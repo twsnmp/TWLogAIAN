@@ -9,6 +9,7 @@
 
   export let logs = [];
   export let fields = [];
+  let dark = false;
   let numFields = [];
   let catFields = [];
   let xType = "";
@@ -44,7 +45,7 @@
       return;
     }
     await tick();
-    data = show3DChart("chart", logs, xType,zType,colorType);
+    data = show3DChart("chart", logs, xType,zType,colorType,dark);
     if (data.length > 10) {
       pagination = {
         limit: 10,
@@ -56,6 +57,9 @@
   onMount(() => {
     catFields = getFields(fields,"string");
     numFields = getFields(fields,"number");
+    window.go.main.App.GetDark().then((v) => {
+      dark = v;
+    });
   });
 
   const onResize = () => {

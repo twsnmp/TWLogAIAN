@@ -11,6 +11,7 @@
   let list = [];
   let catFields = [];
   let selected = "";
+  let dark = false;
 
   const dispatch = createEventDispatcher();
   let data = [];
@@ -36,7 +37,7 @@
     }
     await tick();
     list = getTopList(logs, selected);
-    showTopNChart("chart", list, 50);
+    showTopNChart("chart", list, 50,dark);
     if (list.length > 10) {
       pagination = {
         limit: 10,
@@ -53,7 +54,10 @@
     catFields = getFields(fields,"string");
     if( catFields.length > 0 ){
       selected = catFields[0];
-      updateTopList();
+      window.go.main.App.GetDark().then((v) => {
+        dark = v;
+        updateTopList();
+      });
     }
   });
 

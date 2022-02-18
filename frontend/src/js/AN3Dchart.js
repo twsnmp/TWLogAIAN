@@ -6,7 +6,7 @@ import { getFieldName } from "./define";
 
 let chart;
 
-export const show3DChart = (div, logs, xType, zType, colorType) => {
+export const show3DChart = (div, logs, xType, zType, colorType,dark) => {
   const m = new Map()
   const colors = []
   logs.forEach((l) => {
@@ -42,7 +42,7 @@ export const show3DChart = (div, logs, xType, zType, colorType) => {
   if (chart) {
     chart.dispose()
   }
-  chart = echarts.init(document.getElementById(div),"dark")
+  chart = echarts.init(document.getElementById(div),dark ? "dark" : "")
   const options = {
     title: {
       show: false,
@@ -81,23 +81,27 @@ export const show3DChart = (div, logs, xType, zType, colorType) => {
       name: getFieldName(xType),
       data: cat,
       nameTextStyle: {
-        fontSize: 12,
-        margin: 2,
-      },
-      axisLabel: {
         fontSize: 10,
         margin: 2,
+        color: dark ? "#ccc" : "#222"
+      },
+      axisLabel: {
+        fontSize: 8,
+        margin: 2,
+        color: dark ? "#ccc" : "#222",
       },
     },
     yAxis3D: {
       type: 'time',
       name: '日時',
       nameTextStyle: {
-        fontSize: 12,
+        fontSize: 10,
         margin: 2,
+        color: dark ? "#ccc" : "#222",
       },
       axisLabel: {
         fontSize: 8,
+        color: dark ? "#ccc" : "#222",
         formatter(value, index) {
           const date = new Date(value)
           return echarts.time.format(date, '{MM}/{dd} {HH}:{mm}')
@@ -108,12 +112,14 @@ export const show3DChart = (div, logs, xType, zType, colorType) => {
       type: 'value',
       name: getFieldName(zType),
       nameTextStyle: {
-        fontSize: 12,
+        fontSize: 10,
         margin: 2,
+        color: dark ? "#ccc" : "#222",
       },
       axisLabel: {
         fontSize: 8,
         margin: 2,
+        color: dark ? "#ccc" : "#222",
       },
     },
     grid3D: {

@@ -14,6 +14,7 @@
   let page = "";
   let showQuery = false;
   let busy = false;
+  let dark = false;
   const conf = {
     query: '',
     limit: "1000",
@@ -68,7 +69,6 @@
         result = r;
         columns = getLogColums(r.View);
         data = getLogData(r);
-        showLogChart("chart",r);
         if (r.Logs.length > 20) {
           pagination = {
             limit: 10,
@@ -80,12 +80,16 @@
         if (r.ErrorMsg == ""){
           conf.history.push(conf.query);
         }
+        updateChart();
       }
     });
   };
 
   onMount(() => {
-    showLogChart("chart",result);
+    window.go.main.App.GetDark().then((v) => {
+      dark = v;
+      updateChart();
+    });
   });
 
   const cancel = () => {
@@ -110,7 +114,7 @@
 
   const updateChart = async () => {
     await tick();
-    showLogChart("chart",result);
+    showLogChart("chart",result,dark);
   };
 
   const onResize = () => {
