@@ -9,6 +9,7 @@
   import { getLogData,getLogColums } from "../../js/logview";
   import AnRanking from "../Report/AnRanking.svelte";
   import AnTime3D from "../Report/AnTime3D.svelte";
+  import AnCluster from "../Report/AnCluster.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -144,6 +145,8 @@
   <AnRanking fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "time3d"}
   <AnTime3D fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "cluster"}
+  <AnCluster fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
@@ -226,6 +229,14 @@
             <option value="">レポート選択</option>
             <option value="ranking">ランキング分析</option>
             <option value="time3d">時系列3D分析</option>
+            <option value="cluster">クラスター分析</option>
+            <option value="histogram">ヒストグラム分析</option>
+            <option value="fft">FFT分析</option>
+            <option value="world">世界地図分析</option>
+            <option value="globe">地球儀</option>
+            <option value="fgraph">グラフ(力学モデル)</option>
+            <option value="cgraph">グラフ(円形)</option>
+            <option value="3dgraph">グラフ(3D)</option>
           </select>
         {/if}
         <button class="btn  btn-secondary" type="button" on:click={()=> { page = "result"}}>
