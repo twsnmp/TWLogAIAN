@@ -6,7 +6,7 @@ func (b *App) GetExtractorTypes() []ExtractorType {
 }
 
 // GetFieldTypes : 定義済みのログタイプのリスト情報を提供する
-func (b *App) GetFieldTypes() map[string]FieldType {
+func (b *App) GetFieldTypes() map[string]*FieldType {
 	return fieldTypes
 }
 
@@ -60,23 +60,24 @@ type FieldType struct {
 	Unit string
 }
 
-var fieldTypes = map[string]FieldType{
-	"_all":                 {Name: "ログの行全体", Type: "string"},
+var fieldTypes = map[string]*FieldType{
+	"_all":                 {Name: "ログの行全体", Type: "_all"},
 	"httpversion":          {Name: "HTTPバージョン", Type: "string"},
 	"ident":                {Name: "識別子", Type: "string"},
 	"request":              {Name: "パス", Type: "string"},
 	"response":             {Name: "応答コード", Type: "number"},
 	"agent":                {Name: "ユーザーエージェント", Type: "string"},
 	"bytes":                {Name: "サイズ", Type: "number"},
-	"clientip_geo_latlong": {Name: "クラアンと位置", Type: "latlong"},
-	"timestamp":            {Name: "タイムスタンプ", Type: "string"},
-	"rawrequest":           {Name: "元のリクエスト", Type: "string"},
+	"clientip_geo_latlong": {Name: "クライアントの緯度経度", Type: "latlong"},
+	"timestamp":            {Name: "タイムスタンプ", Type: "timestamp"},
+	"rawrequest":           {Name: "リクエスト", Type: "string"},
 	"referrer":             {Name: "リファラー", Type: "string"},
-	"time":                 {Name: "日時", Type: "time"},
+	"time":                 {Name: "日時", Type: "_time"},
 	"verb":                 {Name: "リクエスト", Type: "string"},
-	"_id":                  {Name: "内部ID", Type: "string"},
+	"_id":                  {Name: "内部ID", Type: "_id"},
 	"auth":                 {Name: "ユーザー名", Type: "string"},
 	"clientip":             {Name: "クライアントIP", Type: "string"},
+	"clientip_geo":         {Name: "クライアント位置", Type: "geo"},
 	"clientip_geo_city":    {Name: "クライアント都市", Type: "string"},
 	"clientip_geo_country": {Name: "クライアントの国", Type: "string"},
 	"clientip_host":        {Name: "クライアントのホスト名", Type: "string"},
@@ -86,4 +87,29 @@ var fieldTypes = map[string]FieldType{
 	"facility":             {Name: "ファシリティー", Type: "string"},
 	"pid":                  {Name: "PID", Type: "number"},
 	"program":              {Name: "プロセス名", Type: "string"},
+}
+
+func setFieldTypes(l *LogEnt) {
+	for f, i := range l.KeyValue {
+		switch i.(type) {
+		case string:
+			setFieldType(f, "string")
+		case float64:
+			setFieldType(f, "number")
+		case *GeoEnt:
+			setFieldType(f, "geo")
+			setFieldType(f+"_country", "string")
+			setFieldType(f+"_city", "string")
+			setFieldType(f+"_latlong", "string")
+		}
+	}
+}
+
+func setFieldType(f, t string) {
+	if _, ok := fieldTypes[f]; !ok {
+		fieldTypes[f] = &FieldType{
+			Name: f + "(自動追加)",
+			Type: t,
+		}
+	}
 }

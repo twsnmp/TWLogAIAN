@@ -6,14 +6,14 @@
   import {showLogChart,resizeLogChart} from "../../js/logchart";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
-  import { getLogData,getLogColums, getValidFeilds } from "../../js/logview";
+  import { getLogData,getLogColums } from "../../js/logview";
   import TopNList from "../Report/TopNList.svelte";
+  import AN3DChart from "../Report/AN3DChart.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
   let showQuery = false;
   let busy = false;
-  let fields = [];
   const conf = {
     query: '',
     limit: "1000",
@@ -55,7 +55,6 @@
   window.go.main.App.GetIndexInfo().then((r) => {
     if (r) {
       indexInfo = r;
-      fields = getValidFeilds(r.Fields);
     }
   });
   let pagination = false;
@@ -138,7 +137,9 @@
 {#if page == "result"}
   <Result {indexInfo} on:done={handleDone} />
 {:else if page == "topNList"}
-  <TopNList fields ={fields} logs={result.Logs} on:done={handleDone}/>
+  <TopNList fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "3DChart"}
+  <AN3DChart fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
@@ -215,11 +216,12 @@
         <Grid {data} sort search {pagination} {columns} language={jaJP} />
       </div>
       <div class="Box-footer text-right">
-        {#if result && result.Hit > 0 && fields.length > 0}
+        {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
           <!-- svelte-ignore a11y-no-onchange -->
           <select class="form-select" bind:value={report} on:change="{showReport}">
             <option value="">レポート選択</option>
-            <option value="topNList">Topリスト</option>
+            <option value="topNList">ランキング分析</option>
+            <option value="3DChart">3D時系列分析</option>
           </select>
         {/if}
         <button class="btn  btn-secondary" type="button" on:click={()=> { page = "result"}}>

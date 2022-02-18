@@ -14,3 +14,14 @@ export const getFieldName = (f) => {
 export const getFieldType = (f) => {
   return fieldTypes[f] ? fieldTypes[f].Type : "string";
 };
+
+export const getFields = (fields,t) => {
+  const ret = [];
+  fields.forEach((f) => {
+    if (getFieldType(f) == t) {
+      ret.push(f);
+    }
+  });
+  return ret;
+}
+

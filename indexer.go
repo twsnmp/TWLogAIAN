@@ -66,11 +66,16 @@ func (b *App) logIndexer() {
 	st := time.Now()
 	timer := time.NewTicker(time.Millisecond * 200)
 	b.indexer.logBuffer = []*LogEnt{}
+	bFirstLog := true
 	for {
 		select {
 		case l, ok := <-b.indexer.logCh:
 			if !ok {
 				timer.Stop()
+				if bFirstLog && len(b.indexer.logBuffer) > 0 {
+					bFirstLog = false
+					setFieldTypes(b.indexer.logBuffer[0])
+				}
 				b.addLogToIndex()
 				b.indexer.logBuffer = []*LogEnt{}
 				b.processStat.Done = true
@@ -81,6 +86,10 @@ func (b *App) logIndexer() {
 			b.indexer.logBuffer = append(b.indexer.logBuffer, l)
 		case <-timer.C:
 			if len(b.indexer.logBuffer) > 10000 {
+				if bFirstLog {
+					bFirstLog = false
+					setFieldTypes(b.indexer.logBuffer[0])
+				}
 				// Index作成
 				b.addLogToIndex()
 				b.indexer.logBuffer = []*LogEnt{}

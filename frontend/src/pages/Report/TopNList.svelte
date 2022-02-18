@@ -1,14 +1,15 @@
 <script>
-  import { getFieldName } from "../../js/define";
+  import { getFields, getFieldName } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { getTopList, showTopNChart, resizeTopNChart } from "../../js/topNList";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
 
-  export let fields = [];
   export let logs = [];
+  export let fields = [];
   let list = [];
+  let catFields = [];
   let selected = "";
 
   const dispatch = createEventDispatcher();
@@ -30,6 +31,9 @@
   let pagination = false;
 
   const updateTopList = async () => {
+    if (selected == "" ) {
+      return;
+    }
     await tick();
     list = getTopList(logs, selected);
     showTopNChart("chart", list, 50);
@@ -46,7 +50,11 @@
   };
 
   onMount(() => {
-    updateTopList();
+    catFields = getFields(fields,"string");
+    if( catFields.length > 0 ){
+      selected = catFields[0];
+      updateTopList();
+    }
   });
 
   const onResize = () => {
@@ -62,7 +70,7 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">Top N集計</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">ランキング分析</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
@@ -70,7 +78,8 @@
       bind:value={selected}
       on:change={updateTopList}
     >
-      {#each fields as f}
+    <option value="">集計する項目を選択してください</option>
+      {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
     </select>

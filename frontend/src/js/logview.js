@@ -134,13 +134,3 @@ export const getLogData = (r) => {
   }
   return getTimeOnlyLogData(r);
 }
-
-export const getValidFeilds = (fields) => {
-  const ret = [];
-  fields.forEach((f) => {
-    if (!f.startsWith("_") && f != "time") {
-      ret.push(f);
-    }
-  });
-  return ret;
-}
