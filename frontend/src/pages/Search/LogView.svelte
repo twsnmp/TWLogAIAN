@@ -7,8 +7,8 @@
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { getLogData,getLogColums } from "../../js/logview";
-  import TopNList from "../Report/TopNList.svelte";
-  import AN3DChart from "../Report/AN3DChart.svelte";
+  import AnRanking from "../Report/AnRanking.svelte";
+  import AnTime3D from "../Report/AnTime3D.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -140,10 +140,10 @@
 <svelte:window on:resize={onResize} />
 {#if page == "result"}
   <Result {indexInfo} on:done={handleDone} />
-{:else if page == "topNList"}
-  <TopNList fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
-{:else if page == "3DChart"}
-  <AN3DChart fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "ranking"}
+  <AnRanking fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "time3d"}
+  <AnTime3D fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
@@ -224,8 +224,8 @@
           <!-- svelte-ignore a11y-no-onchange -->
           <select class="form-select" bind:value={report} on:change="{showReport}">
             <option value="">レポート選択</option>
-            <option value="topNList">ランキング分析</option>
-            <option value="3DChart">3D時系列分析</option>
+            <option value="ranking">ランキング分析</option>
+            <option value="time3d">時系列3D分析</option>
           </select>
         {/if}
         <button class="btn  btn-secondary" type="button" on:click={()=> { page = "result"}}>

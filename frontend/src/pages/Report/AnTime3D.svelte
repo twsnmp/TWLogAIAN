@@ -3,7 +3,7 @@
   import { getFieldName,getFields } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
-  import { show3DChart, resize3DChart } from "../../js/AN3Dchart";
+  import { showTime3DChart, resizeTime3DChart } from "../../js/AnTime3D";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
 
@@ -40,12 +40,12 @@
 
   let pagination = false;
 
-  const update3DChart = async () => {
+  const updateTime3DChart = async () => {
     if( xType == "" || zType == "" || colorType == "" ){
       return;
     }
     await tick();
-    data = show3DChart("chart", logs, xType,zType,colorType,dark);
+    data = showTime3DChart("chart", logs, xType,zType,colorType,dark);
     if (data.length > 10) {
       pagination = {
         limit: 10,
@@ -63,7 +63,7 @@
   });
 
   const onResize = () => {
-    resize3DChart();
+    resizeTime3DChart();
   };
 
   const back = () => {
@@ -81,7 +81,7 @@
       class="form-select"
       aria-label="X軸"
       bind:value={xType}
-      on:change="{update3DChart}"
+      on:change="{updateTime3DChart}"
     >
       <option value="">X軸の項目を選択して下さい</option>
       {#each catFields as f}
@@ -93,7 +93,7 @@
       class="form-select ml-2"
       aria-label="Z軸"
       bind:value={zType}
-      on:change="{update3DChart}"
+      on:change="{updateTime3DChart}"
     >
     <option value="">Z軸の項目を選択して下さい</option>
     {#each numFields as f}
@@ -105,7 +105,7 @@
       class="form-select ml-2"
       aria-label="カラー"
       bind:value={colorType}
-      on:change="{update3DChart}"
+      on:change="{updateTime3DChart}"
     >
       <option value="">色分けの項目を選択して下さい</option>
       {#each numFields as f}

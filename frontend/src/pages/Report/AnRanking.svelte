@@ -2,7 +2,7 @@
   import { getFields, getFieldName } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
-  import { getTopList, showTopNChart, resizeTopNChart } from "../../js/topNList";
+  import { getRanking, showRankingChart, resizeRankingChart } from "../../js/AnRanking";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
 
@@ -31,13 +31,13 @@
   ];
   let pagination = false;
 
-  const updateTopList = async () => {
+  const updateRanking = async () => {
     if (selected == "" ) {
       return;
     }
     await tick();
-    list = getTopList(logs, selected);
-    showTopNChart("chart", list, 50,dark);
+    list = getRanking(logs, selected);
+    showRankingChart("chart", list, 50,dark);
     if (list.length > 10) {
       pagination = {
         limit: 10,
@@ -56,13 +56,13 @@
       selected = catFields[0];
       window.go.main.App.GetDark().then((v) => {
         dark = v;
-        updateTopList();
+        updateRanking();
       });
     }
   });
 
   const onResize = () => {
-    resizeTopNChart();
+    resizeRankingChart();
   };
 
   const back = () => {
@@ -80,7 +80,7 @@
       class="form-select"
       aria-label="項目"
       bind:value={selected}
-      on:change={updateTopList}
+      on:change={updateRanking}
     >
     <option value="">集計する項目を選択してください</option>
       {#each catFields as f}

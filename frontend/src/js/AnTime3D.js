@@ -6,7 +6,7 @@ import { getFieldName } from "./define";
 
 let chart;
 
-export const show3DChart = (div, logs, xType, zType, colorType,dark) => {
+export const showTime3DChart = (div, logs, xType, zType, colorType,dark) => {
   const m = new Map()
   const colors = []
   logs.forEach((l) => {
@@ -142,6 +142,6 @@ export const show3DChart = (div, logs, xType, zType, colorType,dark) => {
   return data;
 }
 
-export const resize3DChart = () => {
+export const resizeTime3DChart = () => {
   chart.resize();
 }

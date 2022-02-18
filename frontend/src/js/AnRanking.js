@@ -3,7 +3,7 @@ import * as echarts from 'echarts'
 let chart;
 
 // 指定の値の出現回数
-export const getTopList = (logs, type) => {
+export const getRanking = (logs, type) => {
   const m = new Map();
   logs.forEach((l) => {
     const k = l.KeyValue[type];
@@ -26,7 +26,7 @@ export const getTopList = (logs, type) => {
   return r
 }
 
-export const showTopNChart = (div, list, max,dark) => {
+export const showRankingChart = (div, list, max,dark) => {
   const total = []
   const category = []
   for (let i = list.length > max ? max - 1 : list.length - 1; i >= 0; i--) {
@@ -86,6 +86,6 @@ export const showTopNChart = (div, list, max,dark) => {
   chart.resize();
 }
 
-export const resizeTopNChart = () => {
+export const resizeRankingChart = () => {
   chart.resize();
 }
