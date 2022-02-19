@@ -10,7 +10,8 @@
   import Ranking from "../Report/Ranking.svelte";
   import Time3D from "../Report/Time3D.svelte";
   import Cluster from "../Report/Cluster.svelte";
-import Histogram from "../Report/Histogram.svelte";
+  import Histogram from "../Report/Histogram.svelte";
+  import FFT from "../Report/FFT.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -150,6 +151,8 @@ import Histogram from "../Report/Histogram.svelte";
   <Cluster fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "histogram"}
   <Histogram fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "fft"}
+  <FFT fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">

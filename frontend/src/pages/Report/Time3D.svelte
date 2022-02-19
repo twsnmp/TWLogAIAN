@@ -12,9 +12,9 @@
   let dark = false;
   let numFields = [];
   let catFields = [];
-  let xType = "";
-  let zType = "";
-  let colorType = "";
+  let xField = "";
+  let zField = "";
+  let colorField = "";
 
   const dispatch = createEventDispatcher();
   let data = [];
@@ -41,11 +41,11 @@
   let pagination = false;
 
   const updateTime3DChart = async () => {
-    if( xType == "" || zType == "" || colorType == "" ){
+    if( xField == "" || zField == "" || colorField == "" ){
       return;
     }
     await tick();
-    data = showTime3DChart("chart", logs, xType,zType,colorType,dark);
+    data = showTime3DChart("chart", logs, xField,zField,colorField,dark);
     if (data.length > 10) {
       pagination = {
         limit: 10,
@@ -80,7 +80,7 @@
     <select
       class="form-select"
       aria-label="X軸"
-      bind:value={xType}
+      bind:value={xField}
       on:change="{updateTime3DChart}"
     >
       <option value="">X軸の項目を選択して下さい</option>
@@ -92,7 +92,7 @@
     <select
       class="form-select ml-2"
       aria-label="Z軸"
-      bind:value={zType}
+      bind:value={zField}
       on:change="{updateTime3DChart}"
     >
     <option value="">Z軸の項目を選択して下さい</option>
@@ -104,7 +104,7 @@
     <select
       class="form-select ml-2"
       aria-label="カラー"
-      bind:value={colorType}
+      bind:value={colorField}
       on:change="{updateTime3DChart}"
     >
       <option value="">色分けの項目を選択して下さい</option>

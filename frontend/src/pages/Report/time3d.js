@@ -79,7 +79,7 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
           '#4575b4',
           '#74add1',
           '#abd9e9',
-          '#e0f3f8',
+          '#d0e3e8',
           '#ffffbf',
           '#fee090',
           '#fdae61',
