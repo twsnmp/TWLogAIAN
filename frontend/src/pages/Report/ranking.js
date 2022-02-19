@@ -6,12 +6,7 @@ let chart;
 export const getRanking = (logs, type) => {
   const m = new Map();
   logs.forEach((l) => {
-    const k = l.KeyValue[type];
-    if (!k) {
-      console.log(type,k);
-      console.log(l.KeyValue);
-      return
-    }
+    const k = l.KeyValue[type] || "unknown";
     const e = m.get(k)
     if (!e) {
       m.set(k, {
