@@ -3,7 +3,7 @@
   import { getFieldName,getFields } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
-  import { showTime3DChart, resizeTime3DChart } from "../../js/AnTime3D";
+  import { showClusterChart, resizeClusterChart } from "./cluster";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
 
@@ -11,41 +11,42 @@
   export let fields = [];
   let dark = false;
   let numFields = [];
-  let catFields = [];
-  let xType = "";
-  let zType = "";
-  let colorType = "";
+  let xField = "";
+  let yField = "";
+  let cluster = 2;
 
   const dispatch = createEventDispatcher();
   let data = [];
   let columns = [
     {
-      name: "項目(X軸)",
-      width: "50%",
-    },
-    {
       name: "日時",
-      width: "30%",
-      formatter: (cell) => echarts.time.format(cell, '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
+      width: "60%",
+      formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
     },
     {
-      name: "値(Z軸）",
-      width: "10%",
+      name: "項目1",
+      width: "20%",
     },
     {
-      name: "値(カラー）",
-      width: "10%",
-    },
+      name: "項目2",
+      width: "20%",
+    }
   ];
 
   let pagination = false;
 
-  const updateTime3DChart = async () => {
-    if( xType == "" || zType == "" || colorType == "" ){
+  const updateCluster = async () => {
+    if( xField == "" || yField == "" ){
       return;
     }
     await tick();
-    data = showTime3DChart("chart", logs, xType,zType,colorType,dark);
+    showClusterChart("chart", logs,xField,yField,cluster * 1 || 2 ,dark);
+    data = [];
+    columns[1].name = getFieldName(xField) || xField;
+    columns[2].name = getFieldName(yField) || yField;
+    logs.forEach((l)=>{
+      data.push([l.Time,l.KeyValue[xField] || "",l.KeyValue[yField] || "" ])
+    });
     if (data.length > 10) {
       pagination = {
         limit: 10,
@@ -55,7 +56,6 @@
   };
 
   onMount(() => {
-    catFields = getFields(fields,"string");
     numFields = getFields(fields,"number");
     window.go.main.App.GetDark().then((v) => {
       dark = v;
@@ -63,7 +63,7 @@
   });
 
   const onResize = () => {
-    resizeTime3DChart();
+    resizeClusterChart();
   };
 
   const back = () => {
@@ -74,43 +74,41 @@
 
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+  <!-- svelte-ignore a11y-no-onchange -->
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">3D時系列分析</h3>
-    <!-- svelte-ignore a11y-no-onchange -->
+    <h3 class="Box-title overflow-hidden flex-auto">クラスター分析</h3>
     <select
       class="form-select"
-      aria-label="X軸"
-      bind:value={xType}
-      on:change="{updateTime3DChart}"
+      aria-label="X軸の項目"
+      bind:value={xField}
+      on:change="{updateCluster}"
     >
-      <option value="">X軸の項目を選択して下さい</option>
-      {#each catFields as f}
-        <option value={f}>{getFieldName(f)}</option>
-      {/each}
-    </select>
-    <!-- svelte-ignore a11y-no-onchange -->
-    <select
-      class="form-select ml-2"
-      aria-label="Z軸"
-      bind:value={zType}
-      on:change="{updateTime3DChart}"
-    >
-    <option value="">Z軸の項目を選択して下さい</option>
+    <option value="">X軸の項目を選択して下さい</option>
     {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
     </select>
-    <!-- svelte-ignore a11y-no-onchange -->
     <select
-      class="form-select ml-2"
-      aria-label="カラー"
-      bind:value={colorType}
-      on:change="{updateTime3DChart}"
+      class="form-select"
+      aria-label="Y軸の項目"
+      bind:value={yField}
+      on:change="{updateCluster}"
     >
-      <option value="">色分けの項目を選択して下さい</option>
+      <option value="">Y軸の項目を選択して下さい</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
+    </select>
+    <select
+      class="form-select ml-2"
+      aria-label="クラスター数"
+      bind:value={cluster}
+      on:change="{updateCluster}"
+    >
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
     </select>
   </div>
   <div class="Box-row">

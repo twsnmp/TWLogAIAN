@@ -1,9 +1,10 @@
 import * as echarts from 'echarts'
 import * as ecStat from 'echarts-stat'
+import { getFieldName } from "../../js/define";
 
 let chart;
 
-const makeClusterChart = (div,dark) => {
+const makeClusterChart = (div, xField, yField,dark) => {
   if (chart) {
     chart.dispose()
   }
@@ -31,9 +32,23 @@ const makeClusterChart = (div,dark) => {
     },
     xAxis: {
       type: 'value',
+      name: getFieldName(xField),
+      nameTextStyle: {
+        fontSize: 10,
+      },
+      axisLabel: {
+        fontSize: 8,
+      },
     },
     yAxis: {
       type: 'value',
+      name: getFieldName(yField),
+      nameTextStyle: {
+        fontSize: 10,
+      },
+      axisLabel: {
+        fontSize: 8,
+      },
     },
     series: [],
   }
@@ -42,11 +57,11 @@ const makeClusterChart = (div,dark) => {
 }
 
 
-export const showClusterChart = (div, logs, f1, f2, cluster, dark) => {
-  makeClusterChart(div,dark)
+export const showClusterChart = (div, logs, xField, yField, cluster, dark) => {
+  makeClusterChart(div,xField,yField,dark)
   const data = []
   logs.forEach((l) => {
-    data.push([ l.KeyValue[f1] || 0.0, l.KeyValue[f2] || 0.0 ])
+    data.push([ l.KeyValue[xField] || 0.0, l.KeyValue[yField] || 0.0 ])
   })
   const result = ecStat.clustering.hierarchicalKMeans(data, {
     clusterCount: cluster,

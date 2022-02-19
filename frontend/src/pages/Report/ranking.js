@@ -8,7 +8,8 @@ export const getRanking = (logs, type) => {
   logs.forEach((l) => {
     const k = l.KeyValue[type];
     if (!k) {
-      console.log(k, l);
+      console.log(type,k);
+      console.log(l.KeyValue);
       return
     }
     const e = m.get(k)
@@ -58,6 +59,14 @@ export const showRankingChart = (div, list, max,dark) => {
     xAxis: {
       type: 'value',
       name: '件数',
+      nameTextStyle: {
+        fontSize: 10,
+        margin: 2,
+      },
+      axisLabel: {
+        fontSize: 8,
+        margin: 2,
+      },
     },
     yAxis: {
       type: 'category',
@@ -65,10 +74,6 @@ export const showRankingChart = (div, list, max,dark) => {
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
-      },
-      axisLine: {
-        lineStyle: {
-        },
       },
       axisLabel: {
         fontSize: 8,

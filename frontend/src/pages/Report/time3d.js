@@ -2,18 +2,18 @@
 import * as echarts from 'echarts'
 import 'echarts-gl'
 import * as ecStat from 'echarts-stat'
-import { getFieldName } from "./define";
+import { getFieldName } from "../../js/define";
 
 let chart;
 
-export const showTime3DChart = (div, logs, xType, zType, colorType,dark) => {
+export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
   const m = new Map()
   const colors = []
   logs.forEach((l) => {
     const t = new Date(l.Time / (1000 *1000))
-    const x = l.KeyValue[xType] || "";
-    const z = l.KeyValue[zType] ? l.KeyValue[zType]  * 1 : 0.0;
-    const c = l.KeyValue[colorType] ? l.KeyValue[colorType] * 1 : 0.0;
+    const x = l.KeyValue[xField] || "";
+    const z = l.KeyValue[zField] ? l.KeyValue[zField]  * 1 : 0.0;
+    const c = l.KeyValue[colorField] ? l.KeyValue[colorField] * 1 : 0.0;
     colors.push(c)
     const e = m.get(x)
     if (!e) {
@@ -61,7 +61,20 @@ export const showTime3DChart = (div, logs, xType, zType, colorType,dark) => {
       max: ecStat.statistics.max(colors),
       dimension: 3,
       inRange: {
-        color: [
+        color: dark ?
+        [
+          '#383899',
+          '#4575b4',
+          '#74add1',
+          '#abd9e9',
+          '#e0f3f8',
+          '#ffffbf',
+          '#fee090',
+          '#fdae61',
+          '#f46d43',
+          '#d73027',
+          '#ab0026',
+        ]  : [
           '#313695',
           '#4575b4',
           '#74add1',
@@ -78,7 +91,7 @@ export const showTime3DChart = (div, logs, xType, zType, colorType,dark) => {
     },
     xAxis3D: {
       type: 'category',
-      name: getFieldName(xType),
+      name: getFieldName(xField),
       data: cat,
       nameTextStyle: {
         fontSize: 10,
@@ -110,7 +123,7 @@ export const showTime3DChart = (div, logs, xType, zType, colorType,dark) => {
     },
     zAxis3D: {
       type: 'value',
-      name: getFieldName(zType),
+      name: getFieldName(zField),
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -132,7 +145,7 @@ export const showTime3DChart = (div, logs, xType, zType, colorType,dark) => {
         name: '3D集計',
         type: 'scatter3D',
         symbolSize: 4,
-        dimensions: [xType, 'Time', zType, colorType],
+        dimensions: [xField, 'Time', zField, colorField],
         data,
       },
     ],

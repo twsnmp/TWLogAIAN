@@ -3,13 +3,13 @@
   import Query from "./Query.svelte"
   import Result from "./Result.svelte"
   import { createEventDispatcher,onMount, tick } from "svelte";
-  import {showLogChart,resizeLogChart} from "../../js/logchart";
+  import {showLogChart,resizeLogChart} from "./logchart";
+  import { getLogData,getLogColums } from "./logview";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
-  import { getLogData,getLogColums } from "../../js/logview";
-  import AnRanking from "../Report/AnRanking.svelte";
-  import AnTime3D from "../Report/AnTime3D.svelte";
-  import AnCluster from "../Report/AnCluster.svelte";
+  import Ranking from "../Report/Ranking.svelte";
+  import Time3D from "../Report/Time3D.svelte";
+  import Cluster from "../Report/Cluster.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -142,11 +142,11 @@
 {#if page == "result"}
   <Result {indexInfo} on:done={handleDone} />
 {:else if page == "ranking"}
-  <AnRanking fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+  <Ranking fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "time3d"}
-  <AnTime3D fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+  <Time3D fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "cluster"}
-  <AnCluster fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+  <Cluster fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">

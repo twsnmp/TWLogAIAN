@@ -2,7 +2,7 @@
   import { getFields, getFieldName } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
-  import { getRanking, showRankingChart, resizeRankingChart } from "../../js/AnRanking";
+  import { getRanking, showRankingChart, resizeRankingChart } from "./ranking";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
 
