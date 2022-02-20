@@ -13,6 +13,7 @@
   import Histogram from "../Report/Histogram.svelte";
   import FFT from "../Report/FFT.svelte";
   import World from "../Report/World.svelte";
+  import Graph from "../Report/Graph.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -156,6 +157,8 @@
   <FFT fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "world"}
   <World fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "graph"}
+  <Graph fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
