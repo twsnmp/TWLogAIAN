@@ -35,7 +35,8 @@
     "numeral": "^2.0.6",
     "p5-svelte": "^2.2.2",
     "sirv-cli": "^1.0.0",
-    "svelte-octicons": "^17.1.0"
+    "svelte-octicons": "^17.1.0",
+    "world-map-geojson": "^1.0.2"
   },
   "author": "twsnmp"
 }

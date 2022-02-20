@@ -12,6 +12,7 @@
   import Cluster from "../Report/Cluster.svelte";
   import Histogram from "../Report/Histogram.svelte";
   import FFT from "../Report/FFT.svelte";
+  import World from "../Report/World.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -153,6 +154,8 @@
   <Histogram fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "fft"}
   <FFT fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "world"}
+  <World fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
@@ -234,15 +237,13 @@
           <select class="form-select" bind:value={report} on:change="{showReport}">
             <option value="">レポート選択</option>
             <option value="ranking">ランキング分析</option>
+            <option value="time">時系列分析</option>
             <option value="time3d">時系列3D分析</option>
             <option value="cluster">クラスター分析</option>
             <option value="histogram">ヒストグラム分析</option>
             <option value="fft">FFT分析</option>
-            <option value="world">世界地図分析</option>
-            <option value="globe">地球儀</option>
-            <option value="fgraph">グラフ(力学モデル)</option>
-            <option value="cgraph">グラフ(円形)</option>
-            <option value="3dgraph">グラフ(3D)</option>
+            <option value="world">位置情報分析</option>
+            <option value="graph">グラフ分析</option>
           </select>
         {/if}
         <button class="btn  btn-secondary" type="button" on:click={()=> { page = "result"}}>
