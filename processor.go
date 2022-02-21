@@ -476,6 +476,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			KeyValue: make(map[string]interface{}),
 			All:      l,
 		}
+		delta := int64(0)
 		if b.processConf.Extractor != nil {
 			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
@@ -541,6 +542,9 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 					}
 				}
 			}
+			if lastTime > 0 {
+				delta = ts.UnixNano() - lastTime
+			}
 			lastTime = ts.UnixNano()
 		} else {
 			ts, ok, err := b.processConf.TimeGrinder.Extract([]byte(l))
@@ -551,6 +555,9 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 					continue
 				}
 			} else if ok {
+				if lastTime > 0 {
+					delta = ts.UnixNano() - lastTime
+				}
 				lastTime = ts.UnixNano()
 			} else {
 				// wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
@@ -558,6 +565,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			}
 		}
 		log.Time = lastTime
+		log.KeyValue["delta"] = float64(delta) / (1000.0 * 1000.0 * 1000.0)
 		b.indexer.logCh <- &log
 		lf.Send += int64(len(l))
 	}

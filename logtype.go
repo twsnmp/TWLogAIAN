@@ -87,6 +87,7 @@ var fieldTypes = map[string]*FieldType{
 	"facility":             {Name: "ファシリティー", Type: "string"},
 	"pid":                  {Name: "PID", Type: "number"},
 	"program":              {Name: "プロセス名", Type: "string"},
+	"delta":                {Name: "前ログとの時間差", Type: "number"},
 }
 
 func setFieldTypes(l *LogEnt) {
