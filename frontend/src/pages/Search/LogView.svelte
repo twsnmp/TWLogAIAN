@@ -9,6 +9,7 @@
   import jaJP from "../../js/gridjsJaJP";
   import Ranking from "../Report/Ranking.svelte";
   import Time3D from "../Report/Time3D.svelte";
+  import Time from "../Report/Time.svelte";
   import Cluster from "../Report/Cluster.svelte";
   import Histogram from "../Report/Histogram.svelte";
   import FFT from "../Report/FFT.svelte";
@@ -148,6 +149,8 @@
   <Result {indexInfo} on:done={handleDone} />
 {:else if page == "ranking"}
   <Ranking fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "time"}
+  <Time fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "time3d"}
   <Time3D fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "cluster"}
@@ -268,7 +271,7 @@
 <style>
   #chart {
     width: 100%;
-    height: 180px;
+    height: 220px;
     margin: 5px auto;
   }
 </style>

@@ -29,7 +29,7 @@ func main() {
 	err := wails.Run(&options.App{
 		Title:     "AIアシストログ分析ツール(TWLogAIAN)",
 		Width:     1024,
-		Height:    800,
+		Height:    900,
 		MinWidth:  720,
 		MinHeight: 570,
 		// MaxWidth:          1280,
