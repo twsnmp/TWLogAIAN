@@ -4,7 +4,7 @@ import WorldData from 'world-map-geojson'
 
 let chart;
 
-export const showWorldMap = (div, logs,geoFiled,numField,dark) => {
+export const showWorldMap = (div, logs,geoField,numField,dark) => {
   if (chart) {
     chart.dispose()
   }
@@ -15,7 +15,7 @@ export const showWorldMap = (div, logs,geoFiled,numField,dark) => {
     if (m.length > 10000) {
       return
     }
-    const latlong = l.KeyValue[geoFiled  +"_latlong"];
+    const latlong = l.KeyValue[geoField  +"_latlong"];
     if (!latlong || !latlong.includes(",")) {
       return;
     }
@@ -25,8 +25,8 @@ export const showWorldMap = (div, logs,geoFiled,numField,dark) => {
       m.set(latlong,{
         count: 1,
         value: v,
-        country:l.KeyValue[geoFiled  +"_country"] || "",
-        city: l.KeyValue[geoFiled  +"_city"] || "",
+        country:l.KeyValue[geoField  +"_country"] || "",
+        city: l.KeyValue[geoField  +"_city"] || "",
       });
     } else {
       e.count++;

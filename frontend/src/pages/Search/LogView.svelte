@@ -14,6 +14,7 @@
   import FFT from "../Report/FFT.svelte";
   import World from "../Report/World.svelte";
   import Graph from "../Report/Graph.svelte";
+  import Globe from "../Report/Globe.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -159,6 +160,8 @@
   <World fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else if page == "graph"}
   <Graph fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
+{:else if page == "globe"}
+  <Globe fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone}/>
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
       <div class="Box-header d-flex flex-items-center">
@@ -246,7 +249,8 @@
             <option value="histogram">ヒストグラム分析</option>
             <option value="fft">FFT分析</option>
             <option value="world">位置情報分析</option>
-            <option value="graph">グラフ分析</option>
+            <option value="graph">グラフ（フロー）分析</option>
+            <option value="globe">フロー分析（地球儀)</option>
           </select>
         {/if}
         <button class="btn  btn-secondary" type="button" on:click={()=> { page = "result"}}>
