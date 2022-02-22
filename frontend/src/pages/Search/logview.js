@@ -22,6 +22,7 @@ const columnsTimeOnly = [
     name: "日時",
     width: "20%",
     formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
+    convert: true,
   },{
     name: "ログ",
     width: "70%",
@@ -36,6 +37,7 @@ const columnsSyslog = [
     name: "日時",
     width: "15%",
     formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
+    convert: true,
   },{
     name: "送信元",
     width: "15%",
@@ -60,6 +62,7 @@ const columnsAccessLog = [
     name: "日時",
     width: "15%",
     formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
+    convert: true,
   },{
     name: "リクエスト",
     width: "10%",

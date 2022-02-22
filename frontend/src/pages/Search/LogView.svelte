@@ -125,6 +125,36 @@
     showLogChart("chart",result,dark);
   };
 
+  let exportType = '';
+  let saveBusy = false;
+  const exportLogs = () => {
+    if (exportType == "") {
+      return;
+    }
+    saveBusy = true;
+    const exportData = {
+      Type: "ログ",
+      Title: "ログ分析",
+      Header: [],
+      Data: [],
+    };
+    columns.forEach((e)=>{
+      exportData.Header.push(e.name);
+    });
+    data.forEach((l)=>{
+      const row = [];
+      l.forEach((e,i)=>{
+        const v = columns[i] && columns[i].convert && columns[i].formatter ? columns[i].formatter(e) : e;
+        row.push(v);
+      });
+      exportData.Data.push(row);
+    });
+    window.go.main.App.Export(exportType,exportData).then(()=>{
+      saveBusy = false;
+      exportType = "";
+    });
+  }
+
   const onResize = () => {
     if(pagination) {
       pagination.limit = getTableLimit();
@@ -227,7 +257,7 @@
             {:else }
               <button class="btn btn-primary ml-2" aria-disabled="true">
                 <Search16 />
-                <span>検索</span><span class="AnimatedEllipsis"></span>
+                <span>検索中</span><span class="AnimatedEllipsis"></span>
               </button>
             {/if}
           </div>
@@ -246,6 +276,16 @@
       </div>
       <div class="Box-footer text-right">
         {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
+          <!-- svelte-ignore a11y-no-onchange -->
+          {#if saveBusy}
+            <span>保存中</span><span class="AnimatedEllipsis"></span>
+          {:else}
+            <select class="form-select" bind:value={exportType} on:change="{exportLogs}">
+              <option value="">エクスポート</option>
+              <option value="csv">CSV</option>
+              <option value="excel">Excel</option>
+            </select>
+          {/if}
           <!-- svelte-ignore a11y-no-onchange -->
           <select class="form-select" bind:value={report} on:change="{showReport}">
             <option value="">レポート選択</option>
