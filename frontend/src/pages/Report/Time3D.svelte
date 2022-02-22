@@ -1,6 +1,6 @@
 <script>
   import * as echarts from 'echarts'
-  import { getFieldName,getFields } from "../../js/define";
+  import { getFieldName,getFields,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showTime3DChart, resizeTime3DChart } from "./time3d";
@@ -48,9 +48,11 @@
     data = showTime3DChart("chart", logs, xField,zField,colorField,dark);
     if (data.length > 10) {
       pagination = {
-        limit: 10,
+        limit: getTableLimit(),
         enable: true,
       };
+    } else {
+      pagination = false;
     }
   };
 
@@ -63,6 +65,9 @@
   });
 
   const onResize = () => {
+    if(pagination) {
+      pagination.limit = getTableLimit();
+    }
     resizeTime3DChart();
   };
 

@@ -16,6 +16,7 @@
   import World from "../Report/World.svelte";
   import Graph from "../Report/Graph.svelte";
   import Globe from "../Report/Globe.svelte";
+  import { getTableLimit } from "../../js/define";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -76,9 +77,9 @@
         result = r;
         columns = getLogColums(r.View);
         data = getLogData(r);
-        if (r.Logs.length > 20) {
+        if (r.Logs.length > 10) {
           pagination = {
-            limit: 10,
+            limit: getTableLimit(),
             enable: true,
           };
         } else {
@@ -125,6 +126,9 @@
   };
 
   const onResize = () => {
+    if(pagination) {
+      pagination.limit = getTableLimit();
+    }
     resizeLogChart();
   };
 

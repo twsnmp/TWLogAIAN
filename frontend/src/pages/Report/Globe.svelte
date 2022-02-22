@@ -1,5 +1,5 @@
 <script>
-  import { getFieldName,getFields } from "../../js/define";
+  import { getFieldName,getFields,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showGlobe, resizeGlobe } from "./globe";
@@ -53,9 +53,11 @@
     });
     if (data.length > 10) {
       pagination = {
-        limit: 10,
+        limit: getTableLimit(),
         enable: true,
       };
+    } else {
+      pagination = false;
     }
   }
 
@@ -75,6 +77,9 @@
   });
 
   const onResize = () => {
+    if(pagination) {
+      pagination.limit = getTableLimit();
+    }
     resizeGlobe();
   };
 

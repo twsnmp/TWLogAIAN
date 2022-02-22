@@ -1,5 +1,5 @@
 <script>
-  import { getFields, getFieldName } from "../../js/define";
+  import { getFields, getFieldName,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { getRanking, showRankingChart, resizeRankingChart } from "./ranking";
@@ -40,9 +40,11 @@
     showRankingChart("chart", list, 50,dark);
     if (list.length > 10) {
       pagination = {
-        limit: 10,
+        limit: getTableLimit(),
         enable: true,
       };
+    } else {
+      pagination = false;
     }
     data = [];
     for (let i = 0; i < list.length; i++) {
@@ -62,6 +64,9 @@
   });
 
   const onResize = () => {
+    if(pagination) {
+      pagination.limit = getTableLimit();
+    }
     resizeRankingChart();
   };
 

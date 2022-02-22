@@ -25,3 +25,9 @@ export const getFields = (fields,t) => {
   return ret;
 }
 
+export const getTableLimit = () => {
+  if(window.innerHeight > 880) {
+    return 10 + Math.floor((window.innerHeight - 880 ) /25);
+  }
+  return 10;
+}

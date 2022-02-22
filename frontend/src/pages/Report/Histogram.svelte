@@ -1,6 +1,6 @@
 <script>
   import * as echarts from 'echarts'
-  import { getFields, getFieldName } from "../../js/define";
+  import { getFields, getFieldName,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showHistogramChart, resizeHistogramChart } from "./histogram";
@@ -50,9 +50,11 @@
     });
     if (data.length > 10) {
       pagination = {
-        limit: 10,
+        limit: getTableLimit(),
         enable: true,
       };
+    } else {
+      pagination = false;
     }
   };
 
@@ -68,6 +70,9 @@
   });
 
   const onResize = () => {
+    if(pagination) {
+      pagination.limit = getTableLimit();
+    }
     resizeHistogramChart();
   };
 

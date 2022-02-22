@@ -1,6 +1,6 @@
 <script>
   import * as echarts from "echarts";
-  import { getFieldName, getFields } from "../../js/define";
+  import { getFieldName, getFields,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { getFFTMap, showFFTChart, resizeFFTChart } from "./fft";
@@ -62,9 +62,11 @@
     });
     if (data.length > 10) {
       pagination = {
-        limit: 10,
+        limit: getTableLimit(),
         enable: true,
       };
+    } else {
+      pagination = false;
     }
     updateFFTChart();
   };
@@ -85,6 +87,9 @@
   });
 
   const onResize = () => {
+    if(pagination) {
+      pagination.limit = getTableLimit();
+    }
     resizeFFTChart();
   };
 
