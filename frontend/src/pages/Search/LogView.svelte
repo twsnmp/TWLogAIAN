@@ -3,7 +3,7 @@
   import Query from "./Query.svelte"
   import Result from "./Result.svelte"
   import { createEventDispatcher,onMount, tick } from "svelte";
-  import {showLogChart,resizeLogChart} from "./logchart";
+  import {showLogChart,resizeLogChart, getLogChartImage} from "./logchart";
   import { getLogData,getLogColums } from "./logview";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
@@ -137,7 +137,11 @@
       Title: "ログ分析",
       Header: [],
       Data: [],
+      Image: "",
     };
+    if (exportType == "excel") {
+      exportData.Image = getLogChartImage();
+    }
     columns.forEach((e)=>{
       exportData.Header.push(e.name);
     });

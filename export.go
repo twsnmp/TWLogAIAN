@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/csv"
 	"fmt"
+	_ "image/png"
 	"os"
+	"strings"
 	"time"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -15,7 +18,7 @@ type ExportData struct {
 	Title  string
 	Header []string
 	Data   [][]interface{}
-	Image  []byte
+	Image  string
 }
 
 func (b *App) Export(exportType string, data *ExportData) string {
@@ -63,8 +66,13 @@ func (b *App) exportExcel(data *ExportData) error {
 		}
 		row++
 	}
-	if len(data.Image) > 0 {
-		f.AddPictureFromBytes("Sheet1", fmt.Sprintf("%c2", imgCol), "", data.Type, "*.png", data.Image)
+	if data.Image != "" {
+		b64data := data.Image[strings.IndexByte(data.Image, ',')+1:]
+		img, err := base64.StdEncoding.DecodeString(b64data)
+		if err != nil {
+			return err
+		}
+		f.AddPictureFromBytes("Sheet1", fmt.Sprintf("%c2", imgCol), "", data.Type, ".png", img)
 	}
 	if err := f.SaveAs(file); err != nil {
 		return err

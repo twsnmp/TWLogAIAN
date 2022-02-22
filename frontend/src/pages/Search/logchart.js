@@ -318,3 +318,10 @@ export const resizeLogChart = () => {
     chart.resize()
   }
 }
+
+export const getLogChartImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}
