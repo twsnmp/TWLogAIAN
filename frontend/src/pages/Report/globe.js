@@ -115,3 +115,10 @@ export const showGlobe = (div, logs, srcField, dstField,numField, dark) => {
 export const resizeGlobe = () => {
   chart.resize();
 }
+
+export const getGlobeImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}

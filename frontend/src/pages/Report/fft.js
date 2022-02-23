@@ -307,3 +307,10 @@ const showFFT3DChart = (field,fftMap, fftType,dark) => {
 export const resizeFFTChart = () => {
   chart.resize();
 }
+
+export const getFFTChartImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}

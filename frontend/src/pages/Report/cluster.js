@@ -115,3 +115,10 @@ export const showClusterChart = (div, logs, xField, yField, cluster, dark) => {
 export const resizeClusterChart = () => {
   chart.resize();
 }
+
+export const getClusterChartImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}

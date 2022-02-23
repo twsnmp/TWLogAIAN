@@ -3,7 +3,7 @@
   import { getFieldName,getFields,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
-  import { showTime3DChart, resizeTime3DChart } from "./time3d";
+  import { showTime3DChart, resizeTime3DChart,getTime3DChartImage } from "./time3d";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
 
@@ -63,6 +63,40 @@
       dark = v;
     });
   });
+
+  let exportType = '';
+  let saveBusy = false;
+  const exportReport = () => {
+    if (exportType == "") {
+      return;
+    }
+    saveBusy = true;
+    const exportData = {
+      Type: "時系列3D分析",
+      Title: "時系列3D分析",
+      Header: [],
+      Data: [],
+      Image: "",
+    };
+    if (exportType == "excel") {
+      exportData.Image = getTime3DChartImage();
+    }
+    columns.forEach((e)=>{
+      exportData.Header.push(e.name);
+    });
+    data.forEach((l)=>{
+      const row = [];
+      l.forEach((e,i)=>{
+        const v = columns[i] && columns[i].formatter ? columns[i].formatter(e) : e;
+        row.push(v);
+      });
+      exportData.Data.push(row);
+    });
+    window.go.main.App.Export(exportType,exportData).then(()=>{
+      saveBusy = false;
+      exportType = "";
+    });
+  }
 
   const onResize = () => {
     if(pagination) {
@@ -125,6 +159,18 @@
     <Grid {data} sort search {pagination} {columns} language={jaJP} />
   </div>
   <div class="Box-footer text-right">
+    {#if data.length > 0}
+      <!-- svelte-ignore a11y-no-onchange -->
+      {#if saveBusy}
+        <span>保存中</span><span class="AnimatedEllipsis"></span>
+      {:else}
+        <select class="form-select" bind:value={exportType} on:change="{exportReport}">
+          <option value="">エクスポート</option>
+          <option value="csv">CSV</option>
+          <option value="excel">Excel</option>
+        </select>
+      {/if}
+    {/if}
     <button class="btn  btn-secondary" type="button" on:click={back}>
       <X16 />
       戻る

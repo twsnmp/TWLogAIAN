@@ -157,3 +157,10 @@ export const showTimeChart = (
 export const resizeTimeChart = () => {
   chart.resize();
 };
+
+export const getTimeChartImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}

@@ -158,3 +158,10 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
 export const resizeTime3DChart = () => {
   chart.resize();
 }
+
+export const getTime3DChartImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}

@@ -214,3 +214,10 @@ export const showGraph = (div, logs, srcField,dstField,numField,type,dark) => {
 export const resizeGraph = () => {
   chart.resize();
 }
+
+export const getGraphImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}

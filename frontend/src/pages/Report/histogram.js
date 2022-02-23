@@ -81,3 +81,10 @@ export const showHistogramChart = (div, logs, field, dark) => {
 export const resizeHistogramChart = () => {
   chart.resize();
 }
+
+export const getHistogramChartImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}

@@ -154,3 +154,10 @@ export const showWorldMap = (div, logs,geoField,numField,dark) => {
 export const resizeWorldMap = () => {
   chart.resize();
 }
+
+export const getWorldMapImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}

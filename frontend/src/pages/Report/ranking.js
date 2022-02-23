@@ -89,3 +89,10 @@ export const showRankingChart = (div, list, max,dark) => {
 export const resizeRankingChart = () => {
   chart.resize();
 }
+
+export const getRankingChartImage = () => {
+  if (chart) {
+    return chart.getDataURL({ type:"png"});
+  }
+  return [];
+}
