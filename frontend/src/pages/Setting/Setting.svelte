@@ -1,9 +1,10 @@
 <script>
-  import { X16, Plus16, Check16, File16 } from "svelte-octicons";
+  import { X16, Plus16, Check16, File16,Checklist16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
   import LogSource from "./LogSource.svelte";
+  import GrokTest from "./GrokTest.svelte";
   import { onMount } from "svelte";
   import jaJP from "../../js/gridjsJaJP";
   const dispatch = createEventDispatcher();
@@ -38,7 +39,7 @@
   let logSources = [];
   let errorMsg = "";
   let infoMsg = "";
-  let edit = false;
+  let page = "";
 
   const getConfig = () => {
     window.go.main.App.GetConfig().then((c) => {
@@ -107,7 +108,7 @@
     } else {
       logSource = logSources[no - 1];
     }
-    edit = true;
+    page = "edit";
   };
 
   const formatLogSourceType = (t) => {
@@ -212,13 +213,20 @@
     if (e && e.detail && e.detail.update) {
       getLogSources();
     }
-    edit = false;
+    if (e && e.detail && e.detail.grok) {
+      config.Grok = e.detail.grok;
+      config.Extractor = "custom";
+    }
+    page = "";
   };
+
 </script>
 
-<div class="Box mx-auto Box--condensed" style="max-width: 800px;">
-  {#if edit}
+<div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+  {#if page == "edit" }
     <LogSource {logSource} on:done={handleDone} />
+  {:else if page =="grok" }
+    <GrokTest {extractorTypes} grok={config.Grok} on:done="{handleDone}" />
   {:else}
     <div class="Box-header">
       <h3 class="Box-title">ログ分析の設定</h3>
@@ -484,11 +492,15 @@
       </form>
     </div>
     <div class="Box-footer text-right">
-      <button class="btn  btn-secondary" type="button" on:click={cancel}>
+      <button class="btn btn-outline mr-2" type="button" on:click={()=>{page="grok"}}>
+        <Checklist16 />
+        抽出テスト
+      </button>
+      <button class="btn btn-secondary mr-2" type="button" on:click={cancel}>
         <X16 />
         キャンセル
       </button>
-      <button class="btn btn-primary ml-2" type="button" on:click={start}>
+      <button class="btn btn-primary" type="button" on:click={start}>
         <Check16 />
         開始
       </button>

@@ -284,15 +284,15 @@
           {#if saveBusy}
             <span>保存中</span><span class="AnimatedEllipsis"></span>
           {:else}
-            <select class="form-select" bind:value={exportType} on:change="{exportLogs}">
+            <select class="form-select mr-2" bind:value={exportType} on:change="{exportLogs}">
               <option value="">エクスポート</option>
               <option value="csv">CSV</option>
               <option value="excel">Excel</option>
             </select>
           {/if}
           <!-- svelte-ignore a11y-no-onchange -->
-          <select class="form-select" bind:value={report} on:change="{showReport}">
-            <option value="">レポート選択</option>
+          <select class="form-select mr-2" bind:value={report} on:change="{showReport}">
+            <option value="">レポート</option>
             <option value="ranking">ランキング分析</option>
             <option value="time">時系列分析</option>
             <option value="time3d">時系列3D分析</option>
@@ -304,7 +304,7 @@
             <option value="globe">フロー分析（地球儀)</option>
           </select>
         {/if}
-        <button class="btn  btn-secondary" type="button" on:click={()=> { page = "result"}}>
+        <button class="btn  btn-outline mr-2" type="button" on:click={()=> { page = "result"}}>
           <Check16 />
           処理結果
         </button>

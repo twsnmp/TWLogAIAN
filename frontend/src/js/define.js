@@ -8,11 +8,22 @@ window.go.main.App.GetFieldTypes().then((r) =>{
 });
 
 export const getFieldName = (f) => {
+  if (f=="") {
+    return "";
+  }
   return fieldTypes[f] ? fieldTypes[f].Name : f + "(未定義)";
 };
 
 export const getFieldType = (f) => {
   return fieldTypes[f] ? fieldTypes[f].Type : "string";
+};
+
+export const getFieldUnit = (f) => {
+  return fieldTypes[f] ? fieldTypes[f].Unit : "";
+};
+
+export const isFieldValid = (f) => {
+  return fieldTypes[f] ? true : false;
 };
 
 export const getFields = (fields,t) => {

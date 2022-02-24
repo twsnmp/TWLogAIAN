@@ -191,7 +191,7 @@
         </select>
       {/if}
     {/if}
-    <button class="btn  btn-secondary" type="button" on:click={back}>
+    <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
       戻る
     </button>

@@ -96,11 +96,11 @@
     </form>
   </div>
   <div class="Box-footer text-right">
-    <button class="btn btn-secondary" type="button" on:click={cancel}>
+    <button class="btn btn-secondary mr-2" type="button" on:click={cancel}>
       <X16 />
       キャンセル
     </button>
-    <button class="btn btn-primary ml-2" type="button" on:click={setWorkDir}>
+    <button class="btn btn-primary" type="button" on:click={setWorkDir}>
       <Check16 />
       選択
     </button>

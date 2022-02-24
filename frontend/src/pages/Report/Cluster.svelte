@@ -124,8 +124,8 @@
     >
     <option value="">X軸の項目を選択して下さい</option>
     {#each numFields as f}
-        <option value={f}>{getFieldName(f)}</option>
-      {/each}
+      <option value={f}>{getFieldName(f)}</option>
+    {/each}
     </select>
     <select
       class="form-select"
@@ -169,7 +169,7 @@
         </select>
       {/if}
     {/if}
-    <button class="btn  btn-secondary" type="button" on:click={back}>
+    <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
       戻る
     </button>

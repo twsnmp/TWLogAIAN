@@ -36,7 +36,7 @@
     <h3 class="Box-title">フィードバック</h3>
   </div>
   {#if feedbackWait}
-    <div class="flash">フィードバックを送信中</div>
+    <div class="flash">フィードバックを送信中<span class="AnimatedEllipsis"></span></div>
   {:else if feedbackErr}
     <div class="flash flash-error">
       フィードバックの送信に失敗しました
@@ -80,16 +80,16 @@
   </div>
   <div class="Box-footer text-right">
     {#if !feedbackWait}
+      <button class="btn btn-secondary mr-2" type="button" on:click={close}>
+        <X16 />
+        キャンセル
+      </button>
       {#if feedbackMsg != ""}
-        <button class="btn btn-primary mr-1" type="button" on:click={sendFeedBack}>
+        <button class="btn btn-primary" type="button" on:click={sendFeedBack}>
           <PaperAirplane16 />
           送信
         </button>
       {/if}
-      <button class="btn" type="button btn-secondary" on:click={close}>
-        <X16 />
-        閉じる
-      </button>
     {/if}
   </div>
 </div>

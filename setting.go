@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/viant/afs/storage"
+	"github.com/vjeantet/grok"
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.etcd.io/bbolt"
 )
@@ -260,4 +263,75 @@ func (b *App) DeleteLogSource(no int) string {
 		b.logSources = append(b.logSources, e)
 	}
 	return ""
+}
+
+type TestGrokResp struct {
+	ErrorMsg string
+	Fields   []string
+	Data     [][]string
+}
+
+// TestGrok : 抽出パターンのテストを行う
+func (b *App) TestGrok(p, testData string) TestGrokResp {
+	ret := TestGrokResp{
+		Fields: []string{},
+		Data:   [][]string{},
+	}
+	config := grok.Config{
+		Patterns:          make(map[string]string),
+		NamedCapturesOnly: true,
+	}
+	config.Patterns["TWLOGAIAN"] = p
+	g, err := grok.NewWithConfig(&config)
+	if err != nil {
+		wails.LogError(b.ctx, err.Error())
+		ret.ErrorMsg = err.Error()
+		return ret
+	}
+	skip := 0
+	total := 0
+	ln := 0
+	for _, l := range strings.Split(testData, "\n") {
+		ln++
+		if strings.TrimSpace(l) == "" {
+			continue
+		}
+		total++
+		values, err := g.Parse("%{TWLOGAIAN}", l)
+		if err != nil {
+			ret.ErrorMsg = fmt.Sprintf("%d行目のエラー:%v", ln, err)
+			break
+		} else if len(values) > 0 {
+			if len(ret.Fields) < 1 {
+				for k := range values {
+					ret.Fields = append(ret.Fields, k)
+				}
+				sort.Strings(ret.Fields)
+			}
+			ent := []string{}
+			for _, k := range ret.Fields {
+				ent = append(ent, values[k])
+			}
+			ret.Data = append(ret.Data, ent)
+		} else {
+			wails.LogDebug(b.ctx, "skip="+l)
+			skip++
+		}
+	}
+	if skip > 0 {
+		ret.ErrorMsg = fmt.Sprintf("全%d行中%d行が対象外でした", total, skip)
+	}
+	return ret
+}
+
+type AutoGrokResp struct {
+	ErrorMsg string
+	Grok     string
+}
+
+// AutoGrok : 抽出パターンを自動生成する
+func (b *App) AutoGrok(testData string) AutoGrokResp {
+	ret := AutoGrokResp{}
+	// 中身は後で考える
+	return ret
 }

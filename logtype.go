@@ -30,6 +30,13 @@ var extractorTypes = []ExtractorType{
 		View:      "syslog",
 	},
 	{
+		Key:       "syslog",
+		Name:      "syslog(BSD/文字列PRI付き)",
+		TimeField: "timestamp",
+		Grok:      `%{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:logsource}\s+%{NOTSPACE:facility_str}\.%{NOTSPACE:severity_str}\s+%{SYSLOGPROG}:\s+%{GREEDYDATA:message}`,
+		View:      "syslog",
+	},
+	{
 		Key:       "syslogIETF",
 		Name:      "syslog(IETF)",
 		TimeField: "timestamp",
@@ -81,13 +88,15 @@ var fieldTypes = map[string]*FieldType{
 	"clientip_geo_city":    {Name: "クライアント都市", Type: "string"},
 	"clientip_geo_country": {Name: "クライアントの国", Type: "string"},
 	"clientip_host":        {Name: "クライアントのホスト名", Type: "string"},
-	"priority":             {Name: "プライオリティー", Type: "string"},
+	"priority":             {Name: "プライオリティー", Type: "number"},
 	"logsource":            {Name: "ログ送信元", Type: "string"},
 	"message":              {Name: "メッセージ", Type: "string"},
-	"facility":             {Name: "ファシリティー", Type: "string"},
+	"facility":             {Name: "ファシリティー", Type: "number"},
 	"pid":                  {Name: "PID", Type: "number"},
 	"program":              {Name: "プロセス名", Type: "string"},
 	"delta":                {Name: "前ログとの時間差", Type: "number"},
+	"facility_str":         {Name: "ファシリティー", Type: "string"},
+	"severity_str":         {Name: "優先度", Type: "string"},
 }
 
 func setFieldTypes(l *LogEnt) {

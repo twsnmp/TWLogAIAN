@@ -69,7 +69,7 @@
       >
         GitHUB
       </a>にあります。<br />
-      バグや要望は＜フィードバック＞か
+      バグや要望は「フィードバック」か
       <a
         href="##"
         on:click={() => {
@@ -86,13 +86,13 @@
     </div>
   </div>
   <div class="Box-footer text-right">
-    <button class="btn btn-primary mr-1" type="button" on:click={workdir}>
-      <MortarBoard16 />
-      分析をはじめる
-    </button>
-    <button class="btn btn-danger" type="button" on:click={feedback}>
+    <button class="btn btn-danger mr-2" type="button" on:click={feedback}>
       <PaperAirplane16 />
       フィードバック
+    </button>
+    <button class="btn btn-primary" type="button" on:click={workdir}>
+      <MortarBoard16 />
+      分析をはじめる
     </button>
   </div>
 </div>

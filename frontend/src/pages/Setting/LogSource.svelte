@@ -296,17 +296,17 @@
 </form>
 </div>
 <div class="Box-footer text-right">
-  <button class="btn btn-secondary" type="button" on:click={cancel}>
+  <button class="btn btn-secondary mr-2" type="button" on:click={cancel}>
     <X16 />
     キャンセル
   </button>
   {#if editMode}
-    <button class="btn btn-danger ml-2" type="button" on:click={del}>
+    <button class="btn btn-danger mr-2" type="button" on:click={del}>
       <Trash16 />
       削除
     </button>
   {/if}
-  <button class="btn btn-primary ml-2" type="button" on:click={save}>
+  <button class="btn btn-primary" type="button" on:click={save}>
     <Check16 />
     {#if editMode }
       更新
