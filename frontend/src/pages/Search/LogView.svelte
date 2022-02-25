@@ -16,7 +16,7 @@
   import World from "../Report/World.svelte";
   import Graph from "../Report/Graph.svelte";
   import Globe from "../Report/Globe.svelte";
-  import { getTableLimit } from "../../js/define";
+  import { getTableLimit, loadFieldTypes } from "../../js/define";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -94,6 +94,7 @@
   };
 
   onMount(() => {
+    loadFieldTypes();
     window.go.main.App.GetDark().then((v) => {
       dark = v;
       updateChart();

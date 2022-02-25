@@ -1,13 +1,32 @@
 package main
 
+import (
+	"encoding/csv"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	wails "github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
 // GetExtractorTypes : 定義済みのログタイプのリスト情報を提供する
 func (b *App) GetExtractorTypes() []ExtractorType {
-	return extractorTypes
+	ret := []ExtractorType{}
+	ret = append(ret, extractorTypes...)
+	ret = append(ret, importedExtractorTypes...)
+	return ret
 }
 
 // GetFieldTypes : 定義済みのログタイプのリスト情報を提供する
 func (b *App) GetFieldTypes() map[string]*FieldType {
-	return fieldTypes
+	ret := make(map[string]*FieldType)
+	for k, v := range fieldTypes {
+		ret[k] = v
+	}
+	for k, v := range importedFieldTypes {
+		ret[k] = v
+	}
+	return ret
 }
 
 // ExtractorType : ログからデータを取得するパターン定義
@@ -110,16 +129,91 @@ func setFieldTypes(l *LogEnt) {
 			setFieldType(f, "geo")
 			setFieldType(f+"_country", "string")
 			setFieldType(f+"_city", "string")
-			setFieldType(f+"_latlong", "string")
+			setFieldType(f+"_latlong", "latlong")
 		}
 	}
 }
 
 func setFieldType(f, t string) {
 	if _, ok := fieldTypes[f]; !ok {
-		fieldTypes[f] = &FieldType{
-			Name: f + "(自動追加)",
-			Type: t,
+		if _, ok := importedFieldTypes[f]; !ok {
+			fieldTypes[f] = &FieldType{
+				Name: f + "(自動追加)",
+				Type: t,
+			}
+		}
+	}
+}
+
+var importedExtractorTypes = []ExtractorType{}
+var importedFieldTypes = make(map[string]*FieldType)
+
+// importExtractorTypes : 抽出パターン定義のインポート
+func (b *App) importExtractorTypes() {
+	importedExtractorTypes = []ExtractorType{}
+	f, err := os.Open(filepath.Join(b.workdir, "extractor.tsv"))
+	if err != nil {
+		return
+	}
+	r := csv.NewReader(f)
+	r.Comma = '\t'
+	r.Comment = '#'
+	r.FieldsPerRecord = -1
+	records, err := r.ReadAll()
+	if err != nil {
+		wails.LogError(b.ctx, err.Error())
+		return
+	}
+	for i, v := range records {
+		if len(v) > 1 {
+			e := ExtractorType{
+				Key:  fmt.Sprintf("EXT%d", i),
+				Name: v[0],
+				Grok: v[1],
+			}
+			if len(v) > 2 {
+				e.TimeField = v[2]
+				if len(v) > 3 {
+					e.IPFields = v[3]
+					if len(v) > 4 {
+						e.MACFields = v[4]
+						if len(v) > 5 {
+							e.View = v[5]
+						}
+					}
+				}
+			}
+			importedExtractorTypes = append(importedExtractorTypes, e)
+		}
+	}
+}
+
+// importFieldTypes : 抽出項目のインポート
+func (b *App) importFieldTypes() {
+	importedFieldTypes = make(map[string]*FieldType)
+	f, err := os.Open(filepath.Join(b.workdir, "fields.tsv"))
+	if err != nil {
+		return
+	}
+	r := csv.NewReader(f)
+	r.Comma = '\t'
+	r.Comment = '#'
+	r.FieldsPerRecord = -1
+	records, err := r.ReadAll()
+	if err != nil {
+		wails.LogError(b.ctx, err.Error())
+		return
+	}
+	for _, v := range records {
+		if len(v) > 2 {
+			f := FieldType{
+				Name: v[1],
+				Type: v[2],
+			}
+			if len(v) > 3 {
+				f.Unit = v[3]
+			}
+			importedFieldTypes[v[0]] = &f
 		}
 	}
 }

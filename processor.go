@@ -616,6 +616,12 @@ func (b *App) findExtractorType() *ExtractorType {
 			return &e
 		}
 	}
+	for _, e := range importedExtractorTypes {
+		if e.Key == b.config.Extractor {
+			return &e
+		}
+	}
+	wails.LogDebug(b.ctx, b.config.Extractor)
 	return nil
 }
 
@@ -635,6 +641,7 @@ func (b *App) setExtractor() error {
 	config.Patterns["TWLOGAIAN"] = et.Grok
 	g, err := grok.NewWithConfig(&config)
 	if err != nil {
+		wails.LogError(b.ctx, fmt.Sprintf("%#v", config))
 		return err
 	}
 	b.config.GeoFields = et.IPFields

@@ -109,6 +109,8 @@ func (b *App) SetWorkDir(wd string) string {
 	}
 	b.addWorkDirs(wd)
 	b.workdir = wd
+	b.importExtractorTypes()
+	b.importFieldTypes()
 	return ""
 }
 

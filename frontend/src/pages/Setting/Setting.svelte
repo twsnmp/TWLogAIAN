@@ -7,6 +7,8 @@
   import GrokTest from "./GrokTest.svelte";
   import { onMount } from "svelte";
   import jaJP from "../../js/gridjsJaJP";
+  import {loadFieldTypes} from "../../js/define"
+
   const dispatch = createEventDispatcher();
   const data = [];
   let config = {
@@ -40,10 +42,12 @@
   let errorMsg = "";
   let infoMsg = "";
   let page = "";
+  let orgConfig;
 
   const getConfig = () => {
     window.go.main.App.GetConfig().then((c) => {
       config = c;
+      orgConfig = c;
     });
   };
   let pagination = false;
@@ -72,12 +76,14 @@
   let extractorTypes = [];
   const hasIPMap = {};
   const hasMACMap = {};
+  const extractorMap = {};
   const getExtractorTypes = () => {
     window.go.main.App.GetExtractorTypes().then((r) => {
       extractorTypes = r;
       extractorTypes.forEach((e) => {
         hasIPMap[e.Key] = e.IPFields != "";
         hasMACMap[e.Key] = e.MACFields != "";
+        extractorMap[e.Key] = e;
       });
       hasIPMap["timeonly"] = false;
       hasMACMap["timeonly"] = false;
@@ -86,6 +92,7 @@
     });
   };
   onMount(() => {
+    loadFieldTypes();
     getConfig();
     getLogSources();
     getExtractorTypes();
@@ -191,6 +198,23 @@
   const clearMsg = () => {
     errorMsg = "";
     infoMsg = "";
+  };
+
+  const changeExtractor = () => {
+    const e = extractorMap[config.Extractor];
+    if (e) {
+      config.Grok = e.Grok;
+      config.TimeField = e.TimeField;
+      config.GeoFields = e.IPFields;
+      config.HostFields = e.IPFields;
+      config.MACFields = e.MACFields;
+    } else if(orgConfig) {
+      config.Grok = orgConfig.Grok;
+      config.TimeField = orgConfig.TimeField;
+      config.GeoFields = orgConfig.IPFields;
+      config.HostFields = orgConfig.IPFields;
+      config.MACFields = orgConfig.MACFields;
+    }
   };
 
   const testSampleLog = () => {
@@ -307,10 +331,12 @@
             <h5>ログの種類</h5>
           </div>
           <div class="form-group-body">
+            <!-- svelte-ignore a11y-no-onchange -->
             <select
               class="form-select"
               aria-label="抽出パターン"
               bind:value={config.Extractor}
+              on:change="{changeExtractor}"
             >
               <option value="timeonly">タイムスタンプのみ</option>
               {#each extractorTypes as { Key, Name }}
@@ -367,10 +393,10 @@
             </div>
           </div>
         {/if}
-        {#if config.Extractor == "custom"}
+        {#if config.Extractor == "custom" || config.Extractor.startsWith("EXT")}
           <div class="form-group">
             <div class="form-group-header">
-              <h5>カスタム抽出パターン</h5>
+              <h5>抽出パターン</h5>
             </div>
             <div class="form-group-body">
               <input
