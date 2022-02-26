@@ -1,5 +1,5 @@
 <script>
-  import { X16, Check16,StarFill16 } from "svelte-octicons";
+  import { X16, Check16, StarFill16, Reply16 } from "svelte-octicons";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { createEventDispatcher } from "svelte";
@@ -24,7 +24,7 @@
   };
 
   const save = () => {
-    dispatch("done", { update: false,grok: grok });
+    dispatch("done", { update: false, grok: grok });
   };
 
   const clearMsg = () => {
@@ -33,11 +33,11 @@
 
   const test = () => {
     if (grok == "") {
-      errorMsg = "パターンを指定してください"
+      errorMsg = "パターンを指定してください";
       return;
     }
     if (testData == "") {
-      errorMsg = "テストデータを指定してください"
+      errorMsg = "テストデータを指定してください";
       return;
     }
     window.go.main.App.TestGrok(grok, testData).then((r) => {
@@ -53,14 +53,15 @@
 
   const auto = () => {
     if (testData == "") {
-      errorMsg = "テストデータを指定してください"
+      errorMsg = "テストデータを指定してください";
       return;
     }
     window.go.main.App.AutoGrok(testData).then((r) => {
       errorMsg = r.ErrorMsg;
       if (r.Grok) {
+        oldGrok = grok;
         grok = r.Grok;
-      } 
+      }
     });
   };
 
@@ -70,12 +71,39 @@
     }
     grok = selected;
   };
+
+  let oldGrok = "";
+  const resetGrok = () => {
+    grok = oldGrok;
+    oldGrok = "";
+  };
+  let selectedGrok = "";
+  const replaceGrok = (e) => {
+    if ( e.key != 'Tab' || selectedGrok == "") {
+      return;
+    }
+    if (!e.target || !e.target.selectionStart){
+      return;
+    }
+    e.preventDefault();
+    const { selectionStart, selectionEnd, value } = e.target;
+    const sel = value.slice(selectionStart, selectionEnd);
+    if(sel == "") {
+      return;
+    }
+    oldGrok = grok;
+    grok = (
+      value.slice(0, selectionStart) +
+      selectedGrok +
+      value.slice(selectionEnd)
+    );
+  };
 </script>
 
 <div class="Box-header">
   <h3 class="Box-title">抽出(Grok)パターンテスト</h3>
 </div>
-{#if errorMsg }
+{#if errorMsg}
   <div class="flash flash-error">
     {errorMsg}
     <button
@@ -111,7 +139,32 @@
     </div>
     <div class="form-group">
       <div class="form-group-header">
-        <h5>抽出パターン</h5>
+        <h5>抽出パターン
+          <select class="form-select select-sm" bind:value={selectedGrok}>
+            <option value="">TABキーで変換する項目を選択</option>
+            <option value="{`\s+`}">空白部分</option>
+            <option value="{`.*`}">無視する部分</option>
+            <option value="{`%{NUMBER:number}`}">数値</option>
+            <option value="{`%{INT:int}`}">整数</option>
+            <option value="{`%{IP:ip}`}">IPアドレス</option>
+            <option value="{`%{IPV4:ipv4}`}">IPv4アドレス</option>
+            <option value="{`%{IPV6:ipv6}`}">IPv6アドレス</option>
+            <option value="{`%{MAC:mac}`}">MACアドレス</option>
+            <option value="{`%{URI:uri}`}">URI</option>
+            <option value="{`%{LOGLEVEL:loglevel}`}">ログレベル</option>
+            <option value="{`%{EMAILADDRESS:email}`}">メールアドレス</option>
+            <option value="{`%{USER:user}`}">ユーザーID</option>
+            <option value="{`%{GREEDYDATA:data}`}">何か情報</option>
+            <option value="{`%{PATH:path}`}">パス</option>
+            <option value="{`%{HOSTNAME:host}`}">ホスト名</option>
+            <option value="{`%{IPHOST:iphost}`}">ホスト名またはIPアドレス</option>
+            <option value="{`\s+`}">ホスト名:ポート番号</option>
+            <option value="{`%{UUID:uuid}`}">UUID</option>
+          </select>
+        {#if oldGrok}
+          <button class="btn btn-sm ml-1" on:click="{resetGrok}"><Reply16/></button>
+        {/if}
+        </h5>
       </div>
       <div class="form-group-body">
         <input
@@ -120,6 +173,7 @@
           placeholder="抽出パターン"
           aria-label="抽出パターン"
           bind:value={grok}
+          on:keydown={replaceGrok}
         />
       </div>
     </div>
@@ -163,7 +217,7 @@
   </div>
 {/if}
 <div class="Box-footer text-right">
-  <button class="btn btn-outline mr-2" type="button" on:click={auto}>
+  <button class="btn btn-danger mr-2" type="button" on:click={auto}>
     <StarFill16 />
     自動抽出パターン生成
   </button>
@@ -184,7 +238,6 @@
 </div>
 
 <style>
-
   .form-group-body input.grok {
     width: 99%;
   }
@@ -203,5 +256,4 @@
     font-size: 10px;
     padding: 3px 6px;
   }
-
 </style>

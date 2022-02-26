@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -331,9 +332,133 @@ type AutoGrokResp struct {
 	Grok     string
 }
 
+var grokTestMap = map[string][]string{
+	"timestamp": {
+		"%{TIMESTAMP_ISO8601:timestamp}",
+		"%{SYSLOGTIMESTAMP:timestamp}",
+		"%{DATESTAMP_RFC822:timestamp}",
+		"%{DATESTAMP_RFC2822:timestamp}",
+		"%{DATESTAMP_OTHER:timestamp}",
+		"%{DATESTAMP_EVENTLOG:timestamp}",
+		"%{HTTPDERROR_DATE:timestamp}",
+		"%{HTTPDATE:timestamp}",
+	}, // Time
+	"ipv4": {
+		"%{IPV4:ipv4}",
+	}, // IPv4
+	"ipv6": {
+		"%{IPV6:ipv6}",
+	}, // IPv4
+	"mac": {
+		"%{MAC:mac}",
+	},
+	"email": {
+		"%{EMAILADDRESS:email}",
+	},
+	"uri": {
+		"%{URI:uri}",
+	},
+}
+
 // AutoGrok : 抽出パターンを自動生成する
 func (b *App) AutoGrok(testData string) AutoGrokResp {
 	ret := AutoGrokResp{}
-	// 中身は後で考える
+	grokMap := make(map[string]string)
+	for f, ps := range grokTestMap {
+		r, err := b.findGrok(f, testData, ps)
+		if err == nil && r != "" {
+			grokMap[f] = r
+			wails.LogDebug(b.ctx, fmt.Sprintf("%s=%s", f, r))
+		}
+	}
+	if len(grokMap) < 1 {
+		ret.ErrorMsg = "フィールドを検知できません"
+		return ret
+	}
+	ret.Grok = b.makeGrok(testData, grokMap)
 	return ret
+}
+
+func (b *App) findGrok(field, td string, groks []string) (string, error) {
+	config := grok.Config{
+		Patterns:          make(map[string]string),
+		NamedCapturesOnly: true,
+	}
+	scores := make(map[string]int)
+	for _, p := range groks {
+		config.Patterns["TWLOGAIAN"] = p
+		g, err := grok.NewWithConfig(&config)
+		if err != nil {
+			wails.LogError(b.ctx, err.Error())
+			return "", err
+		}
+		for _, l := range strings.Split(td, "\n") {
+			if strings.TrimSpace(l) == "" {
+				continue
+			}
+			values, err := g.Parse("%{TWLOGAIAN}", l)
+			if err != nil {
+				wails.LogError(b.ctx, err.Error())
+				break
+			} else if len(values) > 0 {
+				for k, v := range values {
+					if k == field && v != "" {
+						if _, ok := scores[p]; !ok {
+							scores[p] = 1
+						} else {
+							scores[p]++
+						}
+					}
+				}
+			}
+		}
+	}
+	rtp := ""
+	max := 0
+	for p, c := range scores {
+		if c > max {
+			max = c
+			rtp = p
+		}
+	}
+	if rtp == "" {
+		return "", fmt.Errorf("pattern not fond")
+	}
+	return rtp, nil
+}
+
+func (b *App) makeGrok(td string, grokMap map[string]string) string {
+	l := ""
+	for _, l = range strings.Split(td, "\n") {
+		l = strings.TrimSpace(l)
+		if l != "" {
+			break
+		}
+	}
+	r := regexp.QuoteMeta(l)
+	config := grok.Config{
+		Patterns:          make(map[string]string),
+		NamedCapturesOnly: true,
+	}
+	for f, p := range grokMap {
+		config.Patterns["TWLOGAIAN"] = p
+		g, err := grok.NewWithConfig(&config)
+		if err != nil {
+			wails.LogError(b.ctx, err.Error())
+			continue
+		}
+		values, err := g.Parse("%{TWLOGAIAN}", l)
+		if err != nil {
+			wails.LogError(b.ctx, err.Error())
+			continue
+		} else if len(values) > 0 {
+			for k, v := range values {
+				if k == f && v != "" {
+					r = strings.ReplaceAll(r, regexp.QuoteMeta(v), p)
+					break
+				}
+			}
+		}
+	}
+	return r
 }
