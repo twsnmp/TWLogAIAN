@@ -56,7 +56,7 @@ type LogFile struct {
 }
 
 // Start : インデックス作成を開始する
-func (b *App) Start(c Config) string {
+func (b *App) Start(c Config, noRead bool) string {
 	wails.LogDebug(b.ctx, "Start")
 	b.config = c
 	if e := b.makeLogFileList(); e != "" {
@@ -72,6 +72,11 @@ func (b *App) Start(c Config) string {
 	b.stopProcess = false
 	if err := b.StartLogIndexer(); err != nil {
 		return fmt.Sprintf("インデクサーを起動できません。err=%v", err)
+	}
+	if noRead {
+		close(b.indexer.logCh)
+		b.wg.Wait()
+		return ""
 	}
 	b.saveSettingsToDB()
 	b.wg.Add(1)

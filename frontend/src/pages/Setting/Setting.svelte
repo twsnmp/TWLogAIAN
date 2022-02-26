@@ -1,5 +1,5 @@
 <script>
-  import { X16, Plus16, Check16, File16,Checklist16 } from "svelte-octicons";
+  import { X16, Plus16, Check16, File16, Checklist16, Trash16, Search16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
@@ -7,7 +7,7 @@
   import GrokTest from "./GrokTest.svelte";
   import { onMount } from "svelte";
   import jaJP from "../../js/gridjsJaJP";
-  import {loadFieldTypes} from "../../js/define"
+  import { loadFieldTypes } from "../../js/define";
 
   const dispatch = createEventDispatcher();
   const data = [];
@@ -43,6 +43,7 @@
   let infoMsg = "";
   let page = "";
   let orgConfig;
+  let hasIndex = false;
 
   const getConfig = () => {
     window.go.main.App.GetConfig().then((c) => {
@@ -50,6 +51,13 @@
       orgConfig = c;
     });
   };
+
+  const getHasIndex = () => {
+    window.go.main.App.HasIndex().then((r) => {
+      hasIndex = r;
+    });
+  };
+
   let pagination = false;
   const getLogSources = () => {
     window.go.main.App.GetLogSources().then((ds) => {
@@ -96,6 +104,7 @@
     getConfig();
     getLogSources();
     getExtractorTypes();
+    getHasIndex();
   });
 
   const editLogSource = (sno) => {
@@ -175,11 +184,33 @@
 
   const start = () => {
     // Index作成を開始
-    window.go.main.App.Start(config).then((e) => {
+    window.go.main.App.Start(config,false).then((e) => {
       if (e && e != "") {
         errorMsg = e;
       } else {
         dispatch("done", { page: "processing" });
+      }
+    });
+  };
+
+  const clear = () => {
+    // Index作成を開始
+    window.go.main.App.ClearIndex().then((e) => {
+      if (e && e != "") {
+        errorMsg = e;
+      } else {
+        hasIndex = false;
+      }
+    });
+  };
+
+  const search = () => {
+    // Index作成を開始
+    window.go.main.App.Start(config,true).then((e) => {
+      if (e && e != "") {
+        errorMsg = e;
+      } else {
+        dispatch("done", { page: "logview" });
       }
     });
   };
@@ -208,7 +239,7 @@
       config.GeoFields = e.IPFields;
       config.HostFields = e.IPFields;
       config.MACFields = e.MACFields;
-    } else if(orgConfig) {
+    } else if (orgConfig) {
       config.Grok = orgConfig.Grok;
       config.TimeField = orgConfig.TimeField;
       config.GeoFields = orgConfig.IPFields;
@@ -243,14 +274,13 @@
     }
     page = "";
   };
-
 </script>
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
-  {#if page == "edit" }
+  {#if page == "edit"}
     <LogSource {logSource} on:done={handleDone} />
-  {:else if page =="grok" }
-    <GrokTest {extractorTypes} grok={config.Grok} on:done="{handleDone}" />
+  {:else if page == "grok"}
+    <GrokTest {extractorTypes} grok={config.Grok} on:done={handleDone} />
   {:else}
     <div class="Box-header">
       <h3 class="Box-title">ログ分析の設定</h3>
@@ -297,14 +327,7 @@
             </h5>
           </div>
           <div class="form-group-body markdown-body mt-3">
-            <Grid {data} {pagination} {columns} language={jaJP}/>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>読み込み時の動作</h5>
-          </div>
-          <div class="form-group-body">
+            <Grid {data} {pagination} {columns} language={jaJP} />
             <label>
               <input type="checkbox" bind:checked={config.Recursive} />
               tar.gzの再帰読み込み
@@ -336,7 +359,7 @@
               class="form-select"
               aria-label="抽出パターン"
               bind:value={config.Extractor}
-              on:change="{changeExtractor}"
+              on:change={changeExtractor}
             >
               <option value="timeonly">タイムスタンプのみ</option>
               {#each extractorTypes as { Key, Name }}
@@ -411,66 +434,45 @@
           </div>
           <div class="form-group">
             <div class="form-group-header">
-              <h5>タイムスタンプ項目</h5>
+              <h5>取得情報</h5>
             </div>
             <div class="form-group-body">
               <input
-                class="form-control mt-2"
+                class="form-control"
                 type="text"
-                placeholder="項目"
-                aria-label="タイムスタンプ項目"
+                style="width: 15%;"
+                placeholder="タイムスタンプ項目"
                 bind:value={config.TimeField}
               />
-            </div>
-          </div>
-          {#if config.HostName}
-            <div class="form-group">
-              <div class="form-group-header">
-                <h5>ホスト名解決項目</h5>
-              </div>
-              <div class="form-group-body">
+              {#if config.HostName}
                 <input
                   class="form-control"
                   type="text"
+                  style="width: 25%;"
                   placeholder="ホスト名解決項目"
-                  aria-label="ホスト名解決項目"
                   bind:value={config.HostFields}
                 />
-              </div>
-            </div>
-          {/if}
-          {#if config.GeoIP}
-            <div class="form-group">
-              <div class="form-group-header">
-                <h5>IP位置情報項目</h5>
-              </div>
-              <div class="form-group-body">
+              {/if}
+              {#if config.GeoIP}
                 <input
                   class="form-control"
                   type="text"
                   placeholder="IP位置情報項目"
-                  aria-label="IP位置情報項目"
+                  style="width: 25%;"
                   bind:value={config.GeoFields}
                 />
-              </div>
-            </div>
-          {/if}
-          {#if config.VendorName}
-            <div class="form-group">
-              <div class="form-group-header">
-                <h5>MACアドレス項目</h5>
-              </div>
-              <div class="form-group-body">
+              {/if}
+              {#if config.VendorName}
                 <input
                   class="form-control"
                   type="text"
                   placeholder="MACアドレス項目"
-                  aria-label="MACアドレス項目"
+                  style="width: 20%;"
                   bind:value={config.MACFields}
                 />
-              </div>
+              {/if}
             </div>
-          {/if}
+          </div>
         {/if}
         <div class="form-group">
           <div class="form-group-header">
@@ -518,7 +520,13 @@
       </form>
     </div>
     <div class="Box-footer text-right">
-      <button class="btn btn-outline mr-2" type="button" on:click={()=>{page="grok"}}>
+      <button
+        class="btn btn-outline mr-2"
+        type="button"
+        on:click={() => {
+          page = "grok";
+        }}
+      >
         <Checklist16 />
         抽出テスト
       </button>
@@ -526,10 +534,25 @@
         <X16 />
         キャンセル
       </button>
-      <button class="btn btn-primary" type="button" on:click={start}>
-        <Check16 />
-        開始
-      </button>
+      {#if hasIndex}
+        <button class="btn btn-danger mr-2" type="button" on:click={clear}>
+          <Trash16 />
+          前のインデックスをクリア
+        </button>
+        <button class="btn btn-danger" type="button" on:click={start}>
+          <Check16 />
+          追加読み込み
+        </button>
+        <button class="btn btn-primary mr-2" type="button" on:click={search}>
+          <Search16 />
+          前のインデックスで検索
+        </button>
+      {:else}
+        <button class="btn btn-primary" type="button" on:click={start}>
+          <Check16 />
+          インデクス作成を開始
+        </button>
+      {/if}
     </div>
   {/if}
 </div>

@@ -194,8 +194,9 @@ func (b *App) saveSettingsToDB() error {
 	})
 }
 
-// CloseWorkDir : 作業フォルダを設定する
+// CloseWorkDir : 作業フォルダを閉じる
 func (b *App) CloseWorkDir() string {
+	b.CloseIndexor()
 	b.workdir = ""
 	if b.db != nil {
 		b.db.Close()

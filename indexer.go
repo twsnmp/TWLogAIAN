@@ -60,6 +60,38 @@ func (b *App) StartLogIndexer() error {
 	return nil
 }
 
+// 作業ディレクトリにインデックスがあるか？
+func (b *App) HasIndex() bool {
+	if b.config.InMemory {
+		return false
+	}
+	if st, err := os.Stat(filepath.Join(b.workdir, "bluge")); err == nil && st.IsDir() {
+		return true
+	}
+	return false
+}
+
+func (b *App) CloseIndexor() error {
+	if b.indexer.writer != nil {
+		return b.indexer.writer.Close()
+	}
+	return nil
+}
+
+// 作業ディレクトリにインデックスがあるか？
+func (b *App) ClearIndex() string {
+	if b.config.InMemory {
+		return ""
+	}
+	if st, err := os.Stat(filepath.Join(b.workdir, "bluge")); err != nil && !st.IsDir() {
+		return ""
+	}
+	if err := os.RemoveAll(filepath.Join(b.workdir, "bluge")); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
 func (b *App) logIndexer() {
 	defer b.wg.Done()
 	wails.LogDebug(b.ctx, "start logindexer")
@@ -122,7 +154,10 @@ func (b *App) addLogToIndex() {
 				doc.AddField(bluge.NewTextField(k, v))
 			case float64:
 				numCount++
-				doc.AddField(bluge.NewNumericField(k, v))
+				if k == "delta" {
+				} else {
+					doc.AddField(bluge.NewNumericField(k, v))
+				}
 			case *GeoEnt:
 				l.KeyValue[k+"_country"] = v.Country
 				l.KeyValue[k+"_city"] = v.City
@@ -273,7 +308,8 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 				})
 			} else {
 				l := LogEnt{
-					Score: match.Score,
+					Score:    match.Score,
+					KeyValue: make(map[string]interface{}),
 				}
 				match.VisitStoredFields(func(field string, value []byte) bool {
 					switch field {
@@ -285,13 +321,68 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 						if t, err := bluge.DecodeDateTime(value); err == nil {
 							l.Time = t.UnixNano()
 						}
+					case "delta":
+						if f, err := bluge.DecodeNumericFloat64(value); err == nil {
+							l.KeyValue["delta"] = f
+						}
 					}
 					return true
 				})
+				b.parseLogEnt(&l)
 				ret.Logs = append(ret.Logs, &l)
 			}
 		} else {
 			return ret
+		}
+	}
+}
+
+func (b *App) parseLogEnt(l *LogEnt) {
+	if b.processConf.Extractor == nil {
+		return
+	}
+	values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l.All)
+	if err != nil {
+		wails.LogError(b.ctx, err.Error())
+	}
+	for k, v := range values {
+		if k == "TWLOGAIAN" {
+			continue
+		}
+		if fv, err := strconv.ParseFloat(v, 64); err == nil {
+			l.KeyValue[k] = fv
+		} else {
+			l.KeyValue[k] = v
+		}
+	}
+	if b.config.GeoIP {
+		for _, f := range b.processConf.GeoFields {
+			if ip, ok := l.KeyValue[f]; ok {
+				if e := b.findGeo(ip.(string)); e != nil {
+					l.KeyValue[f+"_geo"] = e
+					l.KeyValue[f+"_country"] = e.Country
+					l.KeyValue[f+"_city"] = e.City
+					l.KeyValue[f+"_latlong"] = fmt.Sprintf("%0.3f,%0.3f", e.Lat, e.Long)
+				}
+			}
+		}
+	}
+	if b.config.HostName {
+		for _, f := range b.processConf.HostFields {
+			if ip, ok := l.KeyValue[f]; ok {
+				if e := b.findHost(ip.(string)); e != "" {
+					l.KeyValue[f+"_host"] = e
+				}
+			}
+		}
+	}
+	if b.config.VendorName {
+		for _, f := range b.processConf.MACFields {
+			if ip, ok := l.KeyValue[f]; ok {
+				if e := b.findVendor(ip.(string)); e != "" {
+					l.KeyValue[f+"_vendor"] = e
+				}
+			}
 		}
 	}
 }
