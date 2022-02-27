@@ -72,6 +72,8 @@ func (b *App) GetVersion() string {
 
 // loadAppConfig : アプリ設定を読み込み
 func (b *App) loadAppConfig() {
+	b.appConfig.DarkMode = false
+	b.appConfig.LastWorkDirs = []string{}
 	conf := b.getConfigName()
 	if conf == "" {
 		return
@@ -107,6 +109,7 @@ func (b *App) getConfigName() string {
 		wails.LogError(b.ctx, fmt.Sprintf("getConfigName err=%v", err))
 		return ""
 	}
+	wails.LogDebug(b.ctx, c)
 	return path.Join(c, "twlogaian.conf")
 }
 

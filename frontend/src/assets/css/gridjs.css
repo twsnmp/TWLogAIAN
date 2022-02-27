@@ -225,7 +225,7 @@ table.gridjs-table {
   font-family: "Menlo", "Monaco", "Consolas", monospace;
   font-size: 10px;
   padding: 2px 2px;
-  overflow-x: scroll;
+  overflow: auto;
   word-break: keep-all;
 }
 
