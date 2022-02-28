@@ -217,6 +217,7 @@ var fieldTypes = map[string]*FieldType{
 	"load1m":               {Name: "1分間負荷", Type: "number"},
 	"load5m":               {Name: "5分間負荷", Type: "number"},
 	"load15m":              {Name: "15分間負荷", Type: "number"},
+	"_None":                {Name: "項目なし", Type: "string"},
 }
 
 func setFieldTypes(l *LogEnt) {

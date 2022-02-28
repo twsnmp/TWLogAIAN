@@ -144,6 +144,9 @@
       on:change={updateFFT}
     >
       <option value="">集計項目を選択して下さい</option>
+      {#if catFields.length < 1 }
+        <option value="_None">項目なし</option>
+      {/if}
       {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}

@@ -27,7 +27,7 @@ export const getFFTMap = (logs, field) => {
   let st = Infinity;
   let lt = 0;
   logs.forEach((l) => {
-    const k = l.KeyValue[field] || "unknown";
+    const k = l.KeyValue[field] || "項目なし";
     const e = m.get(k);
     if (!e) {
       m.set(k, { Name: k, Count: 0, Data: [] })

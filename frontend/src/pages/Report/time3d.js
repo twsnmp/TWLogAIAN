@@ -11,7 +11,7 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
   const colors = []
   logs.forEach((l) => {
     const t = new Date(l.Time / (1000 *1000))
-    const x = l.KeyValue[xField] || "";
+    const x = l.KeyValue[xField] || "項目なし";
     const z = l.KeyValue[zField] ? l.KeyValue[zField]  * 1 : 0.0;
     const c = l.KeyValue[colorField] ? l.KeyValue[colorField] * 1 : 0.0;
     colors.push(c)
