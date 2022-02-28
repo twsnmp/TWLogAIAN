@@ -214,6 +214,9 @@ var fieldTypes = map[string]*FieldType{
 	"email":                {Name: "メールアドレス", Type: "string"},
 	"uuid":                 {Name: "UUID", Type: "string"},
 	"tag":                  {Name: "タグ", Type: "string"},
+	"load1m":               {Name: "1分間負荷", Type: "number"},
+	"load5m":               {Name: "5分間負荷", Type: "number"},
+	"load15m":              {Name: "15分間負荷", Type: "number"},
 }
 
 func setFieldTypes(l *LogEnt) {

@@ -17,6 +17,7 @@
   import Graph from "../Report/Graph.svelte";
   import Globe from "../Report/Globe.svelte";
   import { getTableLimit, loadFieldTypes } from "../../js/define";
+  import numeral from 'numeral';
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -209,9 +210,9 @@
       <div class="Box-header d-flex flex-items-center">
         <h3 class="Box-title overflow-hidden flex-auto">ログ分析</h3>
         <span class="f6">
-          ログ総数:{indexInfo.Total}/項目数:{ indexInfo.Fields.length}/処理時間:{indexInfo.Duration}
+          ログ総数:{numeral(indexInfo.Total).format('0,0')}/項目数:{ indexInfo.Fields.length}/処理時間:{indexInfo.Duration}
           {#if result.Hit > 0 }
-            /ヒット数:{result.Hit}/検索時間:{result.Duration}
+            /ヒット数:{numeral(result.Hit).format('0,0')}/検索時間:{result.Duration}
           {/if}
         </span>
       </div>

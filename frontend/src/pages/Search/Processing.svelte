@@ -2,6 +2,7 @@
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import { onMount } from 'svelte';
+  import numeral from 'numeral';
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   let logFiles = [];
@@ -70,10 +71,10 @@
         {#each logFiles as f }
             <tr>
             <td class:color-fg-danger={(f.Read ? (100.0 * f.Send/f.Read) : 100) < 50.0}>{f.Read ? (100.0 * f.Send/f.Read).toFixed(2) : 0}%</td>
-            <td>{f.Read}</td>
-            <td>{f.Send}</td>
+            <td>{numeral(f.Read).format('0.00b')}</td>
+            <td>{numeral(f.Send).format('0.00b')}</td>
             <td>{f.Duration}</td>
-            <td>{f.Size}</td>
+            <td>{numeral(f.Size).format('0.00b')}</td>
             <td>{(f.LogSrc.Type == "scp" || f.LogSrc.Type == "ssh") ? f.LogSrc.Server + ":" + f.Path : f.Path}</td>
           </tr>
         {/each}
