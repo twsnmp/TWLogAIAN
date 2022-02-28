@@ -1,6 +1,6 @@
 <script>
   import { getFieldName,getFieldType } from "../../js/define";
-  import { Plus16 } from "svelte-octicons";
+  import { Plus16,Trash16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   export let conf;
   export let fields = [];
@@ -30,20 +30,25 @@
     if( !conf.number.field || !conf.number.oper || !conf.number.value){
       return
     }
-    const q = " " + conf.number.field + conf.number.oper + conf.number.value;
+    const q = " " + conf.number.field + ":" + conf.number.oper + conf.number.value;
     dispatch("update", { query: q, add: true });
   };
 
   const addRange = () => {
-    if(!conf.range.start || !conf.range.end ){
+    let q = "";
+    if (conf.range.start) {
+      q += ` +time:>="` +
+      conf.range.start +
+      `:00+09:00"`;
+    }
+    if (conf.range.end) {
+      q += ` +time:<="` +
+      conf.range.end +
+      `:00+09:00"`;
+    }
+    if (!q) {
       return
     }
-    const q =
-      ` time:>="` +
-      conf.range.start +
-      `:00+09:00" time:<="` +
-      conf.range.end +
-      `:00+09:00" `;
     dispatch("update", { query: q, add: true });
   };
   const addGeo = () => {
@@ -83,6 +88,10 @@
       }
     }
   });
+
+  const clear = () => {
+    conf.history.length = 0;
+  }
 </script>
 
 <form>
@@ -105,7 +114,10 @@
         </select>
       </div>
       <div class="col-2 float-left" />
-    </div>
+        <button class="btn btn-danger" type="button" on:click={clear}>
+          <Trash16 />
+        </button>
+      </div>
   {/if}
   <div class="container-lg clearfix">
     <div class="col-2 float-left">検索期間</div>
@@ -190,6 +202,8 @@
           <option value="<">&lt;</option>
           <option value=">">&gt;</option>
           <option value="=">=</option>
+          <option value="<=">&lt;=</option>
+          <option value=">=">&gt;=</option>
         </select>
         <input
           class="form-control input-sm"
