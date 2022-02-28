@@ -97,9 +97,11 @@ func (b *App) GetLastWorkDirs() []string {
 func (b *App) SetWorkDir(wd string) string {
 	fs, err := os.Stat(wd)
 	if err != nil {
+		wails.LogError(b.ctx, err.Error())
 		return fmt.Sprintf("作業フォルダが正しくありません err=%v", err)
 	}
 	if !fs.IsDir() {
+		wails.LogError(b.ctx, "not dir")
 		return "指定した作業フォルダはディレクトリではありません"
 	}
 	b.logSources = []*LogSource{}
@@ -207,9 +209,12 @@ func (b *App) CloseWorkDir() string {
 // addWorkDirs : 作業ディレクトリ履歴に追加
 func (b *App) addWorkDirs(wd string) {
 	wds := []string{wd}
-	for _, w := range b.appConfig.LastWorkDirs {
+	for i, w := range b.appConfig.LastWorkDirs {
 		if w != wd {
 			wds = append(wds, w)
+		}
+		if i > 10 {
+			break
 		}
 	}
 	b.appConfig.LastWorkDirs = wds

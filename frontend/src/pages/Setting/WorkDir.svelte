@@ -3,7 +3,7 @@
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   let workdir = "";
-  let setWorkDirErr = "";
+  let ErrorMsg = "";
   let lastWorkDirs = [];
   let selLast = "";
 
@@ -16,14 +16,14 @@
   });
   const setWorkDir = () => {
     if (!workdir) {
-      setWorkDirErr = "作業ディレクトリを選択してください";
+      ErrorMsg = "作業ディレクトリを選択してください";
       return;
     }
     window.go.main.App.SetWorkDir(workdir).then((r) => {
       if (r === "") {
         dispatch("done", { page: "setting" });
       } else {
-        setWorkDirErr = true;
+        ErrorMsg = r;
       }
     });
   };
@@ -41,7 +41,7 @@
     }
   };
   const clearMsg = () => {
-    setWorkDirErr = "";
+    ErrorMsg = "";
   };
 </script>
 
@@ -49,9 +49,9 @@
   <div class="Box-header">
     <h3 class="Box-title">作業フォルダーの選択</h3>
   </div>
-  {#if setWorkDirErr != ""}
+  {#if ErrorMsg != ""}
     <div class="flash flash-error">
-      { setWorkDirErr }
+      { ErrorMsg }
       <button
         class="flash-close js-flash-close"
         type="button"
