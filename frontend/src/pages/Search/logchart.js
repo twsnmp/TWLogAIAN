@@ -1,4 +1,5 @@
 import * as echarts from 'echarts'
+import { getSyslogLevel } from './logview';
 
 let chart;
 
@@ -124,22 +125,15 @@ const addMultiChartData = (data, count, ctm, newCtm) => {
   return ctm
 }
 
-const getSyslogLevel = (pri) => {
-  if(pri==""){
-    return "other";
+const getLogLevel = (l) => {
+  const code = l.KeyValue.response;
+  if(code) {
+    return code < 300 ? "normal" : code < 400 ? "warn" : "error";
   }
-  // TODO:<pri>の場合、文字列の場合も対応する
-  if( pri < 3){
-    return "high";
-  } else if( pri < 4){
-    return "low";
-  } else if (pri == 4){
-    return "warn";
-  }
-  return "other";
+  return getSyslogLevel(l);
 }
 
-const showAccessLogChart = (div,logs,dark) => {
+const showLogLevelChart = (div,logs,dark) => {
   if (chart) {
     chart.dispose()
   }
@@ -157,8 +151,7 @@ const showAccessLogChart = (div,logs,dark) => {
   }
   let ctm
   logs.forEach((l) => {
-    const code = l.KeyValue.response || 200;
-    const lvl = code < 300 ? "normal" : code < 400 ? "warn" : "error";
+    const lvl = getLogLevel(l)
     const newCtm = Math.floor(l.Time / (1000 * 1000 * 1000 * 60))
     if (!ctm) {
       ctm = newCtm
@@ -215,99 +208,13 @@ const showAccessLogChart = (div,logs,dark) => {
   chart.resize()
 }
 
-const showSyslogChart = (div,logs,dark) => {
-  if (chart) {
-    chart.dispose()
-  }
-  chart = echarts.init(document.getElementById(div),dark ? "dark" : "")
-  chart.setOption(baseOption);
-  const data = {
-    high: [],
-    low: [],
-    warn: [],
-    other: [],
-  }
-  const count = {
-    high: 0,
-    low: 0,
-    warn: 0,
-    other: 0,
-  }
-  let ctm
-  logs.forEach((l) => {
-    const lvl = getSyslogLevel(l.KeyValue.priority || "");
-    const newCtm = Math.floor(l.Time / (1000 * 1000 * 1000 * 60))
-    if (!ctm) {
-      ctm = newCtm
-    }
-    if (ctm !== newCtm) {
-      ctm = addMultiChartData(data, count, ctm, newCtm)
-      for (const k in count) {
-        count[k] = 0
-      }
-    }
-    count[lvl]++
-  })
-  addMultiChartData(data, count, ctm, ctm + 1)
-  chart.setOption({
-    grid: {
-      left: '2%',
-      right: '5%',
-      top: 50,
-      buttom: 0,
-    },
-    series: [
-      {
-        name: '重度',
-        type: 'bar',
-        color: '#e31a1c',
-        stack: 'count',
-        large: true,
-        data: data.high,
-      },
-      {
-        name: '軽度',
-        type: 'bar',
-        color: '#fb9a99',
-        stack: 'count',
-        large: true,
-        data: data.low,
-      },
-      {
-        name: '注意',
-        type: 'bar',
-        color: '#dfdf22',
-        stack: 'count',
-        large: true,
-        data: data.warn,
-      },
-      {
-        name: 'その他',
-        type: 'bar',
-        color: '#1f78b4',
-        stack: 'count',
-        large: true,
-        data: data.other,
-      },
-    ],
-    legend: {
-      textStyle: {
-        fontSize: 10,
-        color: '#ccc',
-      },
-      data: ['重度', '軽度', '注意', 'その他'],
-    },
-  })
-  chart.resize()
-}
-
 export const showLogChart = (div,r,dark) => {
   switch (r.View) {
   case "access":
-    showAccessLogChart(div,r.Logs,dark);
+    showLogLevelChart(div,r.Logs,dark);
     return
   case "syslog":
-    showSyslogChart(div,r.Logs,dark);
+    showLogLevelChart(div,r.Logs,dark);
     return
   }
   showLogCountChart(div,r.Logs,dark);

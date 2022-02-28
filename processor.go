@@ -59,11 +59,13 @@ type LogFile struct {
 func (b *App) Start(c Config, noRead bool) string {
 	wails.LogDebug(b.ctx, "Start")
 	b.config = c
-	if e := b.makeLogFileList(); e != "" {
-		return e
-	}
-	if len(b.processStat.LogFiles) < 1 {
-		return "処理するファイルがありません"
+	if !noRead {
+		if e := b.makeLogFileList(); e != "" {
+			return e
+		}
+		if len(b.processStat.LogFiles) < 1 {
+			return "処理するファイルがありません"
+		}
 	}
 	if e := b.setupProcess(); e != "" {
 		return e
@@ -247,6 +249,7 @@ func getFileNameFilter(f string) (*regexp.Regexp, error) {
 }
 
 func (b *App) addLogFileFromSCP(src *LogSource) string {
+	wails.LogDebug(b.ctx, "start addLogFileFromSCP")
 	kpath := src.SSHKey
 	if kpath == "" {
 		kpath = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
@@ -265,6 +268,7 @@ func (b *App) addLogFileFromSCP(src *LogSource) string {
 	if err != nil {
 		return err.Error()
 	}
+	wails.LogDebug(b.ctx, "start service.List")
 	files, err := service.List(context.Background(), src.Path)
 	if err != nil {
 		return err.Error()
@@ -288,6 +292,7 @@ func (b *App) addLogFileFromSCP(src *LogSource) string {
 			LogSrc: src,
 		})
 	}
+	wails.LogDebug(b.ctx, "end addLogFileFromSCP")
 	return ""
 }
 
@@ -468,12 +473,14 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 	wails.LogDebug(b.ctx, "start readOneLogFile path="+lf.Path)
 	scanner := bufio.NewScanner(reader)
 	ln := 0
+	skipF := 0
 	var lastTime int64
 	for scanner.Scan() {
 		l := scanner.Text()
 		lf.Read += int64(len(l))
 		ln++
 		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
+			skipF++
 			continue
 		}
 		log := LogEnt{
@@ -485,6 +492,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		if b.processConf.Extractor != nil {
 			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
+				wails.LogError(b.ctx, fmt.Sprintf("grok err=%v:%s", err, l))
 				continue
 			}
 			for k, v := range values {
@@ -502,6 +510,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			if b.processConf.TimeField != "" {
 				tfi, ok := log.KeyValue[b.processConf.TimeField]
 				if !ok {
+					wails.LogError(b.ctx, fmt.Sprintf("no time field %s", l))
 					continue
 				}
 				tf, ok := tfi.(string)
@@ -510,6 +519,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				}
 				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(tf))
 				if err != nil || !ok {
+					wails.LogError(b.ctx, fmt.Sprintf("time parse err=%v:%s", err, l))
 					continue
 				}
 			} else {
@@ -556,7 +566,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			if err != nil {
 				// 複数行は同じタイムスタンプにする
 				if lastTime < 1 {
-					// wails.LogError(b.ctx, fmt.Sprintf("failed to get time stamp err=%v:%s", err, l))
+					wails.LogError(b.ctx, fmt.Sprintf("failed to get time stamp err=%v:%s", err, l))
 					continue
 				}
 			} else if ok {
@@ -565,7 +575,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				}
 				lastTime = ts.UnixNano()
 			} else {
-				// wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
+				wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
 				continue
 			}
 		}
@@ -578,7 +588,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		b.processStat.ErrorMsg = err.Error()
 	}
 	lf.Duration = time.Since(st).String()
-	wails.LogDebug(b.ctx, fmt.Sprintf("end readOneLogFile ln=%d", ln))
+	wails.LogDebug(b.ctx, fmt.Sprintf("end readOneLogFile ln=%d skip=%d", ln, skipF))
 }
 
 func (b *App) setTimeGrinder() error {

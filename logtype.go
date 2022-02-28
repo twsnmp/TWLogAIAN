@@ -49,7 +49,14 @@ var extractorTypes = []ExtractorType{
 		View:      "syslog",
 	},
 	{
-		Key:       "syslog",
+		Key:       "syslogBSD_NOPID",
+		Name:      "syslog(BSD/PIDなし)",
+		TimeField: "timestamp",
+		Grok:      `%{SYSLOGTIMESTAMP:timestamp}\s+%{SYSLOGHOST:logsource}\s+%{NOTSPACE:tag}:\s+%{GREEDYDATA:message}`,
+		View:      "syslog",
+	},
+	{
+		Key:       "syslogBSD_PRI",
 		Name:      "syslog(BSD/文字列PRI付き)",
 		TimeField: "timestamp",
 		Grok:      `%{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:logsource}\s+%{NOTSPACE:facility_str}\.%{NOTSPACE:severity_str}\s+%{SYSLOGPROG}:\s+%{GREEDYDATA:message}`,
@@ -59,7 +66,7 @@ var extractorTypes = []ExtractorType{
 		Key:       "syslogIETF",
 		Name:      "syslog(IETF)",
 		TimeField: "timestamp",
-		Grok:      `%{TIMESTAMP_ISO8601:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG} %{GREEDYDATA:message}`,
+		Grok:      `%{TIMESTAMP_ISO8601:timestamp}\s+(?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource}\s+%{NOTSPACE:tag}:\s+%{GREEDYDATA:message}`,
 		View:      "syslog",
 	},
 	{
@@ -180,10 +187,11 @@ var fieldTypes = map[string]*FieldType{
 	"clientip_geo_country": {Name: "クライアントの国", Type: "string"},
 	"clientip_geo_latlong": {Name: "クライアントの緯度経度", Type: "latlong"},
 	"clientip_host":        {Name: "クライアントのホスト名", Type: "string"},
-	"priority":             {Name: "プライオリティー", Type: "number"},
 	"logsource":            {Name: "ログ送信元", Type: "string"},
-	"message":              {Name: "メッセージ", Type: "string"},
+	"priority":             {Name: "プライオリティー", Type: "number"},
+	"severity":             {Name: "優先度", Type: "number"},
 	"facility":             {Name: "ファシリティー", Type: "number"},
+	"message":              {Name: "メッセージ", Type: "string"},
 	"pid":                  {Name: "PID", Type: "number"},
 	"program":              {Name: "プロセス名", Type: "string"},
 	"delta":                {Name: "前ログとの時間差", Type: "number"},
@@ -205,6 +213,7 @@ var fieldTypes = map[string]*FieldType{
 	"uri":                  {Name: "URI", Type: "string"},
 	"email":                {Name: "メールアドレス", Type: "string"},
 	"uuid":                 {Name: "UUID", Type: "string"},
+	"tag":                  {Name: "タグ", Type: "string"},
 }
 
 func setFieldTypes(l *LogEnt) {

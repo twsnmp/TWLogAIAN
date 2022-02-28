@@ -13,6 +13,16 @@ const formatCode = (code) => {
   return html(`<div class="color-fg-danger-emphasis">${code}</div>`);
 }
 
+const formatLevel = (level) => {
+  switch (level) {
+  case "error":
+    return html(`<div class="color-fg-danger">エラー</div>`);
+  case "warn":
+    return html(`<div class="color-fg-attention">注意</div>`);
+  }
+  return html(`<div class="color-fg-default">正常</div>`);
+}
+
 const columnsTimeOnly = [
   {
     name: "スコア",
@@ -33,6 +43,7 @@ const columnsSyslog = [
   {
     name: "レベル",
     width: "10%",
+    formatter: (cell) => formatLevel(cell),
   },{
     name: "日時",
     width: "15%",
@@ -43,10 +54,7 @@ const columnsSyslog = [
     width: "15%",
   },{
     name: "タグ",
-    width: "15%",
-  },{
-    name: "PID",
-    width: "5%",
+    width: "20%",
   },{
     name: "メッセージ",
     width: "40%",
@@ -115,15 +123,32 @@ const getTimeOnlyLogData = (r) => {
   return d;
 }
 
+export const getSyslogLevel = (l) => {
+  let suverity = l.KeyValue.suverity || l.KeyValue.priority;
+  if (suverity && suverity != "") {
+    // 数値のsuverityを優先する
+    suverity %= 8
+    return  suverity < 4 ? "error" : suverity == 4 ? "warn" : "normal";
+  }
+  const level = l.KeyValue.suverity_str || l.KeyValue.level || l.All;
+  if (/(alert|error|crit|fatal|emerg|err )/i.test(level)) {
+    return "error";
+  }
+  if (/warn/i.test(level)) {
+    return "warn";
+  }
+  return "normal";
+}
+
 const getSyslogData = (r) => {
   const d = [];
   r.Logs.forEach((l) => {
     const message = l.KeyValue.message || "";
     const pid = l.KeyValue.pid || "";
-    const tag = l.KeyValue.program || "";
+    const tag =  l.KeyValue.tag || ((l.KeyValue.program || "") + (pid ? "[" + pid + "]" : ""));
     const src = l.KeyValue.logsource || "";
-    const pri = l.KeyValue.priority || "";
-    d.push([pri,l.Time,src,tag,pid,message ]);
+    const level = getSyslogLevel(l);
+    d.push([level,l.Time,src,tag,message ]);
   });
   return d;
 }

@@ -181,10 +181,12 @@
       formatter: actionButtons,
     },
   ];
-
+  let busy = false;
   const start = () => {
     // Index作成を開始
+    busy = true;
     window.go.main.App.Start(config,false).then((e) => {
+      busy = false;
       if (e && e != "") {
         errorMsg = e;
       } else {
@@ -194,8 +196,10 @@
   };
 
   const clear = () => {
-    // Index作成を開始
+    // Indexをクリア
+    busy = true
     window.go.main.App.ClearIndex().then((e) => {
+      busy = false;
       if (e && e != "") {
         errorMsg = e;
       } else {
@@ -205,8 +209,10 @@
   };
 
   const search = () => {
-    // Index作成を開始
+    // 既存のIndexで検索開始
+    busy = true;
     window.go.main.App.Start(config,true).then((e) => {
+      busy = false;
       if (e && e != "") {
         errorMsg = e;
       } else {
@@ -277,7 +283,14 @@
 </script>
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
-  {#if page == "edit"}
+  {#if busy }
+    <div class="Box-header">
+      <h3 class="Box-title">ログ分析起動</h3>
+    </div>
+    <div class="flash mt-2">
+      ログの読み込みを準備しています。お待ち下さい<span class="AnimatedEllipsis"></span>
+    </div>
+  {:else if page == "edit"}
     <LogSource {logSource} on:done={handleDone} />
   {:else if page == "grok"}
     <GrokTest {extractorTypes} grok={config.Grok} on:done={handleDone} />
