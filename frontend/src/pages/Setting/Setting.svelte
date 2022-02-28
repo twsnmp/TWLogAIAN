@@ -65,7 +65,7 @@
       if (ds) {
         logSources = ds;
         logSources.forEach((e) => {
-          const path = e.Type == "scp" ? e.Server + ":" + e.Path : e.Path;
+          const path = (e.Type == "scp" || e.Type == "ssh") ? e.Server + ":" + e.Path : e.Path;
           data.push([e.No, e.Type, path, ""]);
         });
         if (ds.length > 5) {

@@ -74,7 +74,7 @@
             <td>{f.Send}</td>
             <td>{f.Duration}</td>
             <td>{f.Size}</td>
-            <td>{f.Path}</td>
+            <td>{(f.LogSrc.Type == "scp" || f.LogSrc.Type == "ssh") ? f.LogSrc.Server + ":" + f.Path : f.Path}</td>
           </tr>
         {/each}
         </tbody>
