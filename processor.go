@@ -601,6 +601,7 @@ func (b *App) setTimeGrinder() error {
 
 func (b *App) setFilter() error {
 	if b.config.Filter == "" {
+		b.processConf.Filter = nil
 		return nil
 	}
 	var err error
