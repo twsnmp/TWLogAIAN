@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"log"
+	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 
@@ -24,7 +25,10 @@ var commit = ""
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()
-
+	if len(os.Args) > 1 && os.Args[1] == "debug" {
+		debug = true
+		log.Println("debug mode on")
+	}
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:     "AIアシストログ分析ツール(TWLogAIAN)",

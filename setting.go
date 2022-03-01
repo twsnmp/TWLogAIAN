@@ -74,7 +74,7 @@ func (b *App) SelectFile(t string) string {
 			CanCreateDirectories: true,
 		})
 		if err != nil {
-			wails.LogError(b.ctx, fmt.Sprintf("SelectFile err=%v", err))
+			OutLog("SelectFile err=%v", err)
 		}
 		return dir
 	}
@@ -83,7 +83,7 @@ func (b *App) SelectFile(t string) string {
 		ShowHiddenFiles: sh,
 	})
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("SelectFile err=%v", err))
+		OutLog("SelectFile err=%v", err)
 	}
 	return file
 }
@@ -97,11 +97,11 @@ func (b *App) GetLastWorkDirs() []string {
 func (b *App) SetWorkDir(wd string) string {
 	fs, err := os.Stat(wd)
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("SetWorkDir err=%v", err)
 		return fmt.Sprintf("作業フォルダが正しくありません err=%v", err)
 	}
 	if !fs.IsDir() {
-		wails.LogError(b.ctx, "not dir")
+		OutLog("SetWorkDir not dir")
 		return "指定した作業フォルダはディレクトリではありません"
 	}
 	b.logSources = []*LogSource{}
@@ -223,26 +223,26 @@ func (b *App) addWorkDirs(wd string) {
 
 // GetConfig : 設定の取得
 func (b *App) GetConfig() Config {
-	wails.LogDebug(b.ctx, "GetConfig")
+	OutLog("GetConfig")
 	return b.config
 }
 
 // SetConfig : 設定の変更
 func (b *App) SetConfig(c Config) string {
-	wails.LogDebug(b.ctx, "SetConfig")
+	OutLog("SetConfig")
 	b.config = c
 	return ""
 }
 
 // GetLogSources : ログソースリストの取得
 func (b *App) GetLogSources() []*LogSource {
-	wails.LogDebug(b.ctx, "GetLogSources")
+	OutLog("GetLogSources")
 	return b.logSources
 }
 
 // UpdateLogSource : ログソースの更新
 func (b *App) UpdateLogSource(ls LogSource) string {
-	wails.LogDebug(b.ctx, "UpdateLogSource")
+	OutLog("UpdateLogSource")
 	if ls.No > 0 && ls.No <= len(b.logSources) {
 		// 既存
 		b.logSources[ls.No-1] = &ls
@@ -256,7 +256,7 @@ func (b *App) UpdateLogSource(ls LogSource) string {
 
 // DeleteLogSource : ログソースの更新
 func (b *App) DeleteLogSource(no int) string {
-	wails.LogDebug(b.ctx, fmt.Sprintf("DeleteLogSource no=%d", no))
+	OutLog("DeleteLogSource no=%d", no)
 	if no <= 0 || no > len(b.logSources) {
 		return "送信元がありません"
 	}
@@ -293,7 +293,7 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 	config.Patterns["TWLOGAIAN"] = p
 	g, err := grok.NewWithConfig(&config)
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("TestGrok err=%v", err)
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
@@ -323,7 +323,7 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 			}
 			ret.Data = append(ret.Data, ent)
 		} else {
-			wails.LogDebug(b.ctx, "skip="+l)
+			OutLog("skip=%s", l)
 			skip++
 		}
 	}
@@ -374,7 +374,7 @@ func (b *App) AutoGrok(testData string) AutoGrokResp {
 		r, err := b.findGrok(f, testData, ps)
 		if err == nil && r != "" {
 			grokMap[f] = r
-			wails.LogDebug(b.ctx, fmt.Sprintf("%s=%s", f, r))
+			OutLog("%s=%s", f, r)
 		}
 	}
 	if len(grokMap) < 1 {
@@ -395,7 +395,7 @@ func (b *App) findGrok(field, td string, groks []string) (string, error) {
 		config.Patterns["TWLOGAIAN"] = p
 		g, err := grok.NewWithConfig(&config)
 		if err != nil {
-			wails.LogError(b.ctx, err.Error())
+			OutLog("find Grok err=%v", err)
 			return "", err
 		}
 		for _, l := range strings.Split(td, "\n") {
@@ -404,7 +404,7 @@ func (b *App) findGrok(field, td string, groks []string) (string, error) {
 			}
 			values, err := g.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
-				wails.LogError(b.ctx, err.Error())
+				OutLog("find Grok err=%v", err)
 				break
 			} else if len(values) > 0 {
 				for k, v := range values {
@@ -450,12 +450,12 @@ func (b *App) makeGrok(td string, grokMap map[string]string) string {
 		config.Patterns["TWLOGAIAN"] = p
 		g, err := grok.NewWithConfig(&config)
 		if err != nil {
-			wails.LogError(b.ctx, err.Error())
+			OutLog("makeGrok err=%v", err)
 			continue
 		}
 		values, err := g.Parse("%{TWLOGAIAN}", l)
 		if err != nil {
-			wails.LogError(b.ctx, err.Error())
+			OutLog("makeGrok err=%v", err)
 			continue
 		} else if len(values) > 0 {
 			for k, v := range values {

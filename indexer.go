@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	wails "github.com/wailsapp/wails/v2/pkg/runtime"
-
 	"github.com/blugelabs/bluge"
 	querystr "github.com/blugelabs/query_string"
 )
@@ -94,7 +92,7 @@ func (b *App) ClearIndex() string {
 
 func (b *App) logIndexer() {
 	defer b.wg.Done()
-	wails.LogDebug(b.ctx, "start logindexer")
+	OutLog("start logindexer")
 	st := time.Now()
 	timer := time.NewTicker(time.Millisecond * 200)
 	b.indexer.logBuffer = []*LogEnt{}
@@ -112,7 +110,7 @@ func (b *App) logIndexer() {
 				b.indexer.logBuffer = []*LogEnt{}
 				b.processStat.Done = true
 				b.indexer.duration = time.Since(st)
-				wails.LogDebug(b.ctx, "stop logindexer")
+				OutLog("stop logindexer")
 				return
 			}
 			b.indexer.logBuffer = append(b.indexer.logBuffer, l)
@@ -167,18 +165,18 @@ func (b *App) addLogToIndex() {
 				doc.AddField(bluge.NewGeoPointField(k+"_latlong", v.Lat, v.Long))
 			default:
 				// Unknown Type
-				wails.LogError(b.ctx, fmt.Sprintf("unknown type %s=%v", k, v))
+				OutLog("unknown type %s=%v", k, v)
 				continue
 			}
 		}
 		batch.Insert(doc)
 		batch_len++
 	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("batch len=%d %s", batch_len, time.Since(st)))
+	OutLog("batch len=%d %s", batch_len, time.Since(st))
 	if err := b.indexer.writer.Batch(batch); err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("error executing batch: %v", err))
+		OutLog("error executing batch: %v", err)
 	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("end batch %s numCount=%d", time.Since(st), numCount))
+	OutLog("end batch %s numCount=%d", time.Since(st), numCount)
 }
 
 type IndexInfo struct {
@@ -188,11 +186,11 @@ type IndexInfo struct {
 }
 
 func (b *App) GetIndexInfo() (IndexInfo, error) {
-	wails.LogDebug(b.ctx, "GetIndexInfo")
+	OutLog("GetIndexInfo")
 	ret := IndexInfo{}
 	reader, err := b.indexer.writer.Reader()
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("GetIndexInfo err=%v", err)
 		return ret, err
 	}
 	defer func() {
@@ -200,12 +198,12 @@ func (b *App) GetIndexInfo() (IndexInfo, error) {
 	}()
 	t, err := reader.Count()
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("GetIndexInfo err=%v", err)
 		return ret, err
 	}
 	f, err := reader.Fields()
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("GetIndexInfo err=%v", err)
 		return ret, err
 	}
 	ret.Duration = b.indexer.duration.String()
@@ -224,7 +222,7 @@ type SearchResult struct {
 }
 
 func (b *App) SearchLog(q string, limit int) SearchResult {
-	wails.LogDebug(b.ctx, "SearchLog q="+q)
+	OutLog("SearchLog q=%#v", q)
 	view := "timeonly"
 	if et := b.findExtractorType(); et != nil {
 		view = et.View
@@ -235,7 +233,7 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 	}
 	reader, err := b.indexer.writer.Reader()
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("SearchLog err=%v", err)
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
@@ -252,7 +250,7 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 	//  TODO:オプションの考える
 	query, err := querystr.ParseQueryString(q, qo)
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("SearchLog err=%v", err)
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
@@ -264,23 +262,23 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 		}
 		lat, err := strconv.ParseFloat(a[1], 64)
 		if err != nil {
-			wails.LogError(b.ctx, err.Error())
+			OutLog("SearchLog err=%v", err)
 			return ret
 		}
 		long, err := strconv.ParseFloat(a[2], 64)
 		if err != nil {
-			wails.LogError(b.ctx, err.Error())
+			OutLog("SearchLog err=%v", err)
 			ret.ErrorMsg = err.Error()
 			return ret
 		}
 		gq := bluge.NewGeoDistanceQuery(lat, long, a[2]).SetField(a[0])
 		query = bluge.NewBooleanQuery().AddMust(query, gq)
 	}
-	wails.LogDebug(b.ctx, fmt.Sprintf("query=%#+v", query))
+	OutLog("query=%#+v", query)
 	req := bluge.NewTopNSearch(limit, query).WithStandardAggregations().SortBy([]string{"time"})
 	dmi, err := reader.Search(b.ctx, req)
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("SearchLog err=%v", err)
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
@@ -290,7 +288,7 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 	for {
 		match, err := dmi.Next()
 		if err != nil {
-			wails.LogError(b.ctx, err.Error())
+			OutLog("SearchLog err=%v", err)
 			ret.ErrorMsg = err.Error()
 			return ret
 		}
@@ -343,7 +341,7 @@ func (b *App) parseLogEnt(l *LogEnt) {
 	}
 	values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l.All)
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("parseLogEnt err=%v", err)
 	}
 	for k, v := range values {
 		if k == "TWLOGAIAN" {

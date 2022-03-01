@@ -23,7 +23,6 @@ import (
 	"github.com/vjeantet/grok"
 
 	"github.com/gravwell/gravwell/v3/timegrinder"
-	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type ProcessStat struct {
@@ -57,7 +56,7 @@ type LogFile struct {
 
 // Start : インデックス作成を開始する
 func (b *App) Start(c Config, noRead bool) string {
-	wails.LogDebug(b.ctx, "Start")
+	OutLog("Start")
 	b.config = c
 	if !noRead {
 		if e := b.makeLogFileList(); e != "" {
@@ -110,19 +109,19 @@ func (b *App) TestSampleLog(c Config) *ExtractorType {
 func (b *App) setupProcess() string {
 	b.processStat.ErrorMsg = ""
 	if err := b.setTimeGrinder(); err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("failed to create new timegrinder err=%v", err))
+		OutLog("failed to create new timegrinder err=%v", err)
 		return err.Error()
 	}
 	if err := b.setFilter(); err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("failed to get filter err=%v", err))
+		OutLog("failed to get filter err=%v", err)
 		return err.Error()
 	}
 	if err := b.setExtractor(); err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
+		OutLog("failed to get extractor err=%v", err)
 		return err.Error()
 	}
 	if err := b.setGeoIP(); err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("failed to get extractor err=%v", err))
+		OutLog("failed to get extractor err=%v", err)
 		return err.Error()
 	}
 	b.setHostFields()
@@ -131,7 +130,7 @@ func (b *App) setupProcess() string {
 }
 
 func (b *App) cleanupProcess() {
-	wails.LogDebug(b.ctx, "cleanupProcess")
+	OutLog("cleanupProcess")
 	if b.processConf.GeoIP != nil {
 		b.processConf.GeoIP.Close()
 		b.processConf.GeoIP = nil
@@ -145,7 +144,7 @@ func (b *App) cleanupProcess() {
 
 // Stop : インデクス作成を停止する
 func (b *App) Stop() string {
-	wails.LogDebug(b.ctx, "Stop")
+	OutLog("Stop")
 	b.stopProcess = true
 	b.wg.Wait()
 	b.cleanupProcess()
@@ -154,7 +153,7 @@ func (b *App) Stop() string {
 
 // GetProcessInfo : 処理状態を返す
 func (b *App) GetProcessInfo() ProcessStat {
-	wails.LogDebug(b.ctx, "GetProcessInfo")
+	OutLog("GetProcessInfo")
 	if b.processStat.Done {
 		b.wg.Wait()
 		b.cleanupProcess()
@@ -249,7 +248,7 @@ func getFileNameFilter(f string) (*regexp.Regexp, error) {
 }
 
 func (b *App) addLogFileFromSCP(src *LogSource) string {
-	wails.LogDebug(b.ctx, "start addLogFileFromSCP")
+	OutLog("start addLogFileFromSCP")
 	kpath := src.SSHKey
 	if kpath == "" {
 		kpath = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
@@ -268,7 +267,7 @@ func (b *App) addLogFileFromSCP(src *LogSource) string {
 	if err != nil {
 		return err.Error()
 	}
-	wails.LogDebug(b.ctx, "start service.List")
+	OutLog("start service.List")
 	files, err := service.List(context.Background(), src.Path)
 	if err != nil {
 		return err.Error()
@@ -292,7 +291,7 @@ func (b *App) addLogFileFromSCP(src *LogSource) string {
 			LogSrc: src,
 		})
 	}
-	wails.LogDebug(b.ctx, "end addLogFileFromSCP")
+	OutLog("end addLogFileFromSCP")
 	return ""
 }
 
@@ -301,7 +300,7 @@ func (b *App) logReader() {
 		b.wg.Done()
 		close(b.indexer.logCh)
 	}()
-	wails.LogDebug(b.ctx, "start logReader")
+	OutLog("start logReader")
 	for _, lf := range b.processStat.LogFiles {
 		if b.stopProcess {
 			return
@@ -317,20 +316,20 @@ func (b *App) logReader() {
 		ext := strings.ToLower(filepath.Ext(lf.Path))
 		if ext == ".zip" {
 			if err := b.readLogFromZIP(lf); err != nil {
-				wails.LogError(b.ctx, fmt.Sprintf("failed to read zip log file err=%v", err))
+				OutLog("failed to read zip log file err=%v", err)
 			}
 			continue
 		} else if (ext == ".gz" && strings.HasSuffix(lf.Path, "tar.gz")) ||
 			ext == ".tgz" ||
 			ext == ".bin" {
 			if err := b.readLogFromTarGZ(lf); err != nil {
-				wails.LogError(b.ctx, fmt.Sprintf("failed to read tar gz log file err=%v", err))
+				OutLog("failed to read tar gz log file err=%v", err)
 			}
 			continue
 		}
 		file, err := b.openLogFile(lf)
 		if err != nil {
-			wails.LogError(b.ctx, fmt.Sprintf("failed to open log file err=%v", err))
+			OutLog("failed to open log file err=%v", err)
 			b.processStat.ErrorMsg = err.Error()
 			continue
 		}
@@ -339,7 +338,7 @@ func (b *App) logReader() {
 	}
 	b.processStat.LogFiles = append(b.processStat.LogFiles, b.processStat.IntLogFiles...)
 	b.processStat.IntLogFiles = []*LogFile{}
-	wails.LogDebug(b.ctx, "stop logReader")
+	OutLog("stop logReader")
 }
 
 func (b *App) readLogFromZIP(lf *LogFile) error {
@@ -373,7 +372,7 @@ func (b *App) readLogFromZIP(lf *LogFile) error {
 		if strings.HasSuffix(p, ".gz") {
 			gzr, err := gzip.NewReader(file)
 			if err != nil {
-				wails.LogError(b.ctx, fmt.Sprintf("read gz log file err=%v", err))
+				OutLog("read gz log file err=%v", err)
 				continue
 			}
 			b.readOneLogFile(ilf, gzr)
@@ -420,7 +419,7 @@ func (b *App) readLogFromTarGZSub(lf *LogFile, r io.Reader, filter *regexp.Regex
 				// 再帰読み込み
 				err := b.readLogFromTarGZSub(lf, tgzr, filter, p+"->"+f.Name)
 				if err != nil {
-					wails.LogError(b.ctx, fmt.Sprintf("read sub tar gz log file err=%v", err))
+					OutLog("read sub tar gz log file err=%v", err)
 				}
 			}
 			continue
@@ -470,7 +469,7 @@ func (b *App) openLogFile(lf *LogFile) (io.ReadCloser, error) {
 
 func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 	st := time.Now()
-	wails.LogDebug(b.ctx, "start readOneLogFile path="+lf.Path)
+	OutLog("start readOneLogFile path=%s", lf.Path)
 	scanner := bufio.NewScanner(reader)
 	ln := 0
 	skipF := 0
@@ -492,7 +491,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		if b.processConf.Extractor != nil {
 			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
-				wails.LogError(b.ctx, fmt.Sprintf("grok err=%v:%s", err, l))
+				OutLog("grok err=%v:%s", err, l)
 				continue
 			}
 			for k, v := range values {
@@ -510,7 +509,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			if b.processConf.TimeField != "" {
 				tfi, ok := log.KeyValue[b.processConf.TimeField]
 				if !ok {
-					wails.LogError(b.ctx, fmt.Sprintf("no time field %s", l))
+					OutLog("no time field %s", l)
 					continue
 				}
 				tf, ok := tfi.(string)
@@ -519,7 +518,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				}
 				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(tf))
 				if err != nil || !ok {
-					wails.LogError(b.ctx, fmt.Sprintf("time parse err=%v:%s", err, l))
+					OutLog("time parse err=%v:%s", err, l)
 					continue
 				}
 			} else {
@@ -566,7 +565,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			if err != nil {
 				// 複数行は同じタイムスタンプにする
 				if lastTime < 1 {
-					wails.LogError(b.ctx, fmt.Sprintf("failed to get time stamp err=%v:%s", err, l))
+					OutLog("failed to get time stamp err=%v:%s", err, l)
 					continue
 				}
 			} else if ok {
@@ -575,7 +574,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				}
 				lastTime = ts.UnixNano()
 			} else {
-				wails.LogError(b.ctx, fmt.Sprintf("no time stamp: %s", l))
+				OutLog("no time stamp: %s", l)
 				continue
 			}
 		}
@@ -588,7 +587,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		b.processStat.ErrorMsg = err.Error()
 	}
 	lf.Duration = time.Since(st).String()
-	wails.LogDebug(b.ctx, fmt.Sprintf("end readOneLogFile ln=%d skip=%d", ln, skipF))
+	OutLog("end readOneLogFile ln=%d skip=%d", ln, skipF)
 }
 
 func (b *App) setTimeGrinder() error {
@@ -637,7 +636,7 @@ func (b *App) findExtractorType() *ExtractorType {
 			return &e
 		}
 	}
-	wails.LogDebug(b.ctx, b.config.Extractor)
+	OutLog(b.config.Extractor)
 	return nil
 }
 
@@ -657,7 +656,7 @@ func (b *App) setExtractor() error {
 	config.Patterns["TWLOGAIAN"] = et.Grok
 	g, err := grok.NewWithConfig(&config)
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("%#v", config))
+		OutLog("%#v err=%v", config, err)
 		return err
 	}
 	b.config.GeoFields = et.IPFields

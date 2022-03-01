@@ -29,7 +29,7 @@ func (b *App) Export(exportType string, data *ExportData) string {
 		err = b.exportCSV(data)
 	}
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("ExportTable err=%v", err))
+		OutLog("ExportTable err=%v", err)
 		return fmt.Sprintf("エクスポートできません err=%v", err)
 	}
 	return ""

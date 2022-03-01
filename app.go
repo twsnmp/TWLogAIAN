@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,6 +20,9 @@ import (
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.etcd.io/bbolt"
 )
+
+// Debug Mode
+var debug = false
 
 // App application struct
 type App struct {
@@ -51,6 +55,8 @@ func NewApp() *App {
 // startup is called at application startup
 func (b *App) startup(ctx context.Context) {
 	// Perform your setup here
+	env := wails.Environment(ctx)
+	debug = env.BuildType == "debug" || debug
 	b.ctx = ctx
 	b.loadAppConfig()
 }
@@ -80,10 +86,9 @@ func (b *App) loadAppConfig() {
 	}
 	j, err := ioutil.ReadFile(conf)
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("loadAppConfig err=%v", err))
+		OutLog("loadAppConfig err=%v", err)
 		return
 	}
-	wails.LogDebug(b.ctx, string(j))
 	json.Unmarshal(j, &b.appConfig)
 }
 
@@ -95,10 +100,9 @@ func (b *App) saveAppConfig() {
 	}
 	j, err := json.Marshal(&b.appConfig)
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("saveAppConfig err=%v", err))
+		OutLog("saveAppConfig err=%v", err)
 		return
 	}
-	wails.LogDebug(b.ctx, string(j))
 	ioutil.WriteFile(conf, j, 0600)
 }
 
@@ -106,10 +110,9 @@ func (b *App) saveAppConfig() {
 func (b *App) getConfigName() string {
 	c, err := os.UserConfigDir()
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("getConfigName err=%v", err))
+		OutLog("getConfigName err=%v", err)
 		return ""
 	}
-	wails.LogDebug(b.ctx, c)
 	return path.Join(c, "twlogaian.conf")
 }
 
@@ -127,7 +130,7 @@ func (b *App) OpenURL(url string) {
 		err = fmt.Errorf("unsupported platform")
 	}
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("open url=%s err=%v", url, err))
+		OutLog("open url=%s err=%v", url, err)
 	}
 }
 
@@ -144,7 +147,7 @@ func (b *App) SendFeedBack(msg string) bool {
 		strings.NewReader(values.Encode()),
 	)
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("send feedback err=%v", err))
+		OutLog("send feedback err=%v", err)
 		return false
 	}
 
@@ -154,17 +157,17 @@ func (b *App) SendFeedBack(msg string) bool {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("send feedback err=%v", err))
+		OutLog("send feedback err=%v", err)
 		return false
 	}
 	defer resp.Body.Close()
 	r, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		wails.LogError(b.ctx, fmt.Sprintf("send feedback err=%v", err))
+		OutLog("send feedback err=%v", err)
 		return false
 	}
 	if string(r) != "OK" {
-		wails.LogError(b.ctx, fmt.Sprintf("send feedback resp=%s", r))
+		OutLog("send feedback resp=%s", r)
 		return false
 	}
 	return true
@@ -190,4 +193,10 @@ func (b *App) SetDark(dark bool) {
 	}
 	b.appConfig.DarkMode = dark
 	b.saveAppConfig()
+}
+
+func OutLog(format string, v ...interface{}) {
+	if debug {
+		log.Printf(format, v...)
+	}
 }

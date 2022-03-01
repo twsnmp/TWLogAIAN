@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // GetExtractorTypes : 定義済みのログタイプのリスト情報を提供する
@@ -263,7 +261,7 @@ func (b *App) importExtractorTypes() {
 	r.FieldsPerRecord = -1
 	records, err := r.ReadAll()
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("importExtractorTypes err=%v", err)
 		return
 	}
 	for i, v := range records {
@@ -303,7 +301,7 @@ func (b *App) importFieldTypes() {
 	r.FieldsPerRecord = -1
 	records, err := r.ReadAll()
 	if err != nil {
-		wails.LogError(b.ctx, err.Error())
+		OutLog("importFieldTypes err=%v", err)
 		return
 	}
 	for _, v := range records {
