@@ -30,7 +30,7 @@
     history: [],
     keyword: {
       field: "",
-      mode: "",
+      mode: "+",
       key: "",
     },
     number: {

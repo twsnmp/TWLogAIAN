@@ -56,7 +56,7 @@ func NewApp() *App {
 func (b *App) startup(ctx context.Context) {
 	// Perform your setup here
 	env := wails.Environment(ctx)
-	debug = env.BuildType == "debug" || debug
+	debug = env.BuildType != "production" || debug
 	b.ctx = ctx
 	b.loadAppConfig()
 }

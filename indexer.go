@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -162,7 +163,7 @@ func (b *App) addLogToIndex() {
 				l.KeyValue[k+"_latlong"] = fmt.Sprintf("%0.3f,%0.3f", v.Lat, v.Long)
 				doc.AddField(bluge.NewTextField(k+"_country", v.Country))
 				doc.AddField(bluge.NewTextField(k+"_city", v.City))
-				doc.AddField(bluge.NewGeoPointField(k+"_latlong", v.Lat, v.Long))
+				doc.AddField(bluge.NewGeoPointField(k+"_latlong", v.Long, v.Lat))
 			default:
 				// Unknown Type
 				OutLog("unknown type %s=%v", k, v)
@@ -221,6 +222,8 @@ type SearchResult struct {
 	View     string
 }
 
+var regGeo = regexp.MustCompile(`\s*geo:(\S+)`)
+
 func (b *App) SearchLog(q string, limit int) SearchResult {
 	OutLog("SearchLog q=%#v", q)
 	view := "timeonly"
@@ -240,14 +243,22 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 	defer func() {
 		reader.Close()
 	}()
-	a := strings.SplitN(q, "geo:", 2)
 	geo := ""
-	if len(a) > 1 {
-		q = a[0]
-		geo = a[1]
+	if gl := regGeo.FindAllStringSubmatch(q, -1); len(gl) > 0 {
+		if len(gl) != 1 && len(gl[0]) != 2 {
+			ret.ErrorMsg = fmt.Sprintf("位置検索条件が正しくありません len=%d", len(gl))
+			return ret
+		}
+		q = strings.ReplaceAll(q, gl[0][0], "")
+		geo = gl[0][1]
+		OutLog("geo=%s", geo)
+	}
+	q = strings.TrimSpace(q)
+	if q == "" {
+		// 空欄は全件検索にする
+		q = "*"
 	}
 	qo := querystr.DefaultOptions()
-	//  TODO:オプションの考える
 	query, err := querystr.ParseQueryString(q, qo)
 	if err != nil {
 		OutLog("SearchLog err=%v", err)
@@ -255,25 +266,29 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 		return ret
 	}
 	if geo != "" {
-		a = strings.Split(geo, ",")
+		a := strings.Split(geo, ",")
 		if len(a) < 4 {
-			ret.ErrorMsg = fmt.Sprintf("invalid geo format=%s", geo)
+			OutLog("invalid geo formar=%s", geo)
+			ret.ErrorMsg = fmt.Sprintf("位置検索条件が正しくありません%s", geo)
 			return ret
 		}
 		lat, err := strconv.ParseFloat(a[1], 64)
 		if err != nil {
 			OutLog("SearchLog err=%v", err)
+			ret.ErrorMsg = fmt.Sprintf("位置検索条件が正しくありません err=%v", err)
 			return ret
 		}
 		long, err := strconv.ParseFloat(a[2], 64)
 		if err != nil {
 			OutLog("SearchLog err=%v", err)
-			ret.ErrorMsg = err.Error()
+			ret.ErrorMsg = fmt.Sprintf("位置検索条件が正しくありません err=%v", err)
 			return ret
 		}
-		gq := bluge.NewGeoDistanceQuery(lat, long, a[2]).SetField(a[0])
-		query = bluge.NewBooleanQuery().AddMust(query, gq)
+		gq := bluge.NewGeoDistanceQuery(long, lat, a[3]).SetField(a[0])
+		OutLog("GeoDistanceQuery err=%#v", gq)
+		query = bluge.NewBooleanQuery().AddMust(gq, query)
 	}
+
 	OutLog("query=%#+v", query)
 	req := bluge.NewTopNSearch(limit, query).WithStandardAggregations().SortBy([]string{"time"})
 	dmi, err := reader.Search(b.ctx, req)

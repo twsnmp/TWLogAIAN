@@ -18,7 +18,7 @@
   };
 
   const addKeyword = () => {
-    if( !conf.keyword.field || !conf.keyword.oper || !conf.keyword.value){
+    if( !conf.keyword.field || !conf.keyword.key){
       return
     }
     const q =
@@ -30,7 +30,8 @@
     if( !conf.number.field || !conf.number.oper || !conf.number.value){
       return
     }
-    const q = " " + conf.number.field + ":" + conf.number.oper + conf.number.value;
+    const oper = (conf.number.oper == "=") ? "=" : ":" + conf.number.oper
+    const q = " " + conf.number.field + oper + conf.number.value;
     dispatch("update", { query: q, add: true });
   };
 
@@ -52,7 +53,7 @@
     dispatch("update", { query: q, add: true });
   };
   const addGeo = () => {
-    if( !conf.geo.field || conf.geo.lat || conf.geo.long || conf.geo.range ){
+    if( !conf.geo.field || !conf.geo.lat || !conf.geo.long || !conf.geo.range ){
       return
     }
     const q =
@@ -63,7 +64,7 @@
       "," +
       conf.geo.long +
       "," +
-      conf.geo.range;
+      conf.geo.range + "km";
     dispatch("update", { query: q, add: true });
   };
 
@@ -153,7 +154,6 @@
           aria-label="項目"
           bind:value={conf.keyword.field}
         >
-          <option value="">全体</option>
           {#each fields as f}
             {#if !f.startsWith("_") && getFieldType(f) == "string"}
               <option value={f}>{getFieldName(f)}</option>
