@@ -53,11 +53,11 @@
     <hr />
     <p>
       TWLogAIANはAIアシスト付きログ分析ツールです。<br />
-      使い方は
+      活用法は
       <a
         href="##"
         on:click={() => {
-          openURL("https://note.com/twsnmp/m/meed0d0ddab5e");
+          openURL("https://note.com/twsnmp/m/m9c88e79743b6");
         }}>Noteのマガジン</a
       >に書いています。<br />
       ソースコードは
@@ -82,7 +82,7 @@
     <hr />
     <p>TWLogAIANを利用いただきありがとうございます。</p>
     <div class="f6">
-      <em><small>TWLogAIAN {version}© 2021 Masayuki Yamai</small></em>
+      <em><small>TWLogAIAN {version}© 2022 Masayuki Yamai</small></em>
     </div>
   </div>
   <div class="Box-footer text-right">
