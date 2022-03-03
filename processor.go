@@ -645,25 +645,29 @@ func (b *App) setExtractor() error {
 		b.processConf.Extractor = nil
 		return nil
 	}
-	et := b.findExtractorType()
-	if et == nil {
-		return fmt.Errorf("invalid extractor type %s", b.processConf.Extractor)
+	grstr := b.config.Grok
+	if b.config.Extractor != "custom" {
+		et := b.findExtractorType()
+		if et == nil {
+			return fmt.Errorf("invalid extractor type %s", b.processConf.Extractor)
+		}
+		b.config.GeoFields = et.IPFields
+		b.config.HostFields = et.IPFields
+		b.config.MACFields = et.MACFields
+		b.processConf.TimeField = et.TimeField
+		grstr = et.Grok
 	}
 	config := grok.Config{
 		Patterns:          make(map[string]string),
 		NamedCapturesOnly: true,
 	}
-	config.Patterns["TWLOGAIAN"] = et.Grok
+	config.Patterns["TWLOGAIAN"] = grstr
 	g, err := grok.NewWithConfig(&config)
 	if err != nil {
 		OutLog("%#v err=%v", config, err)
 		return err
 	}
-	b.config.GeoFields = et.IPFields
-	b.config.HostFields = et.IPFields
-	b.config.MACFields = et.MACFields
 	b.processConf.Extractor = g
-	b.processConf.TimeField = et.TimeField
 	return nil
 }
 
