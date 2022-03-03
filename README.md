@@ -27,7 +27,7 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 今後、
 
 - TWSNMP FCからログを取得する
-- Splukなどからログを取得する
+- Gravwellなどからログを取得する
 
 などの拡張を考えています。
 
@@ -72,6 +72,35 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 
 最初のお試し版をリリースしました。
 v1.0.0
+
+## Build
+
+ビルドのためには、ｗails v2のインストールが必要です。
+https://wails.io/docs/gettingstarted/installation/
+
+ビルドはmakeで行います。
+```
+$make
+```
+以下のターゲットが指定できます。
+```
+  all        全実行ファイルのビルド（省略可能）
+  mac        Mac用の実行ファイルのビルド
+  windows    Windows用の実行ファイルのビルド
+  clean      ビルドした実行ファイルの削除
+  dev        デバッグ環境の起動
+```
+
+```
+$make
+```
+を実行すれば、MacOS,Windows用の実行ファイルが、`build/bin`のディレクトリに作成されます。
+
+デバッグ用に起動するためには
+```
+$make dev
+```
+を実行します。
 
 
 ## Copyright
