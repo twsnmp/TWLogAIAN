@@ -99,9 +99,14 @@ export const getLogColums = (view) => {
   return columnsTimeOnly;
 }
 
-const getAccessLogData = (r) =>{
+const getAccessLogData = (r, filter) =>{
   const d = [];
   r.Logs.forEach((l) => {
+    if(filter && filter.st) {
+      if (l.Time < filter.st || l.Time > filter.et) {
+        return
+      }
+    }
     d.push([
       l.KeyValue.response,
       l.Time,
@@ -115,9 +120,14 @@ const getAccessLogData = (r) =>{
   return d
 }
 
-const getTimeOnlyLogData = (r) => {
+const getTimeOnlyLogData = (r, filter) => {
   const d = [];
   r.Logs.forEach((l) => {
+    if(filter && filter.st) {
+      if (l.Time < filter.st || l.Time > filter.et) {
+        return
+      }
+    }
     d.push([l.Score, l.Time, l.All]);
   });
   return d;
@@ -140,9 +150,14 @@ export const getSyslogLevel = (l) => {
   return "normal";
 }
 
-const getSyslogData = (r) => {
+const getSyslogData = (r,filter) => {
   const d = [];
   r.Logs.forEach((l) => {
+    if(filter && filter.st) {
+      if (l.Time < filter.st || l.Time > filter.et) {
+        return
+      }
+    }
     const message = l.KeyValue.message || "";
     const pid = l.KeyValue.pid || "";
     const tag =  l.KeyValue.tag || ((l.KeyValue.program || "") + (pid ? "[" + pid + "]" : ""));
@@ -153,12 +168,12 @@ const getSyslogData = (r) => {
   return d;
 }
 
-export const getLogData = (r) => {
+export const getLogData = (r,filter) => {
   switch (r.View) {
   case "syslog":
-    return getSyslogData(r);
+    return getSyslogData(r,filter);
   case "access":
-    return getAccessLogData(r);
+    return getAccessLogData(r,filter);
   }
-  return getTimeOnlyLogData(r);
+  return getTimeOnlyLogData(r,filter);
 }

@@ -68,6 +68,22 @@
     }
   });
   let pagination = false;
+  let filter = {
+    st: false,
+    et: false,
+  }
+  const setLogTable = () => {
+    columns = getLogColums(result.View);
+    data = getLogData(result,filter);
+    if (data.length > 10) {
+      pagination = {
+        limit: getTableLimit(),
+        enable: true,
+      };
+    } else {
+      pagination = false;
+    }
+  }
   const search = () => {
     data.length = 0; // 空にする
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
@@ -76,16 +92,7 @@
       busy = false;
       if (r) {
         result = r;
-        columns = getLogColums(r.View);
-        data = getLogData(r);
-        if (r.Logs.length > 10) {
-          pagination = {
-            limit: getTableLimit(),
-            enable: true,
-          };
-        } else {
-          pagination = false;
-        }
+        setLogTable();
         if (r.ErrorMsg == ""){
           conf.history.push(conf.query);
         }
@@ -122,9 +129,15 @@
     page = report;
   }
 
+  const zoomCallback = (st,et) => {
+    filter.st = st;
+    filter.et = et;
+    setLogTable();
+  }
+
   const updateChart = async () => {
     await tick();
-    showLogChart("chart",result,dark);
+    showLogChart("chart",result,dark, zoomCallback);
   };
 
   let exportType = '';
