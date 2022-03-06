@@ -30,6 +30,7 @@ type Config struct {
 	MACFields  string
 	InMemory   bool
 	SampleLog  string
+	ForceUTC   bool
 }
 
 type LogSource struct {

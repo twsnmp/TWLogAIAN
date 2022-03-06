@@ -26,6 +26,7 @@
     Recursive: false,
     InMemory: false,
     SampleLog: "",
+    ForceUTC: false,
   };
   let logSource = {
     No: 0,
@@ -68,9 +69,9 @@
     case "scp":
       return e.Server + ":" + e.Path;
     case "twsnmp":
-      return e.Server;
+      return e.Server + "/?start=" +e.Start + "&end="+ e.End + "&host=" + e.Host + "&tag=" + e.Tag + "&message=" +e.Pattern;
     case "gravwell":
-      return e.Server + ":qeury=" + e.Pattern;
+      return e.Server + "/?start=" +e.Start + "&end="+ e.End + "&qeury=`" + e.Pattern +"`";
     }
     return e.Path;
   }
@@ -153,9 +154,13 @@
       case "scp":
         return "SCP転送";
       case "cmd":
-        return "コマンド実行";
+        return "コマンド";
       case "ssh":
-        return "SSHコマンド実行";
+        return "SSHコマンド";
+      case "twsnmp":
+        return "TWSNMP連携";
+      case "gravwell":
+        return "Gravwell連携";
     }
     return "";
   };
@@ -361,6 +366,10 @@
             <label>
               <input type="checkbox" bind:checked={config.Recursive} />
               tar.gzの再帰読み込み
+            </label>
+            <label>
+              <input type="checkbox" bind:checked={config.ForceUTC} />
+              タイムゾーンなしはUTC
             </label>
           </div>
         </div>

@@ -42,12 +42,12 @@ func (b *App) readLogFromGravwell(lf *LogFile) error {
 	end := time.Now()
 	start := end.Add(time.Hour * -1)
 	if lf.LogSrc.Start != "" {
-		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.Start+" JST"); err != nil {
+		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.Start+" JST"); err == nil {
 			start = t
 		}
 	}
 	if lf.LogSrc.End != "" {
-		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.End+" JST"); err != nil {
+		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.End+" JST"); err == nil {
 			end = t
 		}
 	}

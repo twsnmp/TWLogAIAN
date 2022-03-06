@@ -195,7 +195,7 @@ func (b *App) makeLogFileList() string {
 		case "twsnmp":
 			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
 				Name:   s.Server,
-				Path:   fmt.Sprintf("start%s,end=%s,host=%s,tag=%s,message=%s", s.Start, s.End, s.Host, s.Tag, s.Pattern),
+				Path:   fmt.Sprintf("%s/?start=%s&end=%s&host=%s&tag=%s&message=%s", s.Server, s.Start, s.End, s.Host, s.Tag, s.Pattern),
 				Size:   0,
 				Read:   0,
 				Send:   0,
@@ -204,7 +204,7 @@ func (b *App) makeLogFileList() string {
 		case "gravwell":
 			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
 				Name:   s.Server,
-				Path:   fmt.Sprintf("start%s,end=%s,query=%s", s.Start, s.End, s.Pattern),
+				Path:   fmt.Sprintf("%s/?start=%s&end=%s&query=`%s`", s.Server, s.Start, s.End, s.Pattern),
 				Size:   0,
 				Read:   0,
 				Send:   0,
@@ -621,6 +621,9 @@ func (b *App) setTimeGrinder() error {
 	b.processConf.TimeGrinder, err = timegrinder.New(timegrinder.Config{
 		EnableLeftMostSeed: true,
 	})
+	if err == nil && b.processConf.TimeGrinder != nil && !b.config.ForceUTC {
+		b.processConf.TimeGrinder.SetLocalTime()
+	}
 	return err
 }
 
