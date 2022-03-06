@@ -37,6 +37,10 @@
     Password: "",
     Server: "",
     KeyPath: "",
+    Start: "",
+    End: "",
+    Tag: "",
+    Host: "",
   };
   let logSources = [];
   let errorMsg = "";
@@ -58,6 +62,19 @@
     });
   };
 
+  const getLSPath = (e) => {
+    switch(e.Type) {
+    case "ssh":
+    case "scp":
+      return e.Server + ":" + e.Path;
+    case "twsnmp":
+      return e.Server;
+    case "gravwell":
+      return e.Server + ":qeury=" + e.Pattern;
+    }
+    return e.Path;
+  }
+
   let pagination = false;
   const getLogSources = () => {
     window.go.main.App.GetLogSources().then((ds) => {
@@ -65,7 +82,7 @@
       if (ds) {
         logSources = ds;
         logSources.forEach((e) => {
-          const path = (e.Type == "scp" || e.Type == "ssh") ? e.Server + ":" + e.Path : e.Path;
+          const path = getLSPath(e);
           data.push([e.No, e.Type, path, ""]);
         });
         if (ds.length > 5) {

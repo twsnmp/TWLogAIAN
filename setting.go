@@ -43,6 +43,10 @@ type LogSource struct {
 	Password        string
 	SSHKey          string
 	scpSvc          storage.Storager
+	Start           string
+	End             string
+	Tag             string
+	Host            string
 }
 
 // SelectFile : ファイル/フォルダを選択する

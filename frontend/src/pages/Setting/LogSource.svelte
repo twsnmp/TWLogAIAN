@@ -9,7 +9,6 @@
   } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   export let logSource;
-  let pathError = false;
 
   const dispatch = createEventDispatcher();
   let errorMsg = "";
@@ -42,10 +41,6 @@
   };
 
   const save = () => {
-    if (logSource.Path == "") {
-      pathError = true;
-      return
-    }
     window.go.main.App.UpdateLogSource(logSource).then((e) => {
       errorMsg = e;
       if (e == "") {
@@ -73,7 +68,6 @@
     <button
       class="flash-close js-flash-close"
       type="button"
-      aria-label="Close"
       on:click={clearMsg}
     >
       <X16 />
@@ -89,7 +83,6 @@
       <div class="form-group-body">
         <select
           class="form-select"
-          aria-label="ログソース"
           bind:value={logSource.Type}
           disabled={editMode}
         >
@@ -98,11 +91,13 @@
           <option value="scp">SCP転送</option>
           <option value="cmd">コマンド実行</option>
           <option value="ssh">SSHコマンド実行</option>
+          <option value="twsnmp">TWSNMP FC連携</option>
+          <option value="gravwell">Gravwell連携</option>
         </select>
       </div>
     </div>
     {#if logSource.Type == "folder"}
-      <div class="form-group" class:errored={pathError}>
+      <div class="form-group">
         <div class="form-group-header">
           <h5>フォルダー</h5>
         </div>
@@ -112,9 +107,7 @@
               class="form-control"
               type="text"
               placeholder="フォルダー"
-              aria-label="フォルダー"
               bind:value={logSource.Path}
-              aria-describedby="path-input-validation"
             />
             <span class="input-group-button">
               <button class="btn" type="button" on:click={selectLogFolder}>
@@ -122,14 +115,11 @@
               </button>
             </span>
           </div>
-          <p class="note error" id="path-input-validation">
-            フォルダを選択してください
-          </p>
         </div>
       </div>
     {/if}
     {#if logSource.Type == "file"}
-      <div class="form-group class:errored={pathError}">
+      <div class="form-group">
         <div class="form-group-header">
           <h5>単一ファイル</h5>
         </div>
@@ -139,9 +129,7 @@
               class="form-control"
               type="text"
               placeholder="ファイル"
-              aria-label="ファイル"
               bind:value={logSource.Path}
-              aria-describedby="file-input-validation"
             />
             <span class="input-group-button">
               <button class="btn" type="button" on:click={selectLogFile}>
@@ -149,14 +137,11 @@
               </button>
             </span>
           </div>
-          <p class="note error" id="file-input-validation">
-            ファイルを選択してください。
-          </p>
         </div>
       </div>
     {/if}
     {#if logSource.Type == "cmd" || logSource.Type == "ssh" }
-      <div class="form-group" class:errored={pathError}>
+      <div class="form-group">
         <div class="form-group-header">
           <h5>コマンド</h5>
         </div>
@@ -165,9 +150,7 @@
             class="form-control input-block"
             type="text"
             placeholder="コマンド"
-            aria-label="コマンド"
             bind:value={logSource.Path}
-            aria-describedby="scppath-input-validation"
           />
         </div>
         <p class="note error" id="scppath-input-validation">
@@ -176,7 +159,7 @@
       </div>
     {/if}
     {#if logSource.Type == "scp" || logSource.Type == "ssh" }
-      <div class="form-group" class:errored={pathError}>
+      <div class="form-group">
         <div class="form-group-header">
           <h5>サーバー</h5>
         </div>
@@ -185,17 +168,12 @@
             class="form-control input-block"
             type="text"
             placeholder="サーバー"
-            aria-label="サーバー"
             bind:value={logSource.Server}
-            aria-describedby="server-input-validation"
           />
         </div>
-        <p class="note error" id="server-input-validation">
-           サーバーが空欄か形式が正しくありません
-        </p>
       </div>
       {#if logSource.Type == "scp" }
-        <div class="form-group" class:errored={pathError}>
+        <div class="form-group">
           <div class="form-group-header">
             <h5>パス</h5>
           </div>
@@ -204,14 +182,9 @@
               class="form-control input-block"
               type="text"
               placeholder="パス"
-              aria-label="パス"
               bind:value={logSource.Path}
-              aria-describedby="scppath-input-validation"
             />
           </div>
-          <p class="note error" id="scppath-input-validation">
-            パスを指定してください
-          </p>
         </div>
       {/if}
       <div class="form-group">
@@ -224,7 +197,6 @@
             class="form-control ml-2"
             type="text"
             placeholder="ユーザーID"
-            aria-label="ユーザーID"
             bind:value={logSource.User}
             />
           </p>
@@ -233,7 +205,6 @@
             class="form-control ml-2"
             type="password"
             placeholder="パスワード"
-            aria-label="パスワード"
             bind:value={logSource.Password}
             />
           </p>
@@ -249,7 +220,6 @@
               class="form-control"
               type="text"
               placeholder="SSHキーファイル"
-              aria-label="SSHキーファイル"
               bind:value={logSource.SSHKey}
             />
             <span class="input-group-button">
@@ -271,13 +241,12 @@
             class="form-control"
             type="text"
             placeholder="パターン"
-            aria-label="パターン"
             bind:value={logSource.Pattern}
           />
         </div>
       </div>
     {/if}
-    {#if logSource.Type != "cmd" && logSource.Type != "ssh"}
+    {#if logSource.Type != "cmd" && logSource.Type != "ssh" && logSource.Type != "twsnmp" && logSource.Type != "gravwell"}
       <div class="form-group">
         <div class="form-group-header">
           <h5>アーカイブ内ファイル名パターン</h5>
@@ -287,11 +256,123 @@
             class="form-control"
             type="text"
             placeholder="パターン"
-            aria-label="パターン"
             bind:value={logSource.InternalPattern}
           />
         </div>
       </div>
+    {/if}
+    {#if logSource.Type == "twsnmp" || logSource.Type == "gravwell"}
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5>サーバー</h5>
+        </div>
+        <div class="form-group-body">
+          <input
+            class="form-control input-block"
+            type="text"
+            placeholder="サーバー"
+            bind:value={logSource.Server}
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5>アクセス設定</h5>
+        </div>
+        <div class="form-group-body">
+          <p>
+            <input
+            class="form-control ml-2"
+            type="text"
+            placeholder="ユーザーID"
+            bind:value={logSource.User}
+            />
+          </p>
+          <p>
+            <input
+            class="form-control ml-2"
+            type="password"
+            placeholder="パスワード"
+            bind:value={logSource.Password}
+            />
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5>検索期間</h5>
+        </div>
+        <div class="form-group-body">
+          <input
+            class="form-control input-sm"
+            type="datetime-local"
+            placeholder="開始"
+            bind:value={logSource.Start}
+          />
+          -
+          <input
+            class="form-control input-sm"
+            type="datetime-local"
+            placeholder="終了"
+            bind:value={logSource.End}
+          />
+        </div>
+      </div>
+      {#if logSource.Type == "twsnmp"}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>ホスト名フィルター</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control input-block"
+              type="text"
+              placeholder="ホスト名"
+              bind:value={logSource.Host}
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>タグフィルター</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control input-block"
+              type="text"
+              placeholder="タグ"
+              bind:value={logSource.Tag}
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>メッセージフィルター</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control input-block"
+              type="text"
+              placeholder="メッセージ"
+              bind:value={logSource.Pattern}
+            />
+          </div>
+        </div>
+      {:else}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>検索文</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control input-block"
+              type="text"
+              placeholder="検索文"
+              bind:value={logSource.Pattern}
+            />
+          </div>
+        </div>
+      {/if}
     {/if}
 </form>
 </div>

@@ -192,6 +192,24 @@ func (b *App) makeLogFileList() string {
 				LogSrc: s,
 			})
 		//twsnmp
+		case "twsnmp":
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   s.Server,
+				Path:   fmt.Sprintf("start%s,end=%s,host=%s,tag=%s,message=%s", s.Start, s.End, s.Host, s.Tag, s.Pattern),
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: s,
+			})
+		case "gravwell":
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   s.Server,
+				Path:   fmt.Sprintf("start%s,end=%s,query=%s", s.Start, s.End, s.Pattern),
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: s,
+			})
 		default:
 			return "まだサポートしていません！"
 		}
@@ -311,6 +329,14 @@ func (b *App) logReader() {
 		}
 		if lf.LogSrc.Type == "ssh" {
 			b.readLogFromSSH(lf)
+			continue
+		}
+		if lf.LogSrc.Type == "twsnmp" {
+			b.readLogFromTWSNMP(lf)
+			continue
+		}
+		if lf.LogSrc.Type == "gravwell" {
+			b.readLogFromGravwell(lf)
 			continue
 		}
 		ext := strings.ToLower(filepath.Ext(lf.Path))

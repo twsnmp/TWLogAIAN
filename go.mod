@@ -29,7 +29,9 @@ require (
 	github.com/blevesearch/vellum v1.0.7 // indirect
 	github.com/blugelabs/bluge_segment_api v0.2.0 // indirect
 	github.com/blugelabs/ice v0.2.0 // indirect
+	github.com/buger/jsonparser v0.0.0-20191004114745-ee4c978eae7e // indirect
 	github.com/caio/go-tdigest v3.1.0+incompatible // indirect
+	github.com/crewjam/rfc5424 v0.1.0 // indirect
 	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
 	github.com/fasthttp/websocket v1.5.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
@@ -37,11 +39,17 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gofiber/fiber/v2 v2.28.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.16 // indirect
+	github.com/gofrs/flock v0.8.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/go-write v0.0.0-20181107114627-56629a6b2542 // indirect
+	github.com/google/renameio v0.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gravwell/gcfg v1.2.9-0.20210818172109-3d05a45a2665 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/leaanthony/go-ansi-parser v1.3.0 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
 	github.com/leaanthony/go-webview2 v1.0.3-0.20220125181555-00f20a61c17d // indirect
@@ -57,6 +65,7 @@ require (
 	github.com/richardlehane/mscfb v1.0.3 // indirect
 	github.com/richardlehane/msoleps v1.0.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20220201163454-d252f0a44d5b // indirect
 	github.com/tkrajina/go-reflector v0.5.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -66,6 +75,9 @@ require (
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.0.0-beta.27 => /Users/ymimacmini/go/pkg/mod/github.com/wailsapp/wails/v2@v2.0.0-beta.27
