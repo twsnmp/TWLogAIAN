@@ -157,17 +157,19 @@
     if (exportType == "excel") {
       exportData.Image = getLogChartImage();
     }
-    columns.forEach((e)=>{
-      exportData.Header.push(e.name);
-    });
-    data.forEach((l)=>{
-      const row = [];
-      l.forEach((e,i)=>{
-        const v = columns[i] && columns[i].convert && columns[i].formatter ? columns[i].formatter(e) : e;
-        row.push(v);
+    if (exportType != "logtypes") {
+      columns.forEach((e)=>{
+        exportData.Header.push(e.name);
       });
-      exportData.Data.push(row);
-    });
+      data.forEach((l)=>{
+        const row = [];
+        l.forEach((e,i)=>{
+          const v = columns[i] && columns[i].convert && columns[i].formatter ? columns[i].formatter(e) : e;
+          row.push(v);
+        });
+        exportData.Data.push(row);
+      });
+    }
     window.go.main.App.Export(exportType,exportData).then(()=>{
       saveBusy = false;
       exportType = "";
@@ -294,17 +296,20 @@
         <Grid {data} sort search {pagination} {columns} language={jaJP} />
       </div>
       <div class="Box-footer text-right">
-        {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
-          <!-- svelte-ignore a11y-no-onchange -->
-          {#if saveBusy}
-            <span>保存中</span><span class="AnimatedEllipsis"></span>
-          {:else}
-            <select class="form-select mr-2" bind:value={exportType} on:change="{exportLogs}">
-              <option value="">エクスポート</option>
+        <!-- svelte-ignore a11y-no-onchange -->
+        {#if saveBusy}
+          <span>保存中</span><span class="AnimatedEllipsis"></span>
+        {:else}
+          <select class="form-select mr-2" bind:value={exportType} on:change="{exportLogs}">
+            <option value="">エクスポート</option>
+            {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
               <option value="csv">CSV</option>
               <option value="excel">Excel</option>
-            </select>
-          {/if}
+            {/if}
+            <option value="logtypes">ログ種別定義</option>
+          </select>
+        {/if}
+        {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
           <!-- svelte-ignore a11y-no-onchange -->
           <select class="form-select mr-2" bind:value={report} on:change="{showReport}">
             <option value="">レポート</option>

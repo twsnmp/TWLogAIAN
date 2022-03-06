@@ -14,6 +14,7 @@ require (
 	github.com/xuri/excelize/v2 v2.5.0
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
+	gopkg.in/yaml.v2 v2.3.0
 )
 
 require (

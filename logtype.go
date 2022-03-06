@@ -1,10 +1,13 @@
 package main
 
 import (
-	"encoding/csv"
-	"fmt"
-	"os"
+	"io/ioutil"
 	"path/filepath"
+	"strings"
+	"time"
+
+	wails "github.com/wailsapp/wails/v2/pkg/runtime"
+	"gopkg.in/yaml.v2"
 )
 
 // GetExtractorTypes : 定義済みのログタイプのリスト情報を提供する
@@ -159,6 +162,7 @@ var extractorTypes = []ExtractorType{
 }
 
 type FieldType struct {
+	Key  string
 	Name string
 	Type string // number,string,latlong,time
 	Unit string
@@ -237,7 +241,7 @@ func setFieldTypes(l *LogEnt) {
 func setFieldType(f, t string) {
 	if _, ok := fieldTypes[f]; !ok {
 		if _, ok := importedFieldTypes[f]; !ok {
-			fieldTypes[f] = &FieldType{
+			importedFieldTypes[f] = &FieldType{
 				Name: f + "(自動追加)",
 				Type: t,
 			}
@@ -245,75 +249,96 @@ func setFieldType(f, t string) {
 	}
 }
 
+type exportLogType struct {
+	ExtractorTypes []ExtractorType
+	FieldTypes     []FieldType
+}
+
+func (b *App) ExportLogTypes() error {
+	file, err := wails.SaveFileDialog(b.ctx, wails.SaveDialogOptions{
+		DefaultFilename:      "logtypes.yaml",
+		CanCreateDirectories: false,
+		Filters: []wails.FileFilter{{
+			DisplayName: "Yaml ファイル",
+			Pattern:     "*.yaml",
+		}},
+	})
+	if err != nil {
+		OutLog("ExportLogTypes err=%v", err)
+		return err
+	}
+	export := exportLogType{}
+	if b.config.Extractor == "custom" {
+		d := time.Now().Format("20060102150405")
+		export.ExtractorTypes = append(export.ExtractorTypes, ExtractorType{
+			Key:       "custom_" + d,
+			Name:      "カスタム" + d,
+			Grok:      b.config.Grok,
+			IPFields:  b.getIPFields(),
+			MACFields: b.config.MACFields,
+			TimeField: b.config.TimeField,
+		})
+	} else {
+		export.ExtractorTypes = append(export.ExtractorTypes, extractorTypes...)
+		export.ExtractorTypes = append(export.ExtractorTypes, importedExtractorTypes...)
+		for k, e := range fieldTypes {
+			e.Key = k
+			export.FieldTypes = append(export.FieldTypes, *e)
+		}
+	}
+	for k, e := range importedFieldTypes {
+		e.Key = k
+		export.FieldTypes = append(export.FieldTypes, *e)
+	}
+	d, err := yaml.Marshal(&export)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(file, d, 0660)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *App) getIPFields() string {
+	m := make(map[string]bool)
+	u := []string{}
+	for _, ip := range b.processConf.HostFields {
+		if !m[ip] {
+			m[ip] = true
+			u = append(u, ip)
+		}
+	}
+	for _, ip := range b.processConf.GeoFields {
+		if !m[ip] {
+			m[ip] = true
+			u = append(u, ip)
+		}
+	}
+	return strings.Join(u, ",")
+}
+
 var importedExtractorTypes = []ExtractorType{}
 var importedFieldTypes = make(map[string]*FieldType)
 
-// importExtractorTypes : 抽出パターン定義のインポート
-func (b *App) importExtractorTypes() {
+// importLogTypes : ログ種別定義のインポート
+func (b *App) importLogTypes() {
 	importedExtractorTypes = []ExtractorType{}
-	f, err := os.Open(filepath.Join(b.workdir, "extractor.tsv"))
-	if err != nil {
-		return
-	}
-	r := csv.NewReader(f)
-	r.Comma = '\t'
-	r.Comment = '#'
-	r.FieldsPerRecord = -1
-	records, err := r.ReadAll()
-	if err != nil {
-		OutLog("importExtractorTypes err=%v", err)
-		return
-	}
-	for i, v := range records {
-		if len(v) > 1 {
-			e := ExtractorType{
-				Key:  fmt.Sprintf("EXT%d", i),
-				Name: v[0],
-				Grok: v[1],
-			}
-			if len(v) > 2 {
-				e.TimeField = v[2]
-				if len(v) > 3 {
-					e.IPFields = v[3]
-					if len(v) > 4 {
-						e.MACFields = v[4]
-						if len(v) > 5 {
-							e.View = v[5]
-						}
-					}
-				}
-			}
-			importedExtractorTypes = append(importedExtractorTypes, e)
-		}
-	}
-}
-
-// importFieldTypes : 抽出項目のインポート
-func (b *App) importFieldTypes() {
 	importedFieldTypes = make(map[string]*FieldType)
-	f, err := os.Open(filepath.Join(b.workdir, "fields.tsv"))
+	d, err := ioutil.ReadFile(filepath.Join(b.workdir, "logtypes.yaml"))
 	if err != nil {
+		OutLog("importLogTypes err=%v", err)
 		return
 	}
-	r := csv.NewReader(f)
-	r.Comma = '\t'
-	r.Comment = '#'
-	r.FieldsPerRecord = -1
-	records, err := r.ReadAll()
+	export := new(exportLogType)
+	err = yaml.Unmarshal(d, &export)
 	if err != nil {
-		OutLog("importFieldTypes err=%v", err)
+		OutLog("importLogTypes err=%v", err)
 		return
 	}
-	for _, v := range records {
-		if len(v) > 2 {
-			f := FieldType{
-				Name: v[1],
-				Type: v[2],
-			}
-			if len(v) > 3 {
-				f.Unit = v[3]
-			}
-			importedFieldTypes[v[0]] = &f
-		}
+	importedExtractorTypes = append(importedExtractorTypes, export.ExtractorTypes...)
+	for _, e := range export.FieldTypes {
+		importedFieldTypes[e.Key] = &e
 	}
 }

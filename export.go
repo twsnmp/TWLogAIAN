@@ -23,10 +23,15 @@ type ExportData struct {
 
 func (b *App) Export(exportType string, data *ExportData) string {
 	var err error
-	if exportType == "excel" {
+	switch exportType {
+	case "logtypes":
+		err = b.ExportLogTypes()
+	case "excel":
 		err = b.exportExcel(data)
-	} else {
+	case "csv":
 		err = b.exportCSV(data)
+	default:
+		return "サポートしていません"
 	}
 	if err != nil {
 		OutLog("ExportTable err=%v", err)
