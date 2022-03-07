@@ -535,7 +535,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			if b.processConf.TimeField != "" {
 				tfi, ok := log.KeyValue[b.processConf.TimeField]
 				if !ok {
-					OutLog("no time field %s", l)
+					OutLog("no time field '%s' %s", b.processConf.TimeField, l)
 					continue
 				}
 				tf, ok := tfi.(string)

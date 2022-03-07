@@ -1,5 +1,5 @@
 <script>
-  import { X16, Search16,TriangleDown16,TriangleUp16,Check16,Trash16 } from "svelte-octicons";
+  import { X16, Search16,TriangleDown16,TriangleUp16,Check16,Trash16, Reply16 } from "svelte-octicons";
   import Query from "./Query.svelte"
   import Result from "./Result.svelte"
   import { createEventDispatcher,onMount, tick } from "svelte";
@@ -109,9 +109,13 @@
     });
   });
 
-  const cancel = () => {
+  const end = () => {
     window.go.main.App.CloseWorkDir();
     dispatch("done", { page: "wellcome" });
+  };
+
+  const back = () => {
+    dispatch("done", { page: "setting" });
   };
 
   const clearMsg = () => {
@@ -328,7 +332,11 @@
           <Check16 />
           処理結果
         </button>
-        <button class="btn  btn-secondary" type="button" on:click={cancel}>
+        <button class="btn  btn-secondary mr-2" type="button" on:click={back}>
+          <Reply16 />
+          戻る
+        </button>
+        <button class="btn  btn-secondary" type="button" on:click={end}>
           <X16 />
           終了
         </button>
