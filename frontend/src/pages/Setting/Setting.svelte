@@ -152,6 +152,7 @@
     getLogSources();
     getExtractorTypes();
     getHasIndex();
+    getHasImportedLogTypes();
   });
 
   const editLogSource = (sno) => {
@@ -398,7 +399,7 @@
             </label>
             <label>
               <input type="checkbox" bind:checked={config.ForceUTC} />
-              タイムゾーンなしはUTC
+              タイムゾーン不明はUTC
             </label>
           </div>
         </div>
