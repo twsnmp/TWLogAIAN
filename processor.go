@@ -660,7 +660,7 @@ func (b *App) findExtractorType() *ExtractorType {
 			return &e
 		}
 	}
-	for _, e := range importedExtractorTypes {
+	for _, e := range b.importedExtractorTypes {
 		if e.Key == b.config.Extractor {
 			return &e
 		}

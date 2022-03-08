@@ -117,7 +117,6 @@ func (b *App) SetWorkDir(wd string) string {
 	}
 	b.addWorkDirs(wd)
 	b.workdir = wd
-	b.importLogTypes()
 	return ""
 }
 
@@ -168,11 +167,22 @@ func (b *App) loadSettingsFromDB() error {
 			return err
 		}
 		v = bkt.Get([]byte("logSources"))
-		if v == nil {
-			return nil
+		if v != nil {
+			if err := json.Unmarshal(v, &b.logSources); err != nil {
+				return err
+			}
 		}
-		if err := json.Unmarshal(v, &b.logSources); err != nil {
-			return err
+		v = bkt.Get([]byte("extractorTypes"))
+		if v != nil {
+			if err := json.Unmarshal(v, &b.importedExtractorTypes); err != nil {
+				return err
+			}
+		}
+		v = bkt.Get([]byte("fieldTypes"))
+		if v != nil {
+			if err := json.Unmarshal(v, &b.importedFieldTypes); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -188,12 +198,26 @@ func (b *App) saveSettingsToDB() error {
 	if err != nil {
 		return err
 	}
+	ietj, err := json.Marshal(b.importedExtractorTypes)
+	if err != nil {
+		return err
+	}
+	iftj, err := json.Marshal(b.importedFieldTypes)
+	if err != nil {
+		return err
+	}
 	return b.db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte("settings"))
 		if b == nil {
 			return fmt.Errorf("bucket settings is nil")
 		}
 		if err := b.Put([]byte("config"), cj); err != nil {
+			return err
+		}
+		if err := b.Put([]byte("extractorTypes"), ietj); err != nil {
+			return err
+		}
+		if err := b.Put([]byte("fieldTypes"), iftj); err != nil {
 			return err
 		}
 		return b.Put([]byte("logSources"), lsj)

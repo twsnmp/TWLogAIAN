@@ -105,7 +105,7 @@ func (b *App) logIndexer() {
 				timer.Stop()
 				if bFirstLog && len(b.indexer.logBuffer) > 0 {
 					bFirstLog = false
-					setFieldTypes(b.indexer.logBuffer[0])
+					b.setFieldTypes(b.indexer.logBuffer[0])
 				}
 				b.addLogToIndex()
 				b.indexer.logBuffer = []*LogEnt{}
@@ -119,7 +119,7 @@ func (b *App) logIndexer() {
 			if len(b.indexer.logBuffer) > 10000 {
 				if bFirstLog {
 					bFirstLog = false
-					setFieldTypes(b.indexer.logBuffer[0])
+					b.setFieldTypes(b.indexer.logBuffer[0])
 				}
 				// Index作成
 				b.addLogToIndex()

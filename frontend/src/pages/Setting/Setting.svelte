@@ -1,5 +1,5 @@
 <script>
-  import { X16, Plus16, Check16, File16, Checklist16, Trash16, Search16 } from "svelte-octicons";
+  import { X16, Plus16, Check16, File16, Checklist16, Trash16, Search16, Download16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
@@ -49,6 +49,7 @@
   let page = "";
   let orgConfig;
   let hasIndex = false;
+  let hasImportedLogType = false;
 
   const getConfig = () => {
     window.go.main.App.GetConfig().then((c) => {
@@ -60,6 +61,34 @@
   const getHasIndex = () => {
     window.go.main.App.HasIndex().then((r) => {
       hasIndex = r;
+    });
+  };
+
+  const getHasImportedLogTypes = () => {
+    window.go.main.App.HasImportedLogTypes().then((r) => {
+      hasImportedLogType = r;
+    });
+  };
+
+  const importLogTypes = () => {
+    window.go.main.App.ImportLogTypes().then((r) => {
+      errorMsg = r;
+      if (r == "") {
+        getHasImportedLogTypes();
+        getExtractorTypes();
+        loadFieldTypes();
+      }
+    });
+  };
+
+  const deleteLogTypes = () => {
+    window.go.main.App.DeleteLogTypes().then((r) => {
+      errorMsg = r;
+      if (r == "") {
+        getHasImportedLogTypes();
+        getExtractorTypes();
+        loadFieldTypes();
+      }
     });
   };
 
@@ -559,6 +588,25 @@
       </form>
     </div>
     <div class="Box-footer text-right">
+      {#if hasImportedLogType}
+          <button
+            class="btn btn-danger mr-2"
+            type="button"
+            on:click={deleteLogTypes}
+            >
+            <Trash16 />
+            拡張ログタイプ削除
+        </button>
+      {:else}
+        <button
+          class="btn btn-outline mr-2"
+          type="button"
+          on:click={importLogTypes}
+        >
+          <Download16 />
+          拡張ログタイプインポート
+        </button>
+      {/if}
       <button
         class="btn btn-outline mr-2"
         type="button"

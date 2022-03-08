@@ -2,7 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -14,17 +13,17 @@ import (
 func (b *App) GetExtractorTypes() []ExtractorType {
 	ret := []ExtractorType{}
 	ret = append(ret, extractorTypes...)
-	ret = append(ret, importedExtractorTypes...)
+	ret = append(ret, b.importedExtractorTypes...)
 	return ret
 }
 
 // GetFieldTypes : 定義済みのログタイプのリスト情報を提供する
-func (b *App) GetFieldTypes() map[string]*FieldType {
-	ret := make(map[string]*FieldType)
+func (b *App) GetFieldTypes() map[string]FieldType {
+	ret := make(map[string]FieldType)
 	for k, v := range fieldTypes {
 		ret[k] = v
 	}
-	for k, v := range importedFieldTypes {
+	for k, v := range b.importedFieldTypes {
 		ret[k] = v
 	}
 	return ret
@@ -168,7 +167,7 @@ type FieldType struct {
 	Unit string
 }
 
-var fieldTypes = map[string]*FieldType{
+var fieldTypes = map[string]FieldType{
 	"_all":                 {Name: "ログの行全体", Type: "_all"},
 	"httpversion":          {Name: "HTTPバージョン", Type: "string"},
 	"ident":                {Name: "識別子", Type: "string"},
@@ -222,26 +221,26 @@ var fieldTypes = map[string]*FieldType{
 	"_None":                {Name: "項目なし", Type: "string"},
 }
 
-func setFieldTypes(l *LogEnt) {
+func (b *App) setFieldTypes(l *LogEnt) {
 	for f, i := range l.KeyValue {
 		switch i.(type) {
 		case string:
-			setFieldType(f, "string")
+			b.setFieldType(f, "string")
 		case float64:
-			setFieldType(f, "number")
+			b.setFieldType(f, "number")
 		case *GeoEnt:
-			setFieldType(f, "geo")
-			setFieldType(f+"_country", "string")
-			setFieldType(f+"_city", "string")
-			setFieldType(f+"_latlong", "latlong")
+			b.setFieldType(f, "geo")
+			b.setFieldType(f+"_country", "string")
+			b.setFieldType(f+"_city", "string")
+			b.setFieldType(f+"_latlong", "latlong")
 		}
 	}
 }
 
-func setFieldType(f, t string) {
+func (b *App) setFieldType(f, t string) {
 	if _, ok := fieldTypes[f]; !ok {
-		if _, ok := importedFieldTypes[f]; !ok {
-			importedFieldTypes[f] = &FieldType{
+		if _, ok := b.importedFieldTypes[f]; !ok {
+			b.importedFieldTypes[f] = FieldType{
 				Name: f + "(自動追加)",
 				Type: t,
 			}
@@ -280,15 +279,15 @@ func (b *App) ExportLogTypes() error {
 		})
 	} else {
 		export.ExtractorTypes = append(export.ExtractorTypes, extractorTypes...)
-		export.ExtractorTypes = append(export.ExtractorTypes, importedExtractorTypes...)
+		export.ExtractorTypes = append(export.ExtractorTypes, b.importedExtractorTypes...)
 		for k, e := range fieldTypes {
 			e.Key = k
-			export.FieldTypes = append(export.FieldTypes, *e)
+			export.FieldTypes = append(export.FieldTypes, e)
 		}
 	}
-	for k, e := range importedFieldTypes {
+	for k, e := range b.importedFieldTypes {
 		e.Key = k
-		export.FieldTypes = append(export.FieldTypes, *e)
+		export.FieldTypes = append(export.FieldTypes, e)
 	}
 	d, err := yaml.Marshal(&export)
 	if err != nil {
@@ -319,26 +318,47 @@ func (b *App) getIPFields() string {
 	return strings.Join(u, ",")
 }
 
-var importedExtractorTypes = []ExtractorType{}
-var importedFieldTypes = make(map[string]*FieldType)
-
-// importLogTypes : ログ種別定義のインポート
-func (b *App) importLogTypes() {
-	importedExtractorTypes = []ExtractorType{}
-	importedFieldTypes = make(map[string]*FieldType)
-	d, err := ioutil.ReadFile(filepath.Join(b.workdir, "logtypes.yaml"))
+// ImportLogTypes : ログタイプ定義のインポート
+func (b *App) ImportLogTypes() string {
+	file, err := wails.OpenFileDialog(b.ctx, wails.OpenDialogOptions{
+		DefaultFilename: "logtypes.yaml",
+		Filters: []wails.FileFilter{{
+			DisplayName: "Yaml ファイル",
+			Pattern:     "*.yaml",
+		}},
+	})
 	if err != nil {
 		OutLog("importLogTypes err=%v", err)
-		return
+		return "ファイルを選択できません err=" + err.Error()
+	}
+	b.importedExtractorTypes = []ExtractorType{}
+	b.importedFieldTypes = make(map[string]FieldType)
+	d, err := ioutil.ReadFile(file)
+	if err != nil {
+		OutLog("importLogTypes err=%v", err)
+		return "ファイルを読み込めません err=" + err.Error()
 	}
 	export := new(exportLogType)
 	err = yaml.Unmarshal(d, &export)
 	if err != nil {
 		OutLog("importLogTypes err=%v", err)
-		return
+		return "ファイルのフォーマットが違います err=" + err.Error()
 	}
-	importedExtractorTypes = append(importedExtractorTypes, export.ExtractorTypes...)
+	b.importedExtractorTypes = append(b.importedExtractorTypes, export.ExtractorTypes...)
 	for _, e := range export.FieldTypes {
-		importedFieldTypes[e.Key] = &e
+		b.importedFieldTypes[e.Key] = e
 	}
+	return ""
+}
+
+// DeleteLogTypes : インポートしたログタイプを削除する
+func (b *App) DeleteLogTypes() string {
+	b.importedExtractorTypes = []ExtractorType{}
+	b.importedFieldTypes = make(map[string]FieldType)
+	return ""
+}
+
+// HasImportedLogTypes : インポートしたログタイプの有無を返す
+func (b *App) HasImportedLogTypes() bool {
+	return len(b.importedExtractorTypes) > 0
 }
