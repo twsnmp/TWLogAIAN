@@ -1,6 +1,7 @@
 // Log を表示するための処理
 import * as echarts from 'echarts';
 import { html } from "gridjs";
+import { RowSelection } from "gridjs/plugins/selection";
 
 const formatCode = (code) => {
   if (code < 300) {
@@ -25,9 +26,15 @@ const formatLevel = (level) => {
 
 const columnsTimeOnly = [
   {
-    name: "スコア",
-    width: "10%",
-    formatter: (cell) => Number.parseFloat(cell).toFixed(2),
+    id: "selectLog",
+    name: "",
+    width: "5%",
+    plugin: {
+      component: RowSelection,
+      props: {
+        id: (row) => row.cell(2).data
+      }
+    },
   },{
     name: "日時",
     width: "20%",
@@ -38,6 +45,20 @@ const columnsTimeOnly = [
     width: "70%",
   },
 ];
+
+const getTimeOnlyLogData = (r, filter) => {
+  const d = [];
+  r.Logs.forEach((l) => {
+    if(filter && filter.st) {
+      if (l.Time < filter.st || l.Time > filter.et) {
+        return
+      }
+    }
+    d.push([l.Time, l.All]);
+  });
+  return d;
+}
+
 
 const columnsSyslog = [
   {
@@ -118,19 +139,6 @@ const getAccessLogData = (r, filter) =>{
     ]);
   });
   return d
-}
-
-const getTimeOnlyLogData = (r, filter) => {
-  const d = [];
-  r.Logs.forEach((l) => {
-    if(filter && filter.st) {
-      if (l.Time < filter.st || l.Time > filter.et) {
-        return
-      }
-    }
-    d.push([l.Score, l.Time, l.All]);
-  });
-  return d;
 }
 
 export const getSyslogLevel = (l) => {
