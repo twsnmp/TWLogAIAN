@@ -13,7 +13,7 @@
   import Result from "./Result.svelte";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showLogChart, resizeLogChart, getLogChartImage } from "./logchart";
-  import { getLogData, getLogColums } from "./logview";
+  import { getLogData, getLogColums, getSelectedLogs, clearSelectedLogs } from "./logview";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import Ranking from "../Report/Ranking.svelte";
@@ -77,15 +77,18 @@
       indexInfo = r;
     }
   });
-  let grid;
   let pagination = false;
   let filter = {
     st: false,
     et: false,
   };
+  let logView  = "";
+  let selectedLogs = "";
   const setLogTable = () => {
-    columns = getLogColums(result.View);
-    data = getLogData(result, filter);
+    selectedLogs = "";
+    clearSelectedLogs();
+    columns = getLogColums(logView);
+    data = getLogData(result,logView, filter);
     if (data.length > 10) {
       pagination = {
         limit: getTableLimit(),
@@ -103,6 +106,7 @@
       busy = false;
       if (r) {
         result = r;
+        logView = r.View;
         setLogTable();
         if (r.ErrorMsg == "") {
           conf.history.push(conf.query);
@@ -215,18 +219,12 @@
     conf.query = "";
   };
 
-  let selectedLogs = "";
-  const gridReady = (...args) => {
-    if (grid) {
-      const cb = grid.config.plugin.get("selectLog");
-      if (cb) {
-        cb.props.store.on('updated', (state, prevState) => {
-            console.log('checkbox updated', state, prevState);
-            selectedLogs = state.rowIds.join("\n");
-        });
-      }
-    }
+  const rowClick = (e) => {
+    setTimeout(()=>{
+      selectedLogs = getSelectedLogs();
+    },10);
   };
+
   let showCopy = false;
   const copy = () => {
     showCopy = true;
@@ -239,6 +237,11 @@
       showCopy = false;
     },2000);
   };
+
+  const chnageLogView = ()  => {
+    setLogTable();
+  };
+
 </script>
 
 <svelte:window on:resize={onResize} />
@@ -359,17 +362,35 @@
     </div>
     <div class="Box-row markdown-body log">
       <Grid
-        bind:instance={grid}
         {data}
         sort
         search
         {pagination}
         {columns}
         language={jaJP}
-        on:ready={gridReady}
+        on:rowClick={rowClick}
       />
     </div>
     <div class="Box-footer text-right">
+      {#if result && result.Hit > 0 }
+        <!-- svelte-ignore a11y-no-onchange -->
+        <select
+          class="form-select mr-2"
+          bind:value={logView}
+          on:change={chnageLogView}
+        >
+          <option value="">タイムオンリー</option>
+          {#if result.View == "syslog"}
+            <option value="syslog">syslog</option>
+          {/if}
+          {#if result.View == "access"}
+            <option value="access">アクセスログ</option>
+          {/if}
+          {#if indexInfo.Fields.length > 0}
+            <option value="data">抽出データ</option>
+          {/if}
+        </select>
+      {/if}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
         <span>保存中</span><span class="AnimatedEllipsis" />

@@ -1,7 +1,6 @@
 // Log を表示するための処理
 import * as echarts from 'echarts';
-import { html } from "gridjs";
-import { RowSelection } from "gridjs/plugins/selection";
+import { html,h } from "gridjs";
 
 const formatCode = (code) => {
   if (code < 300) {
@@ -24,25 +23,49 @@ const formatLevel = (level) => {
   return html(`<div class="color-fg-default">正常</div>`);
 }
 
+const selectLogMap = new Map()
+
+export const getSelectedLogs = () => {
+  return Array.from(selectLogMap).join("\n");
+}
+
+export const clearSelectedLogs = () => {
+  selectLogMap.clear();
+}
+
 const columnsTimeOnly = [
   {
-    id: "selectLog",
+    id: "select",
     name: "",
     width: "5%",
-    plugin: {
-      component: RowSelection,
-      props: {
-        id: (row) => row.cell(2).data
-      }
+    sort: false,
+    formatter: (cell, row) => {
+      return h('input', {
+        type: 'checkbox',
+        onChange: () => {
+          const key = row.cells[3].data
+          if (selectLogMap.has(key)) {
+            selectLogMap.delete(key); 
+          } else {
+            selectLogMap.set(key,true);
+          }
+        }
+      });
     },
   },{
+    id: "level",
+    name: "レベル",
+    width: "10%",
+    formatter: (cell) => formatLevel(cell),
+  },{
+    id: "timestamp",
     name: "日時",
     width: "20%",
     formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
     convert: true,
   },{
     name: "ログ",
-    width: "70%",
+    width: "65%",
   },
 ];
 
@@ -54,7 +77,7 @@ const getTimeOnlyLogData = (r, filter) => {
         return
       }
     }
-    d.push([l.Time, l.All]);
+    d.push(["",getLogLevel(l),l.Time, l.All]);
   });
   return d;
 }
@@ -62,21 +85,26 @@ const getTimeOnlyLogData = (r, filter) => {
 
 const columnsSyslog = [
   {
+    id: "level",
     name: "レベル",
     width: "10%",
     formatter: (cell) => formatLevel(cell),
   },{
+    id: "timestamp",
     name: "日時",
     width: "15%",
     formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
     convert: true,
   },{
+    id: "logsrc",
     name: "送信元",
     width: "15%",
   },{
+    id: "tag",
     name: "タグ",
     width: "20%",
   },{
+    id: "message",
     name: "メッセージ",
     width: "40%",
   },
@@ -84,27 +112,34 @@ const columnsSyslog = [
 
 const columnsAccessLog = [
   {
+    id: "code",
     name: "応答",
     width: "8%",
     formatter: (cell) => formatCode(cell),
   },{
+    id: "timestamp",
     name: "日時",
     width: "15%",
     formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
     convert: true,
   },{
+    id: "req",
     name: "リクエスト",
     width: "10%",
   },{
+    id: "size",
     name: "サイズ",
     width: "8%",
   },{
+    id: "client",
     name: "アクセス元",
     width: "25%",
   },{
+    id: "ISO",
     name: "国",
     width: "8%",
   },{
+    id: "path",
     name: "パス",
     width: "26%",
   },
@@ -141,7 +176,7 @@ const getAccessLogData = (r, filter) =>{
   return d
 }
 
-export const getSyslogLevel = (l) => {
+export const getLogLevel = (l) => {
   let suverity = l.KeyValue.suverity || l.KeyValue.priority;
   if (suverity && suverity != "") {
     // 数値のsuverityを優先する
@@ -170,14 +205,14 @@ const getSyslogData = (r,filter) => {
     const pid = l.KeyValue.pid || "";
     const tag =  l.KeyValue.tag || ((l.KeyValue.program || "") + (pid ? "[" + pid + "]" : ""));
     const src = l.KeyValue.logsource || "";
-    const level = getSyslogLevel(l);
+    const level = getLogLevel(l);
     d.push([level,l.Time,src,tag,message ]);
   });
   return d;
 }
 
-export const getLogData = (r,filter) => {
-  switch (r.View) {
+export const getLogData = (r,view,filter) => {
+  switch (view) {
   case "syslog":
     return getSyslogData(r,filter);
   case "access":

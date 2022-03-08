@@ -1,5 +1,5 @@
 import * as echarts from "echarts";
-import { getSyslogLevel } from "./logview";
+import { getLogLevel } from "./logview";
 
 let chart;
 
@@ -130,12 +130,12 @@ const addMultiChartData = (data, count, ctm, newCtm) => {
   return ctm;
 };
 
-const getLogLevel = (l) => {
+const getChartLogLevel = (l) => {
   const code = l.KeyValue.response;
   if (code) {
     return code < 300 ? "normal" : code < 400 ? "warn" : "error";
   }
-  return getSyslogLevel(l);
+  return getLogLevel(l);
 };
 
 const showLogLevelChart = (div, logs, dark) => {
@@ -156,7 +156,7 @@ const showLogLevelChart = (div, logs, dark) => {
   };
   let ctm;
   logs.forEach((l) => {
-    const lvl = getLogLevel(l);
+    const lvl = getChartLogLevel(l);
     const newCtm = Math.floor(l.Time / (1000 * 1000 * 1000 * 60));
     if (!ctm) {
       ctm = newCtm;
