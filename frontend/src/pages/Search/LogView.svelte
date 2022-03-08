@@ -87,7 +87,7 @@
   const setLogTable = () => {
     selectedLogs = "";
     clearSelectedLogs();
-    columns = getLogColums(logView);
+    columns = getLogColums(logView, indexInfo.Fields);
     data = getLogData(result,logView, filter);
     if (data.length > 10) {
       pagination = {
@@ -364,6 +364,7 @@
       <Grid
         {data}
         sort
+        resizable
         search
         {pagination}
         {columns}

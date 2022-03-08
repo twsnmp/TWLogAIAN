@@ -40,7 +40,7 @@ export const getFields = (fields,t) => {
 
 export const getTableLimit = () => {
   if(window.innerHeight > 880) {
-    return 10 + Math.floor((window.innerHeight - 880 ) /25);
+    return 10 + Math.floor((window.innerHeight - 880 ) /30);
   }
   return 10;
 }

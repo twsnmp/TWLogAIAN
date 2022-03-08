@@ -30,7 +30,7 @@
 }
 
 .gridjs-container {
-  overflow: hidden;
+  overflow: auto;
   display: inline-block;
   position: relative;
   z-index: 0;

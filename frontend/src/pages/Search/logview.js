@@ -1,6 +1,7 @@
 // Log を表示するための処理
 import * as echarts from 'echarts';
 import { html,h } from "gridjs";
+import { getFieldName } from '../../js/define';
 
 const formatCode = (code) => {
   if (code < 300) {
@@ -145,12 +146,35 @@ const columnsAccessLog = [
   },
 ];
 
-export const getLogColums = (view) => {
+const makeDataColumns = (fields) => {
+  const colums = [];
+  colums.push({
+    id: "time",
+    name: "日時",
+    formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
+    convert: true,
+  });
+  fields.forEach((f) => {
+    if (f == "time"|| f == "timestamp" || f.startsWith("_")){
+      return;
+    }
+    colums.push({
+      id: f,
+      name: getFieldName(f),
+    });
+  });
+  console.log(colums);
+  return colums;
+}
+
+export const getLogColums = (view, fields) => {
   switch(view) {
     case "syslog":
         return columnsSyslog;
     case "access":
       return columnsAccessLog;
+    case "data":
+      return makeDataColumns(fields);
   }
   return columnsTimeOnly;
 }
@@ -211,12 +235,36 @@ const getSyslogData = (r,filter) => {
   return d;
 }
 
+const getExtractData = (r,filter) => {
+  const d = [];
+  r.Logs.forEach((l) => {
+    if(filter && filter.st) {
+      if (l.Time < filter.st || l.Time > filter.et) {
+        return
+      }
+    }
+    const ent = { time:l.Time}
+    Object.keys(l.KeyValue).forEach((k) => {
+      if (k == "time" || k == "timestamp" ||  k.startsWith("_")){
+        return;
+      }
+      ent[k] = l.KeyValue[k];
+    });
+    d.push(ent);
+  });
+  console.log(d);
+  return d;
+}
+
+
 export const getLogData = (r,view,filter) => {
   switch (view) {
   case "syslog":
     return getSyslogData(r,filter);
   case "access":
     return getAccessLogData(r,filter);
+  case "data":
+    return getExtractData(r,filter);
   }
   return getTimeOnlyLogData(r,filter);
 }
