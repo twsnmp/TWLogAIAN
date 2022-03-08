@@ -182,13 +182,23 @@
       });
       data.forEach((l) => {
         const row = [];
-        l.forEach((e, i) => {
-          const v =
-            columns[i] && columns[i].convert && columns[i].formatter
-              ? columns[i].formatter(e)
-              : e;
-          row.push(v);
-        });
+        if (logView == "data") {
+          columns.forEach((c) => {
+            const v =
+              c.convert && c.formatter
+                ? c.formatter(l[c.id])
+                : l[c.id];
+            row.push(v)
+          });
+        }else {
+          l.forEach((e, i) => {
+            const v =
+              columns[i] && columns[i].convert && columns[i].formatter
+                ? columns[i].formatter(e)
+                : e;
+            row.push(v);
+          });
+        }
         exportData.Data.push(row);
       });
     }
