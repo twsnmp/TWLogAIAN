@@ -156,7 +156,7 @@
 
   const updateChart = async () => {
     await tick();
-    showLogChart("chart", result, dark, zoomCallback);
+    showLogChart("chart", result.Logs, dark, zoomCallback);
   };
 
   let exportType = "";

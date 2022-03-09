@@ -2,7 +2,7 @@
 import * as echarts from 'echarts'
 import 'echarts-gl'
 import * as ecStat from 'echarts-stat'
-import { getFieldName } from "../../js/define";
+import { getFieldName, getFieldUnit } from "../../js/define";
 
 let chart;
 
@@ -123,7 +123,7 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
     },
     zAxis3D: {
       type: 'value',
-      name: getFieldName(zField),
+      name: getFieldName(zField) + " " + getFieldUnit(zField),
       nameTextStyle: {
         fontSize: 10,
         margin: 2,

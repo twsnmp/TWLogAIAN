@@ -57,57 +57,6 @@ const baseOption = {
   },
 };
 
-const addChartData = (data, count, ctm, newCtm) => {
-  let t = new Date(ctm * 60 * 1000);
-  data.push({
-    name: echarts.time.format(t, "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}"),
-    value: [t, count],
-  });
-  ctm++;
-  for (; ctm < newCtm; ctm++) {
-    t = new Date(ctm * 60 * 1000);
-    data.push({
-      name: echarts.time.format(t, "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}"),
-      value: [t, 0],
-    });
-  }
-  return ctm;
-};
-
-const showLogCountChart = (div, logs, dark) => {
-  if (chart) {
-    chart.dispose();
-  }
-  chart = echarts.init(document.getElementById(div), dark ? "dark" : "");
-  chart.setOption(baseOption);
-  const data = [];
-  let count = 0;
-  let ctm;
-  logs.forEach((l) => {
-    const newCtm = Math.floor(l.Time / (1000 * 1000 * 1000 * 60));
-    if (!ctm) {
-      ctm = newCtm;
-    }
-    if (ctm !== newCtm) {
-      ctm = addChartData(data, count, ctm, newCtm);
-      count = 0;
-    }
-    count++;
-  });
-  addChartData(data, count, ctm, ctm + 1);
-  chart.setOption({
-    series: [
-      {
-        type: "bar",
-        name: "Count",
-        color: "#1f78b4",
-        large: true,
-        data: data,
-      },
-    ],
-  });
-  chart.resize();
-};
 
 const addMultiChartData = (data, count, ctm, newCtm) => {
   let t = new Date(ctm * 60 * 1000);
@@ -138,7 +87,7 @@ const getChartLogLevel = (l) => {
   return getLogLevel(l);
 };
 
-const showLogLevelChart = (div, logs, dark) => {
+export const showLogChart = (div, logs, dark, cb) => {
   if (chart) {
     chart.dispose();
   }
@@ -155,6 +104,8 @@ const showLogLevelChart = (div, logs, dark) => {
     error: 0,
   };
   let ctm;
+  let st = Infinity;
+  let lt = 0;
   logs.forEach((l) => {
     const lvl = getChartLogLevel(l);
     const newCtm = Math.floor(l.Time / (1000 * 1000 * 1000 * 60));
@@ -166,6 +117,12 @@ const showLogLevelChart = (div, logs, dark) => {
       for (const k in count) {
         count[k] = 0;
       }
+    }
+    if (st > l.Time) {
+      st = l.Time;
+    }
+    if (lt < l.Time) {
+      lt = l.Time;
     }
     count[lvl]++;
   });
@@ -181,7 +138,7 @@ const showLogLevelChart = (div, logs, dark) => {
       {
         name: "正常",
         type: "bar",
-        color: "#1f78b4",
+        color: "RGB(14,80,209)",
         stack: "count",
         large: true,
         data: data.normal,
@@ -189,7 +146,7 @@ const showLogLevelChart = (div, logs, dark) => {
       {
         name: "注意",
         type: "bar",
-        color: "#dfdf22",
+        color: "RGB(255,248,185)",
         stack: "count",
         large: true,
         data: data.warn,
@@ -197,7 +154,7 @@ const showLogLevelChart = (div, logs, dark) => {
       {
         name: "エラー",
         type: "bar",
-        color: "#e31a1c",
+        color: "RGB(194,11,35)",
         stack: "count",
         large: true,
         data: data.error,
@@ -211,20 +168,7 @@ const showLogLevelChart = (div, logs, dark) => {
     },
   });
   chart.resize();
-};
-
-const setZoomCallbackToLogChart = (logs, cb) => {
-  let st = Infinity;
-  let lt = 0;
-  logs.forEach((l) => {
-    if (st > l.Time) {
-      st = l.Time;
-    }
-    if (lt < l.Time) {
-      lt = l.Time;
-    }
-  });
-  if (chart && cb) {
+  if (cb) {
     chart.on("datazoom", (e) => {
       if (e.batch && e.batch.length === 2) {
         if (e.batch[0].startValue) {
@@ -243,20 +187,6 @@ const setZoomCallbackToLogChart = (logs, cb) => {
       }
     });
   }
-};
-
-export const showLogChart = (div, r, dark, cb) => {
-  switch (r.View) {
-    case "access":
-      showLogLevelChart(div, r.Logs, dark);
-      break;
-    case "syslog":
-      showLogLevelChart(div, r.Logs, dark);
-      break;
-    default:
-      showLogCountChart(div, r.Logs, dark);
-  }
-  setZoomCallbackToLogChart(r.Logs, cb);
 };
 
 export const resizeLogChart = () => {

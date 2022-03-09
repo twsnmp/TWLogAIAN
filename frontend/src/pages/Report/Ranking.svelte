@@ -53,7 +53,7 @@
   };
 
   onMount(() => {
-    catFields = getFields(fields,"string");
+    catFields = getFields(fields,"string,number");
     if( catFields.length > 0 ){
       selected = catFields[0];
       window.go.main.App.GetDark().then((v) => {

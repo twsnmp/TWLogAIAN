@@ -100,7 +100,7 @@ export const showGlobe = (div, logs, srcField, dstField,numField, dark) => {
         value: e.value,
         name: e.src + "->" + e.dst,
         lineStyle: {
-          color: e.value < th50 ? "#1f78b4" : e.value < th95 ? "#dfdf22" : "#e31a1c",
+          color: e.value < th50 ? "RGB(14,80,209)" : e.value < th95 ? "RGB(255,248,185)" : "RGB(194,11,35)",
           width: (e.count * 8 / maxc) || 1,
           opacity: 0.5,
         }

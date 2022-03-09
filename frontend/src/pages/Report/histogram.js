@@ -48,7 +48,7 @@ const makeHistogramChart = (div, field, dark) => {
     },
     series: [
       {
-        color: '#1f78b4',
+        color: "RGB(14,80,209)",
         type: 'bar',
         showSymbol: false,
         barWidth: '99.3%',

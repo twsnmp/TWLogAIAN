@@ -1,6 +1,6 @@
 import * as echarts from "echarts";
 import * as ecStat from "echarts-stat";
-import { getFieldName } from "../../js/define";
+import { getFieldName, getFieldUnit } from "../../js/define";
 
 let chart;
 
@@ -69,7 +69,7 @@ export const showTimeChart = (
     yAxis: [
       {
         type: "value",
-        name: getFieldName(numField1),
+        name:  getFieldName(numField1) + " " + getFieldUnit(numField1),
         nameTextStyle: {
           fontSize: 10,
           margin: 2,
@@ -92,6 +92,7 @@ export const showTimeChart = (
   };
   if (numField2 != "") {
     const name = getFieldName(numField2);
+    const unit = getFieldUnit(numField2);
     option.series.push({
       name,
       type: "line",
@@ -101,7 +102,7 @@ export const showTimeChart = (
     });
     option.yAxis.push({
       type: "value",
-      name,
+      name: name + " " + unit ,
       nameTextStyle: {
         fontSize: 10,
         margin: 2,

@@ -31,7 +31,7 @@ export const isFieldValid = (f) => {
 export const getFields = (fields,t) => {
   const ret = [];
   fields.forEach((f) => {
-    if (getFieldType(f) == t) {
+    if (t.includes(getFieldType(f))) {
       ret.push(f);
     }
   });
