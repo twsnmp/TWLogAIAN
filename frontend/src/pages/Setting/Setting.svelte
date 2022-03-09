@@ -596,7 +596,7 @@
             on:click={deleteLogTypes}
             >
             <Trash16 />
-            拡張ログタイプ削除
+            ログタイプ削除
         </button>
       {:else}
         <button
@@ -605,7 +605,7 @@
           on:click={importLogTypes}
         >
           <Download16 />
-          拡張ログタイプインポート
+          ログタイプインポート
         </button>
       {/if}
       <button
@@ -625,7 +625,7 @@
       {#if hasIndex}
         <button class="btn btn-danger mr-2" type="button" on:click={clear}>
           <Trash16 />
-          前のインデックスをクリア
+          インデックスをクリア
         </button>
         <button class="btn btn-danger" type="button" on:click={start}>
           <Check16 />
@@ -633,7 +633,7 @@
         </button>
         <button class="btn btn-primary mr-2" type="button" on:click={search}>
           <Search16 />
-          前のインデックスで検索
+          検索開始
         </button>
       {:else}
         <button class="btn btn-primary" type="button" on:click={start}>

@@ -208,7 +208,7 @@ export const getLogLevel = (l) => {
     return  suverity < 4 ? "error" : suverity == 4 ? "warn" : "normal";
   }
   const level = l.KeyValue.suverity_str || l.KeyValue.level || l.All;
-  if (/(alert|error|crit|fatal|emerg|err )/i.test(level)) {
+  if (/(alert|error|crit|fatal|emerg|failure|err )/i.test(level)) {
     return "error";
   }
   if (/warn/i.test(level)) {
