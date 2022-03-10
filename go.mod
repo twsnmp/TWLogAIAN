@@ -10,10 +10,10 @@ require (
 	github.com/oschwald/geoip2-golang v1.6.1
 	github.com/viant/afs v1.16.0
 	github.com/vjeantet/grok v1.0.1
-	github.com/wailsapp/wails/v2 v2.0.0-beta.32
+	github.com/wailsapp/wails/v2 v2.0.0-beta.33
 	github.com/xuri/excelize/v2 v2.5.0
 	go.etcd.io/bbolt v1.3.6
-	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	gopkg.in/yaml.v2 v2.3.0
 )
 
@@ -38,8 +38,8 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/gofiber/fiber/v2 v2.28.0 // indirect
-	github.com/gofiber/websocket/v2 v2.0.16 // indirect
+	github.com/gofiber/fiber/v2 v2.29.0 // indirect
+	github.com/gofiber/websocket/v2 v2.0.18 // indirect
 	github.com/gofrs/flock v0.8.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-write v0.0.0-20181107114627-56629a6b2542 // indirect
@@ -49,7 +49,7 @@ require (
 	github.com/gravwell/gcfg v1.2.9-0.20210818172109-3d05a45a2665 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
-	github.com/klauspost/compress v1.14.4 // indirect
+	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leaanthony/go-ansi-parser v1.3.0 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
@@ -68,13 +68,13 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20220201163454-d252f0a44d5b // indirect
-	github.com/tkrajina/go-reflector v0.5.5 // indirect
+	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.33.0 // indirect
+	github.com/valyala/fasthttp v1.34.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	github.com/xuri/efp v0.0.0-20210322160811-ab561f5b45e3 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
+	golang.org/x/sys v0.0.0-20220307203707-22a9840ba4d7 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
