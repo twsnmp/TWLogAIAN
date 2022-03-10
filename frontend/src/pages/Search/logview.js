@@ -163,7 +163,6 @@ const makeDataColumns = (fields) => {
       name: getFieldName(f),
     });
   });
-  console.log(colums);
   return colums;
 }
 
@@ -252,7 +251,6 @@ const getExtractData = (r,filter) => {
     });
     d.push(ent);
   });
-  console.log(d);
   return d;
 }
 

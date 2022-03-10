@@ -18,7 +18,9 @@
   const getProcessInfo = () => {
     window.go.main.App.GetProcessInfo().then((r) => {
       if (r) {
-        logFiles = r.LogFiles
+        if (r.LogFiles) {
+          logFiles = r.LogFiles
+        }
         if (r.ErrorMsg) {
           errorMsg = r.ErrorMsg;
         }

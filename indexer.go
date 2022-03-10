@@ -154,6 +154,7 @@ func (b *App) addLogToIndex() {
 			case float64:
 				numCount++
 				if k == "delta" {
+					doc.AddField(bluge.NewNumericField(k, v).StoreValue())
 				} else {
 					doc.AddField(bluge.NewNumericField(k, v))
 				}
