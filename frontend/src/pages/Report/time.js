@@ -4,22 +4,52 @@ import { getFieldName, getFieldUnit } from "../../js/define";
 
 let chart;
 
-const calcRegression = (logs,field) => {
-  const data = []
+const calcRegression = (logs, field, chartType) => {
+  const data = [];
   logs.forEach((l) => {
-    data.push([l.Time /(1000 * 1000 * 1000),l.KeyValue[field] || 0.0 ])
-  })
-  return ecStat.regression('linear', data);
+    data.push([l.Time / (1000 * 1000), l.KeyValue[field] || 0.0]);
+  });
+  console.log(data);
+  return ecStat.regression(chartType, data);
 }
 
-export const showTimeChart = (
-  div,
-  logs,
-  numField1,
-  numField2,
-  chartType,
-  dark
-) => {
+const setChartData = (series,t, values) => {
+  const data = [t.getTime()* 1000 * 1000 ];
+  const name = echarts.time.format(t, "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}");
+  const mean = ecStat.statistics.mean(values);
+  series[0].data.push({ 
+    name,
+    value: [t, mean],
+  });
+  data.push(mean);
+  const max = ecStat.statistics.max(values);
+  series[1].data.push({ 
+    name,
+    value: [t, max],
+  });
+  data.push(max);
+  const min = ecStat.statistics.min(values);
+  series[2].data.push({ 
+    name,
+    value: [t, min],
+  });
+  data.push(min);
+  const median = ecStat.statistics.median(values);
+  series[3].data.push({ 
+    name,
+    value: [t, median],
+  });
+  data.push(median);
+  const variance = ecStat.statistics.sampleVariance(values);
+  series[4].data.push({ 
+    name,
+    value: [t, variance],
+  });
+  data.push(variance);
+  return data;
+}
+
+export const showTimeChart = (div, logs, field, chartType, dark) => {
   if (chart) {
     chart.dispose();
   }
@@ -31,7 +61,7 @@ export const showTimeChart = (
     toolbox: {},
     dataZoom: [{}],
     legend: {
-      data: [getFieldName(numField1)],
+      data: [getFieldName(field)],
       textStyle: {
         fontSize: 10,
       },
@@ -69,7 +99,7 @@ export const showTimeChart = (
     yAxis: [
       {
         type: "value",
-        name:  getFieldName(numField1) + " " + getFieldUnit(numField1),
+        name: getFieldName(field) + " " + getFieldUnit(field),
         nameTextStyle: {
           fontSize: 10,
           margin: 2,
@@ -82,7 +112,7 @@ export const showTimeChart = (
     ],
     series: [
       {
-        name: getFieldName(numField1),
+        name: getFieldName(field),
         type: "line",
         large: true,
         symbol: "none",
@@ -90,11 +120,29 @@ export const showTimeChart = (
       },
     ],
   };
-  if (numField2 != "") {
-    const name = getFieldName(numField2);
-    const unit = getFieldUnit(numField2);
+  let data = [];
+  if (chartType == "1h" || chartType == "1m" ) {
+    option.series[0].name = "平均値";
     option.series.push({
-      name,
+      name: "最大値",
+      type: "line",
+      large: true,
+      data: [],
+    });
+    option.series.push({
+      name: "最小値",
+      type: "line",
+      large: true,
+      data: [],
+    });
+    option.series.push({
+      name: "中央値",
+      type: "line",
+      large: true,
+      data: [],
+    });
+    option.series.push({
+      name: "分散",
       type: "line",
       large: true,
       yAxisIndex: 1,
@@ -102,7 +150,7 @@ export const showTimeChart = (
     });
     option.yAxis.push({
       type: "value",
-      name: name + " " + unit ,
+      name: "分散",
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -112,47 +160,95 @@ export const showTimeChart = (
         margin: 2,
       },
     });
-    option.legend.data.push(name);
-  }
-  if( chartType == "forcast") {
-    const reg1 = calcRegression(logs,numField1);
-    let reg2;
-    if (numField2 != "") {
-      reg2 = calcRegression(logs,numField2);
-    }
-    const sh = Math.floor(Date.now() / ( 3600 * 1000))
-    for (let h = sh; h < sh + (24*30); h++) {
-      const x = h * 3600 * 1000
-      const t = new Date(x)
-      option.series[0].data.push({
-        name: echarts.time.format(t, '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
-        value: [t, reg1.parameter.intercept + reg1.parameter.gradient * x],
-      });
-      if (reg2) {
-        option.series[1].data.push({
-          name: echarts.time.format(t, '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
-          value: [t, reg2.parameter.intercept + reg2.parameter.gradient * x],
-        });
+    option.legend.data[0]= "平均値";
+    option.legend.data.push("最大値");
+    option.legend.data.push("最小値");
+    option.legend.data.push("中央値");
+    option.legend.data.push("分散");
+    let tS = -1;
+    const values = [];
+    const dt = chartType == "1h" ? 3600 * 1000 : 60 * 1000;
+    logs.forEach((l) => {
+      const t = new Date(l.Time / (1000 * 1000));
+      let tC = Math.floor(t.getTime() / dt);
+      if (tS != tC) {
+        if (tS > 0 ) {
+          if (values.length > 0 ){
+            tS++;
+            data.push(setChartData(option.series,new Date(tS * dt),values));
+            values.length = 0;
+            while( tS < tC) {
+              tS++;
+              setChartData(option.series,new Date(tS * dt),[0,0,0,0]);
+            }
+          }
+        }
+        tS = tC;
       }
+      values.push(l.KeyValue[field] || 0.0);
+    });
+    if (values.length > 0 ){
+      tS++;
+      data.push(setChartData(option.series,new Date(tS * dt),values));
     }
+  } else if (chartType != "") {
+    option.series[0] = {
+      name: getFieldName(field),
+      type: 'scatter',
+      label: {
+          emphasis: {
+              show: true
+          }
+      },
+      data: [],
+    }
+    logs.forEach((l) => {
+      const t = new Date(l.Time / (1000 * 1000));
+      option.series[0].data.push([t, l.KeyValue[field] || 0.0]);
+    });
+    const reg = calcRegression(logs, field, chartType);
+    option.legend.data.push('回帰分析('+ reg.expression +")");
+    option.series.push({
+        name: '回帰分析('+ reg.expression +")",
+        type: 'line',
+        showSymbol: false,
+        data: reg.points,
+        markPoint: {
+            itemStyle: {
+                normal: {
+                    color: 'transparent'
+                }
+            },
+            label: {
+                normal: {
+                    show: true,
+                    formatter: reg.expression,
+                    textStyle: {
+                        color: '#333',
+                        fontSize: 12
+                    }
+                }
+            },
+            data: [{
+                coord: reg.points[reg.points.length - 1]
+            }]
+        }
+      });
+      data = reg.points;
   } else {
     logs.forEach((l) => {
       const t = new Date(l.Time / (1000 * 1000));
       const name = echarts.time.format(t, "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}");
       option.series[0].data.push({
         name,
-        value: [t, l.KeyValue[numField1] || 0.0],
+        value: [t, l.KeyValue[field] || 0.0],
       });
-      if (numField2 != "") {
-        option.series[1].data.push({
-          name,
-          value: [t, l.KeyValue[numField2] || 0.0],
-        });
-      }
+      data.push([l.Time,l.KeyValue[field] || 0.0]);
     });
   }
   chart.setOption(option);
   chart.resize();
+  return data;
 };
 
 export const resizeTimeChart = () => {
@@ -161,7 +257,7 @@ export const resizeTimeChart = () => {
 
 export const getTimeChartImage = () => {
   if (chart) {
-    return chart.getDataURL({ type:"png"});
+    return chart.getDataURL({ type: "png" });
   }
   return [];
-}
+};

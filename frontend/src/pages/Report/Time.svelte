@@ -11,42 +11,57 @@
   export let fields = [];
   let dark = false;
   let numFields = [];
-  let numField1 = "";
-  let numField2 = "";
+  let field = "";
   let chartType = "";
 
   const dispatch = createEventDispatcher();
   let data = [];
-  let columns = [
-    {
-      name: "日時",
-      width: "60%",
-      formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
-    },
-    {
-      name: "項目1",
-      width: "20%",
-    },
-    {
-      name: "項目2",
-      width: "20%",
-    }
-  ];
-
+  let columns = [];
   let pagination = false;
 
   const updateTime = async () => {
-    if( numField1 == "" ){
+    if(field == "" ){
       return;
     }
     await tick();
-    showTimeChart("chart", logs,numField1,numField2,chartType,dark);
-    data = [];
-    columns[1].name = getFieldName(numField1) || numField1;
-    columns[2].name = getFieldName(numField2) || numField2;
-    logs.forEach((l)=>{
-      data.push([l.Time,l.KeyValue[numField1] || "",l.KeyValue[numField2] || "" ])
-    });
+    data = showTimeChart("chart", logs, field,chartType,dark);
+    if(chartType == "1h" || chartType == "1m" ){
+      columns = [
+        {
+          name: "日時",
+          formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
+        },{
+          name: "平均値",
+        },{
+          name: "最大値",
+        },{
+          name: "最小値",
+        },{
+          name: "中央値",
+        },{
+          name: "分散",
+        }
+      ];
+    } else if (chartType != ""){
+      columns = [
+        {
+          name: "日時",
+          formatter: (cell) => echarts.time.format(new Date(cell), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
+        },{
+          name: "回帰分析(" + chartType + ")",
+        }
+      ];
+    } else {
+      columns = [
+        {
+          name: "日時",
+          formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
+        },{
+          name: getFieldName(field),
+        }
+      ];
+
+    }
     if (data.length > 10) {
       pagination = {
         limit: getTableLimit(),
@@ -59,6 +74,9 @@
 
   onMount(() => {
     numFields = getFields(fields,"number");
+    if(field == "" && numFields.length > 0 ){
+      field = numFields[0];
+    }
     window.go.main.App.GetDark().then((v) => {
       dark = v;
     });
@@ -118,34 +136,26 @@
     <h3 class="Box-title overflow-hidden flex-auto">時系列分析</h3>
     <select
       class="form-select"
-      aria-label="数値項目1"
-      bind:value={numField1}
+      bind:value={field}
       on:change="{updateTime}"
     >
-      <option value="">１つ目の数値項目を選択して下さい</option>
-      {#each numFields as f}
-        <option value={f}>{getFieldName(f)}</option>
-      {/each}
-    </select>
-    <select
-      class="form-select"
-      aria-label="Y軸の項目"
-      bind:value={numField2}
-      on:change="{updateTime}"
-    >
-      <option value="">２つめの数値項目を選択して下さい</option>
+      <option value="">項目を選択して下さい</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
     </select>
     <select
       class="form-select ml-2"
-      aria-label="チャートの種類"
       bind:value={chartType}
       on:change="{updateTime}"
     >
-      <option value="">ログの値</option>
-      <option value="forcast">線形予測</option>
+      <option value="">実データ</option>
+      <option value="1m">分単位の集計</option>
+      <option value="1h">時間単位の集計</option>
+      <option value="linear">回帰分析(linear)</option>
+      <option value="exponential">回帰分析(exponential)</option>
+      <option value="logarithmic">回帰分析(logarithmic)</option>
+      <option value="polynomial">回帰分析(polynomial)</option>
     </select>
   </div>
   <div class="Box-row">

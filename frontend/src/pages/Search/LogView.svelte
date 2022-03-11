@@ -37,7 +37,7 @@
   let dark = false;
   const conf = {
     query: "",
-    limit: "1000",
+    limit: "10000",
     history: [],
     keyword: {
       field: "",

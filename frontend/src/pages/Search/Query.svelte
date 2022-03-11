@@ -277,13 +277,13 @@
     <div class="col-2 float-left">最大件数</div>
     <div class="col-10 float-left">
       <select class="form-select" aria-label="最大件数" bind:value={conf.limit}>
-        <option value="100">100</option>
-        <option value="500">500</option>
         <option value="1000">1000</option>
         <option value="2000">2000</option>
         <option value="5000">5000</option>
         <option value="10000">10000</option>
         <option value="20000">20000</option>
+        <option value="50000">50000</option>
+        <option value="100000">100000</option>
       </select>
     </div>
   </div>
