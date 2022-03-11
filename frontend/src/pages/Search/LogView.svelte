@@ -25,6 +25,7 @@
   import World from "../Report/World.svelte";
   import Graph from "../Report/Graph.svelte";
   import Globe from "../Report/Globe.svelte";
+  import Heatmap from "../Report/Heatmap.svelte";
   import { getTableLimit, loadFieldTypes } from "../../js/define";
   import numeral from "numeral";
   import CopyClipBoard from "../../CopyClipBoard.svelte";
@@ -279,6 +280,8 @@
   <Graph fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "globe"}
   <Globe fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+{:else if page == "heatmap"}
+  <Heatmap fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header d-flex flex-items-center">
@@ -436,6 +439,7 @@
           <option value="world">位置情報分析</option>
           <option value="graph">グラフ（フロー）分析</option>
           <option value="globe">フロー分析（地球儀)</option>
+          <option value="heatmap">ヒートマップ</option>
         </select>
       {/if}
       {#if selectedLogs != ""}
