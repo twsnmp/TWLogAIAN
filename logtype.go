@@ -219,6 +219,13 @@ var fieldTypes = map[string]FieldType{
 	"load5m":               {Name: "5分間負荷", Type: "number"},
 	"load15m":              {Name: "15分間負荷", Type: "number"},
 	"_None":                {Name: "項目なし", Type: "string"},
+	"winEventID":           {Name: "イベントID", Type: "number"},
+	"winEventRecordID":     {Name: "レコードID", Type: "number"},
+	"winChannel":           {Name: "チャネル", Type: "number"},
+	"winProvider":          {Name: "プロバイダー", Type: "number"},
+	"winLevel":             {Name: "レベル", Type: "number"},
+	"winUserID":            {Name: "ユーザーID", Type: "number"},
+	"winComputer":          {Name: "コンピュータ名", Type: "string"},
 }
 
 func (b *App) setFieldTypes(l *LogEnt) {

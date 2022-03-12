@@ -206,6 +206,12 @@ export const getLogLevel = (l) => {
     suverity %= 8
     return  suverity < 4 ? "error" : suverity == 4 ? "warn" : "normal";
   }
+
+  let winLevel = l.KeyValue.winLevel;
+  if (winLevel != undefined) {
+    return   (winLevel == 1 || winLevel == 2)  ? "error" : winLevel == 3 ? "warn" : "normal";
+  }
+
   const level = l.KeyValue.suverity_str || l.KeyValue.level || l.All;
   if (/(alert|error|crit|fatal|emerg|failure|err )/i.test(level)) {
     return "error";

@@ -3,6 +3,7 @@ module changeme
 go 1.17
 
 require (
+	github.com/0xrawsec/golang-evtx v1.2.9
 	github.com/Songmu/timeout v0.4.0
 	github.com/blugelabs/bluge v0.1.9
 	github.com/blugelabs/query_string v0.3.0
@@ -18,6 +19,7 @@ require (
 )
 
 require (
+	github.com/0xrawsec/golang-utils v1.3.0 // indirect
 	github.com/RoaringBitmap/roaring v0.9.4 // indirect
 	github.com/Songmu/wrapcommander v0.1.0 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect

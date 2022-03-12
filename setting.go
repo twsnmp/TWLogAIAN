@@ -111,6 +111,8 @@ func (b *App) SetWorkDir(wd string) string {
 	}
 	b.logSources = []*LogSource{}
 	b.config = Config{}
+	b.importedExtractorTypes = []ExtractorType{}
+	b.importedFieldTypes = make(map[string]FieldType)
 	err = b.openDB(wd)
 	if err != nil {
 		return fmt.Sprintf("データベースを開けません err=%v", err)
@@ -173,13 +175,13 @@ func (b *App) loadSettingsFromDB() error {
 			}
 		}
 		v = bkt.Get([]byte("extractorTypes"))
-		if v != nil {
+		if len(v) > 1 {
 			if err := json.Unmarshal(v, &b.importedExtractorTypes); err != nil {
 				return err
 			}
 		}
 		v = bkt.Get([]byte("fieldTypes"))
-		if v != nil {
+		if len(v) > 1 {
 			if err := json.Unmarshal(v, &b.importedFieldTypes); err != nil {
 				return err
 			}

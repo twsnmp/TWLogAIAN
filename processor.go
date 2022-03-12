@@ -4,10 +4,12 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"bufio"
+	"bytes"
 	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"os"
 	"path"
@@ -345,6 +347,11 @@ func (b *App) logReader() {
 				OutLog("failed to read zip log file err=%v", err)
 			}
 			continue
+		} else if ext == ".evtx" {
+			if err := b.readWindowsEvtx(lf); err != nil {
+				OutLog("failed to read evtx file err=%v", err)
+			}
+			continue
 		} else if (ext == ".gz" && strings.HasSuffix(lf.Path, "tar.gz")) ||
 			ext == ".tgz" ||
 			ext == ".bin" {
@@ -398,10 +405,25 @@ func (b *App) readLogFromZIP(lf *LogFile) error {
 		if strings.HasSuffix(p, ".gz") {
 			gzr, err := gzip.NewReader(file)
 			if err != nil {
-				OutLog("read gz log file err=%v", err)
+				OutLog("read gz log file in ZIP err=%v", err)
 				continue
 			}
 			b.readOneLogFile(ilf, gzr)
+		} else if strings.HasSuffix(p, ".evtx") {
+			// ReadSeekerが必要なため一度メモリに読み込むため1GBまでにする
+			if f.UncompressedSize64 > 1024*1024*1024 {
+				OutLog("read evtx file in ZIP size over 1GB")
+				continue
+			}
+			buf, err := ioutil.ReadAll(file)
+			if err != nil {
+				OutLog("evtx in zip err =%v", err)
+				continue
+			}
+			if err := b.readWindowsEvtxInt(ilf, bytes.NewReader(buf)); err != nil {
+				OutLog("read evtx file in ZIP err=%v", err)
+				continue
+			}
 		} else {
 			b.readOneLogFile(ilf, file)
 		}
