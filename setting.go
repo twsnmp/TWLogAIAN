@@ -48,6 +48,9 @@ type LogSource struct {
 	End             string
 	Tag             string
 	Host            string
+	// for Windows
+	Channel string
+	Auth    string
 }
 
 // SelectFile : ファイル/フォルダを選択する

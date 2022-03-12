@@ -1,13 +1,23 @@
 package main
 
 import (
+	"encoding/xml"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"regexp"
+	"runtime"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/0xrawsec/golang-evtx/evtx"
 )
+
+func (b *App) IsWindows() bool {
+	return runtime.GOOS == "windows"
+}
 
 func (b *App) readWindowsEvtx(lf *LogFile) error {
 	r, err := os.Open(lf.Path)
@@ -46,8 +56,8 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 			continue
 		}
 		l := string(evtx.ToJSON(e))
-		len := int64(len(l))
-		lf.Read += len
+		leng := int64(len(l))
+		lf.Read += leng
 		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
 			continue
 		}
@@ -85,6 +95,10 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 		if err != nil {
 			com = ""
 		}
+		user, err := e.GetString(&evtx.UserIDPath)
+		if err != nil {
+			user = ""
+		}
 		log := LogEnt{
 			ID:       fmt.Sprintf("%s:%s:%d", lf.Path, ch, erid),
 			KeyValue: make(map[string]interface{}),
@@ -97,6 +111,7 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 		log.KeyValue["winProvider"] = provider
 		log.KeyValue["winLevel"] = float64(level)
 		log.KeyValue["winComputer"] = com
+		log.KeyValue["winUserID"] = user
 		if b.processConf.Extractor != nil {
 			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
@@ -143,7 +158,155 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 			}
 		}
 		b.indexer.logCh <- &log
-		lf.Send += len
+		lf.Send += leng
+	}
+	return nil
+}
+
+var reSystem = regexp.MustCompile(`<System.+System>`)
+
+type System struct {
+	Provider struct {
+		Name string `xml:"Name,attr"`
+	}
+	EventID       int    `xml:"EventID"`
+	Level         int    `xml:"Level"`
+	EventRecordID int64  `xml:"EventRecordID"`
+	Channel       string `xml:"Channel"`
+	Computer      string `xml:"Computer"`
+	Security      struct {
+		UserID string `xml:"UserID,attr"`
+	}
+	TimeCreated struct {
+		SystemTime string `xml:"SystemTime,attr"`
+	}
+}
+
+func (b *App) readLogFromWinEventLog(lf *LogFile) error {
+	end := time.Now()
+	start := end.Add(time.Hour * -1)
+	if lf.LogSrc.Start != "" {
+		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.Start+" JST"); err == nil {
+			start = t
+		}
+	}
+	if lf.LogSrc.End != "" {
+		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.End+" JST"); err == nil {
+			end = t
+		}
+	}
+	filter := fmt.Sprintf(`/q:*[System[TimeCreated[@SystemTime>='%s' and @SystemTime=<'%s']]]`, start.UTC().Format("2006-01-02T15:04:05"), end.UTC().Format("2006-01-02T15:04:05"))
+	params := []string{"qe", lf.LogSrc.Channel, filter}
+	if lf.LogSrc.Server != "" {
+		params = append(params, "/r:"+lf.LogSrc.Server)
+		params = append(params, "/u:"+lf.LogSrc.User)
+		params = append(params, "/p:"+lf.LogSrc.Password)
+		if lf.LogSrc.Auth != "" {
+			params = append(params, "/a:"+lf.LogSrc.Auth)
+		}
+	}
+	out, err := exec.Command("wevtutil.exe", params...).Output()
+	if err != nil {
+		OutLog("readLogFromWinEventLog c=%s filter=%s err=%v", lf.LogSrc.Channel, filter, err)
+		return err
+	}
+	if len(out) < 5 {
+		OutLog("readLogFromWinEventLog not output")
+		return nil
+	}
+	s := new(System)
+	for _, l := range strings.Split(strings.ReplaceAll(string(out), "\n", ""), "</Event>") {
+		l := strings.TrimSpace(l)
+		leng := int64(len(l))
+		lf.Read += leng
+		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
+			continue
+		}
+		if leng < 10 {
+			continue
+		}
+		lsys := reSystem.FindString(l)
+		err := xml.Unmarshal([]byte(lsys), s)
+		if err != nil {
+			OutLog("xml.Unmarshal err=%v", err)
+			continue
+		}
+		t := getEventTime(s.TimeCreated.SystemTime)
+		log := LogEnt{
+			ID:       fmt.Sprintf("%s:%s:%d", s.Computer, s.Channel, s.EventRecordID),
+			KeyValue: make(map[string]interface{}),
+			Time:     t.UnixNano(),
+			All:      l,
+		}
+		log.KeyValue["winEventID"] = float64(s.EventID)
+		log.KeyValue["winEventRecordID"] = float64(s.EventRecordID)
+		log.KeyValue["winChannel"] = s.Channel
+		log.KeyValue["winProvider"] = s.Provider.Name
+		log.KeyValue["winLevel"] = float64(s.Level)
+		log.KeyValue["winComputer"] = s.Computer
+		log.KeyValue["winUserID"] = s.Security.UserID
+		if err := b.setKeyValuesToLogEnt(l, &log); err != nil {
+			continue
+		}
+		b.indexer.logCh <- &log
+		lf.Send += leng
+	}
+	return nil
+}
+
+func getEventTime(s string) time.Time {
+	t, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		OutLog("getEventTime err=%v", err)
+		return time.Now()
+	}
+	return t
+}
+
+func (b *App) setKeyValuesToLogEnt(l string, log *LogEnt) error {
+	if b.processConf.Extractor != nil {
+		values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
+		if err != nil {
+			return nil
+		}
+		for k, v := range values {
+			if k == "TWLOGAIAN" {
+				continue
+			}
+			// 数値に変換可能な場合は数値として保存
+			if fv, err := strconv.ParseFloat(v, 64); err == nil {
+				log.KeyValue[k] = fv
+			} else {
+				log.KeyValue[k] = v
+			}
+		}
+	}
+	if b.config.GeoIP {
+		for _, f := range b.processConf.GeoFields {
+			if ip, ok := log.KeyValue[f]; ok {
+				if e := b.findGeo(ip.(string)); e != nil {
+					log.KeyValue[f+"_geo"] = e
+				}
+			}
+		}
+	}
+	if b.config.HostName {
+		for _, f := range b.processConf.HostFields {
+			if ip, ok := log.KeyValue[f]; ok {
+				if e := b.findHost(ip.(string)); e != "" {
+					log.KeyValue[f+"_host"] = e
+				}
+			}
+		}
+	}
+	if b.config.VendorName {
+		for _, f := range b.processConf.MACFields {
+			if ip, ok := log.KeyValue[f]; ok {
+				if e := b.findVendor(ip.(string)); e != "" {
+					log.KeyValue[f+"_vendor"] = e
+				}
+			}
+		}
 	}
 	return nil
 }
