@@ -42,6 +42,8 @@
     End: "",
     Tag: "",
     Host: "",
+    Channel: "",
+    Auth: "",
   };
   let logSources = [];
   let errorMsg = "";
@@ -101,6 +103,8 @@
       return e.Server + "/?start=" +e.Start + "&end="+ e.End + "&host=" + e.Host + "&tag=" + e.Tag + "&message=" +e.Pattern;
     case "gravwell":
       return e.Server + "/?start=" +e.Start + "&end="+ e.End + "&qeury=`" + e.Pattern +"`";
+    case "windows":
+      return e.Server + "/?start=" +e.Start + "&end="+ e.End + "&channel=`" + e.Channel +"`";
     }
     return e.Path;
   }
@@ -168,6 +172,12 @@
         User: "",
         Password: "",
         KeyPath: "",
+        Start: "",
+        End: "",
+        Host: "",
+        Tag: "",
+        Channel: "",
+        Auth: "",
       };
     } else {
       logSource = logSources[no - 1];
@@ -183,6 +193,8 @@
         return "単一ファイル";
       case "scp":
         return "SCP転送";
+      case "windows":
+        return "Windows";
       case "cmd":
         return "コマンド";
       case "ssh":

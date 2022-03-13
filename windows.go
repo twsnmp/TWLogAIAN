@@ -195,7 +195,7 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 			end = t
 		}
 	}
-	filter := fmt.Sprintf(`/q:*[System[TimeCreated[@SystemTime>='%s' and @SystemTime=<'%s']]]`, start.UTC().Format("2006-01-02T15:04:05"), end.UTC().Format("2006-01-02T15:04:05"))
+	filter := fmt.Sprintf(`/q:*[System[TimeCreated[@SystemTime>='%s' and @SystemTime<='%s']]]`, start.UTC().Format("2006-01-02T15:04:05"), end.UTC().Format("2006-01-02T15:04:05"))
 	params := []string{"qe", lf.LogSrc.Channel, filter}
 	if lf.LogSrc.Server != "" {
 		params = append(params, "/r:"+lf.LogSrc.Server)

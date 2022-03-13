@@ -400,6 +400,9 @@
           {#if result.View == "access"}
             <option value="access">アクセスログ</option>
           {/if}
+          {#if result.View == "windows"}
+            <option value="windows">Windows</option>
+          {/if}
           {#if indexInfo.Fields.length > 0}
             <option value="data">抽出データ</option>
           {/if}

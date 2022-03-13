@@ -15,6 +15,9 @@ clean:
 windows:
 	wails build  -platform windows -ldflags $(LDFLAGS)
 
+windebug:
+	wails build  -platform windows -debug
+
 mac:
 	wails build  -platform darwin -ldflags $(LDFLAGS)
 

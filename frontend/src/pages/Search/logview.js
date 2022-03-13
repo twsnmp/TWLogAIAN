@@ -146,6 +146,53 @@ const columnsAccessLog = [
   },
 ];
 
+const formatWinLevel = (level) => {
+  switch (level*0) {
+  case 1:
+  case 2:
+    return html(`<div class="color-fg-danger">エラー(${level})</div>`);
+  case 3:
+    return html(`<div class="color-fg-attention">注意</div>`);
+  }
+  return html(`<div class="color-fg-default">正常</div>`);
+}
+
+const columnsWindowsLog = [
+  {
+    id: "level",
+    name: "レベル",
+    width: "10%",
+    formatter: (cell) => formatWinLevel(cell),
+  },{
+    id: "timestamp",
+    name: "日時",
+    width: "15%",
+    formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
+    convert: true,
+  },{
+    id: "winComputer",
+    name: "コンピューター",
+    width: "20%",
+  },{
+    id: "winEventID",
+    name: "イベントID",
+    width: "10%",
+  },{
+    id: "winEventRecordID",
+    name: "レコードID",
+    width: "10%",
+  },{
+    id: "winChannel",
+    name: "チャネル",
+    width: "15%",
+  },{
+    id: "winProvider",
+    name: "プロバイダー",
+    width: "20%",
+  },
+];
+
+
 const makeDataColumns = (fields) => {
   const colums = [];
   colums.push({
@@ -172,6 +219,8 @@ export const getLogColums = (view, fields) => {
         return columnsSyslog;
     case "access":
       return columnsAccessLog;
+    case "windows":
+      return columnsWindowsLog;
     case "data":
       return makeDataColumns(fields);
   }
@@ -260,6 +309,27 @@ const getExtractData = (r,filter) => {
   return d;
 }
 
+const getWindowsLogData = (r,filter) => {
+  const d = [];
+  r.Logs.forEach((l) => {
+    if(filter && filter.st) {
+      if (l.Time < filter.st || l.Time > filter.et) {
+        return
+      }
+    }
+    d.push([
+      l.KeyValue.winLevel || 0,
+      l.Time,
+      l.KeyValue.winComputer || "",
+      l.KeyValue.winEventID || 0,
+      l.KeyValue.winEventRecordID || 0,
+      l.KeyValue.winChannel || "",
+      l.KeyValue.winProvider || "",
+    ]);
+  });
+  return d;
+}
+
 
 export const getLogData = (r,view,filter) => {
   switch (view) {
@@ -267,6 +337,8 @@ export const getLogData = (r,view,filter) => {
     return getSyslogData(r,filter);
   case "access":
     return getAccessLogData(r,filter);
+  case "windows":
+    return getWindowsLogData(r,filter);
   case "data":
     return getExtractData(r,filter);
   }

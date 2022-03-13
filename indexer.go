@@ -241,6 +241,15 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
+	if ret.View == "timeonly" {
+		if fields, err := reader.Fields(); err == nil {
+			for _, f := range fields {
+				if f == "winEventID" {
+					ret.View = "windows"
+				}
+			}
+		}
+	}
 	defer func() {
 		reader.Close()
 	}()

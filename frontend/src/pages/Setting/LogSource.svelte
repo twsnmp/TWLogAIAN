@@ -9,6 +9,11 @@
   } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   export let logSource;
+  let windows = false;
+
+  window.go.main.App.IsWindows().then((r) => {
+    windows = r;
+  });
 
   const dispatch = createEventDispatcher();
   let errorMsg = "";
@@ -89,6 +94,9 @@
           <option value="folder">フォルダー</option>
           <option value="file">単一ファイル</option>
           <option value="scp">SCP転送</option>
+        {#if windows || logSource.Type == "windows"}
+          <option value="windows">Windows</option>
+        {/if}
           <option value="cmd">コマンド実行</option>
           <option value="ssh">SSHコマンド実行</option>
           <option value="twsnmp">TWSNMP FC連携</option>
@@ -246,7 +254,7 @@
         </div>
       </div>
     {/if}
-    {#if logSource.Type != "cmd" && logSource.Type != "ssh" && logSource.Type != "twsnmp" && logSource.Type != "gravwell"}
+    {#if logSource.Type == "folder" || logSource.Type == "file" || logSource.Type == "scp" }
       <div class="form-group">
         <div class="form-group-header">
           <h5>アーカイブ内ファイル名パターン</h5>
@@ -261,7 +269,7 @@
         </div>
       </div>
     {/if}
-    {#if logSource.Type == "twsnmp" || logSource.Type == "gravwell"}
+    {#if logSource.Type == "twsnmp" || logSource.Type == "gravwell" || logSource.Type == "windows"}
       <div class="form-group">
         <div class="form-group-header">
           <h5>サーバー</h5>
@@ -296,6 +304,16 @@
             bind:value={logSource.Password}
             />
           </p>
+          {#if logSource.Type == "windows"}
+          <p>
+            <select class="form-select" bind:value={logSource.Channel}>
+              <option value="">デフォルト</option>
+              <option value="Negotiate">Negotiate</option>
+              <option value="NTLM">NTLM</option>
+              <option value="Kerberos">Kerberos</option>
+            </select>
+          </p>
+          {/if}
         </div>
       </div>
       <div class="form-group">
@@ -356,6 +374,22 @@
               placeholder="メッセージ"
               bind:value={logSource.Pattern}
             />
+          </div>
+        </div>
+      {:else if logSource.Type == "windows"}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>チャネル</h5>
+          </div>
+          <div class="form-group-body">
+            <select
+              class="form-select"
+              bind:value={logSource.Channel}
+            >
+              <option value="System">システム</option>
+              <option value="Security">セキュリティー</option>
+              <option value="Application">アプリケーション</option>
+            </select>
           </div>
         </div>
       {:else}
