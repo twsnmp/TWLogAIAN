@@ -52,6 +52,9 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 	levelPath := evtx.Path("/Event/System/Level")
 	providerPath := evtx.Path("/Event/System/Provider/Name")
 	for e := range ef.FastEvents() {
+		if b.stopProcess {
+			return nil
+		}
 		if e == nil {
 			continue
 		}
@@ -216,6 +219,9 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 	}
 	s := new(System)
 	for _, l := range strings.Split(strings.ReplaceAll(string(out), "\n", ""), "</Event>") {
+		if b.stopProcess {
+			return nil
+		}
 		l := strings.TrimSpace(l)
 		leng := int64(len(l))
 		lf.Read += leng

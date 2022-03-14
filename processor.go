@@ -110,6 +110,7 @@ func (b *App) TestSampleLog(c Config) *ExtractorType {
 
 func (b *App) setupProcess() string {
 	b.processStat.ErrorMsg = ""
+	b.processStat.Done = false
 	if err := b.setTimeGrinder(); err != nil {
 		OutLog("failed to create new timegrinder err=%v", err)
 		return err.Error()
@@ -536,6 +537,9 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 	skipF := 0
 	var lastTime int64
 	for scanner.Scan() {
+		if b.stopProcess {
+			return
+		}
 		l := scanner.Text()
 		lf.Read += int64(len(l))
 		ln++
@@ -795,7 +799,9 @@ func (b *App) findHost(ip string) string {
 	if h, ok := b.hostMap[ip]; ok {
 		return h
 	}
-	if names, err := net.LookupAddr(ip); err == nil && len(names) > 0 {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+	if names, err := net.DefaultResolver.LookupAddr(ctx, ip); err == nil && len(names) > 0 {
 		b.hostMap[ip] = names[0]
 	} else {
 		b.hostMap[ip] = ""
