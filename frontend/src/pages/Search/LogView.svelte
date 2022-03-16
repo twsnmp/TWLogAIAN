@@ -107,7 +107,9 @@
       busy = false;
       if (r) {
         result = r;
-        logView = r.View;
+        if (logView == "") {
+          logView = r.View;
+        }
         setLogTable();
         if (r.ErrorMsg == "") {
           conf.history.push(conf.query);
@@ -393,7 +395,7 @@
           bind:value={logView}
           on:change={chnageLogView}
         >
-          <option value="">タイムオンリー</option>
+          <option value="timeonly">タイムオンリー</option>
           {#if result.View == "syslog"}
             <option value="syslog">syslog</option>
           {/if}

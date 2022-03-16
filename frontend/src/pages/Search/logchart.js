@@ -79,14 +79,6 @@ const addMultiChartData = (data, count, ctm, newCtm) => {
   return ctm;
 };
 
-const getChartLogLevel = (l) => {
-  const code = l.KeyValue.response;
-  if (code) {
-    return code < 300 ? "normal" : code < 400 ? "warn" : "error";
-  }
-  return getLogLevel(l);
-};
-
 export const showLogChart = (div, logs, dark, cb) => {
   if (chart) {
     chart.dispose();
@@ -107,7 +99,7 @@ export const showLogChart = (div, logs, dark, cb) => {
   let st = Infinity;
   let lt = 0;
   logs.forEach((l) => {
-    const lvl = getChartLogLevel(l);
+    const lvl = getLogLevel(l);
     const newCtm = Math.floor(l.Time / (1000 * 1000 * 1000 * 60));
     if (!ctm) {
       ctm = newCtm;

@@ -44,7 +44,7 @@ const columnsTimeOnly = [
       return h('input', {
         type: 'checkbox',
         onChange: () => {
-          const key = row.cells[3].data
+          const key = row.cells[4].data
           if (selectLogMap.has(key)) {
             selectLogMap.delete(key); 
           } else {
@@ -61,12 +61,16 @@ const columnsTimeOnly = [
   },{
     id: "timestamp",
     name: "日時",
-    width: "20%",
+    width: "15%",
     formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}'),
     convert: true,
   },{
+    name: "スコア",
+    width: "10%",
+    formatter: (cell) => cell.toFixed(2),
+  },{
     name: "ログ",
-    width: "65%",
+    width: "60%",
   },
 ];
 
@@ -78,7 +82,7 @@ const getTimeOnlyLogData = (r, filter) => {
         return
       }
     }
-    d.push(["",getLogLevel(l),l.Time, l.All]);
+    d.push(["",getLogLevel(l),l.Time,l.Score, l.All]);
   });
   return d;
 }
@@ -254,6 +258,10 @@ export const getLogLevel = (l) => {
     // 数値のsuverityを優先する
     suverity %= 8
     return  suverity < 4 ? "error" : suverity == 4 ? "warn" : "normal";
+  }
+  const code = l.KeyValue.response;
+  if (code > 99) {
+    return code < 300 ? "normal" : code < 400 ? "warn" : "error";
   }
 
   let winLevel = l.KeyValue.winLevel;
