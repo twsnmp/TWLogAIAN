@@ -226,6 +226,7 @@ var fieldTypes = map[string]FieldType{
 	"winLevel":             {Name: "レベル", Type: "number"},
 	"winUserID":            {Name: "ユーザーID", Type: "number"},
 	"winComputer":          {Name: "コンピュータ名", Type: "string"},
+	"score":                {Name: "検索スコア", Type: "number"},
 }
 
 func (b *App) setFieldTypes(l *LogEnt) {

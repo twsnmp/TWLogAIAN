@@ -82,7 +82,8 @@ const getTimeOnlyLogData = (r, filter) => {
         return
       }
     }
-    d.push(["",getLogLevel(l),l.Time,l.Score, l.All]);
+    const score = l.KeyValue["score"] || 0.0;
+    d.push(["",getLogLevel(l),l.Time,score, l.All]);
   });
   return d;
 }

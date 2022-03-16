@@ -26,7 +26,6 @@ type LogEnt struct {
 	ID       string
 	Time     int64
 	All      string
-	Score    float64
 	KeyValue map[string]interface{}
 }
 
@@ -208,6 +207,7 @@ func (b *App) GetIndexInfo() (IndexInfo, error) {
 		OutLog("GetIndexInfo err=%v", err)
 		return ret, err
 	}
+	f = append(f, "score")
 	ret.Duration = b.indexer.duration.String()
 	ret.Total = t
 	ret.Fields = f
@@ -322,7 +322,7 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 				match.VisitStoredFields(func(field string, value []byte) bool {
 					if field == "_id" {
 						if l, ok := b.indexer.logMap[string(value)]; ok {
-							l.Score = match.Score
+							l.KeyValue["score"] = match.Score
 							ret.Logs = append(ret.Logs, l)
 						}
 						return false
@@ -331,9 +331,9 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 				})
 			} else {
 				l := LogEnt{
-					Score:    match.Score,
 					KeyValue: make(map[string]interface{}),
 				}
+				l.KeyValue["score"] = match.Score
 				match.VisitStoredFields(func(field string, value []byte) bool {
 					switch field {
 					case "_id":
