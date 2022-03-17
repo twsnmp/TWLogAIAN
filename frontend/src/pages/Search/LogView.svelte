@@ -101,6 +101,8 @@
   };
   const search = () => {
     data.length = 0; // 空にする
+    filter.st = false; // 時間フィルターをリセットする
+    filter.et = false;
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
     busy = true;
     window.go.main.App.SearchLog(conf.query, limit).then((r) => {
