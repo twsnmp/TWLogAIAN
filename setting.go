@@ -148,7 +148,7 @@ func (b *App) openDB(wd string) error {
 
 // initDB : DBにバケットを作る
 func (b *App) initDB() error {
-	buckets := []string{"settings", "results", "reports"}
+	buckets := []string{"settings", "result"}
 	return b.db.Update(func(tx *bbolt.Tx) error {
 		for _, b := range buckets {
 			_, err := tx.CreateBucketIfNotExists([]byte(b))
@@ -188,6 +188,24 @@ func (b *App) loadSettingsFromDB() error {
 			if err := json.Unmarshal(v, &b.importedFieldTypes); err != nil {
 				return err
 			}
+		}
+		bkt = tx.Bucket([]byte("result"))
+		v = bkt.Get([]byte("logFiles"))
+		if v == nil {
+			return nil
+		}
+		lfs := []LogFile{}
+		if err := json.Unmarshal(v, &lfs); err == nil {
+			for _, lf := range lfs {
+				b.processStat.LogFiles = append(b.processStat.LogFiles, &lf)
+			}
+		}
+		v = bkt.Get([]byte("memos"))
+		if v == nil {
+			return nil
+		}
+		if err := json.Unmarshal(v, &b.memos); err != nil {
+			return err
 		}
 		return nil
 	})
@@ -229,9 +247,35 @@ func (b *App) saveSettingsToDB() error {
 	})
 }
 
+func (b *App) saveResultToDB() error {
+	lfs := []LogFile{}
+	for _, lf := range b.processStat.LogFiles {
+		lfs = append(lfs, *lf)
+	}
+	jlfs, err := json.Marshal(lfs)
+	if err != nil {
+		return err
+	}
+	jmemos, err := json.Marshal(b.memos)
+	if err != nil {
+		return err
+	}
+	return b.db.Update(func(tx *bbolt.Tx) error {
+		bkt := tx.Bucket([]byte("result"))
+		if bkt == nil {
+			return fmt.Errorf("bucket settings is nil")
+		}
+		if err := bkt.Put([]byte("logFiles"), jlfs); err != nil {
+			return err
+		}
+		return bkt.Put([]byte("memos"), jmemos)
+	})
+}
+
 // CloseWorkDir : 作業フォルダを閉じる
 func (b *App) CloseWorkDir() string {
 	b.CloseIndexor()
+	b.saveResultToDB()
 	b.workdir = ""
 	if b.db != nil {
 		b.db.Close()

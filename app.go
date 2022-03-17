@@ -44,6 +44,13 @@ type App struct {
 	geoMap                 map[string]*GeoEnt
 	importedExtractorTypes []ExtractorType
 	importedFieldTypes     map[string]FieldType
+	memos                  []Memo
+}
+
+type Memo struct {
+	Time int64
+	Memo string
+	Log  string
 }
 
 // NewApp creates a new App application struct
