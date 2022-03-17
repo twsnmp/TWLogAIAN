@@ -99,9 +99,6 @@
   }
 
   const onResize = () => {
-    if(pagination) {
-      pagination.limit = getTableLimit();
-    }
     resizeTime3DChart();
   };
 

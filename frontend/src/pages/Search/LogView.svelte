@@ -214,9 +214,6 @@
   };
 
   const onResize = () => {
-    if (pagination) {
-      pagination.limit = getTableLimit();
-    }
     resizeLogChart();
   };
 

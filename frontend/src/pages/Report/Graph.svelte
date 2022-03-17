@@ -108,9 +108,6 @@
   }
 
   const onResize = () => {
-    if(pagination) {
-      pagination.limit = getTableLimit();
-    }
     resizeGraph();
   };
 

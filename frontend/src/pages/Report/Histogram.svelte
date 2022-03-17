@@ -104,9 +104,6 @@
   }
 
   const onResize = () => {
-    if(pagination) {
-      pagination.limit = getTableLimit();
-    }
     resizeHistogramChart();
   };
 
