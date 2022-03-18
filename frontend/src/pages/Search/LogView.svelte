@@ -495,7 +495,7 @@
         <Check16 />
         処理結果
       </button>
-      <button class="btn  btn-secondary mr-2" type="button" on:click={back}>
+      <button class="btn  btn-secondary mr-1" type="button" on:click={back}>
         <Reply16 />
         戻る
       </button>

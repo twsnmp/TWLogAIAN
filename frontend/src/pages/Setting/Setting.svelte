@@ -603,7 +603,7 @@
     <div class="Box-footer text-right">
       {#if hasImportedLogType}
           <button
-            class="btn btn-danger mr-2"
+            class="btn btn-danger mr-1"
             type="button"
             on:click={deleteLogTypes}
             >
@@ -612,7 +612,7 @@
         </button>
       {:else}
         <button
-          class="btn btn-outline mr-2"
+          class="btn btn-outline mr-1"
           type="button"
           on:click={importLogTypes}
         >
@@ -621,7 +621,7 @@
         </button>
       {/if}
       <button
-        class="btn btn-outline mr-2"
+        class="btn btn-outline mr-1"
         type="button"
         on:click={() => {
           page = "grok";
@@ -630,22 +630,22 @@
         <Checklist16 />
         抽出テスト
       </button>
-      <button class="btn btn-secondary mr-2" type="button" on:click={cancel}>
+      <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
         <X16 />
         キャンセル
       </button>
       {#if hasIndex}
-        <button class="btn btn-danger mr-2" type="button" on:click={clear}>
+        <button class="btn btn-danger mr-1" type="button" on:click={clear}>
           <Trash16 />
           インデックス削除
         </button>
-        <button class="btn btn-danger" type="button" on:click={start}>
+        <button class="btn btn-danger mr-1" type="button" on:click={start}>
           <Check16 />
           追加読み込み
         </button>
-        <button class="btn btn-primary mr-2" type="button" on:click={search}>
+        <button class="btn btn-primary mr-1" type="button" on:click={search}>
           <Search16 />
-          検索開始
+          検索画面へ
         </button>
       {:else}
         <button class="btn btn-primary" type="button" on:click={start}>

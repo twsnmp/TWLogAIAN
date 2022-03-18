@@ -80,7 +80,7 @@
   </div>
   <div class="Box-footer text-right">
     {#if !feedbackWait}
-      <button class="btn btn-secondary mr-2" type="button" on:click={close}>
+      <button class="btn btn-secondary mr-1" type="button" on:click={close}>
         <X16 />
         キャンセル
       </button>

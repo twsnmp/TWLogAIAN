@@ -411,12 +411,12 @@
 </form>
 </div>
 <div class="Box-footer text-right">
-  <button class="btn btn-secondary mr-2" type="button" on:click={cancel}>
+  <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
     <X16 />
     キャンセル
   </button>
   {#if editMode}
-    <button class="btn btn-danger mr-2" type="button" on:click={del}>
+    <button class="btn btn-danger mr-1" type="button" on:click={del}>
       <Trash16 />
       削除
     </button>

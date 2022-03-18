@@ -75,6 +75,7 @@ const columnsTimeOnly = [
 ];
 
 const getTimeOnlyLogData = (r, filter) => {
+  clearSelectedLogs();
   const d = [];
   r.Logs.forEach((l) => {
     if(filter && filter.st) {

@@ -217,16 +217,16 @@
   </div>
 {/if}
 <div class="Box-footer text-right">
-  <button class="btn btn-danger mr-2" type="button" on:click={auto}>
+  <button class="btn btn-danger mr-1" type="button" on:click={auto}>
     <StarFill16 />
     自動抽出パターン生成
   </button>
-  <button class="btn btn-secondary mr-2" type="button" on:click={back}>
+  <button class="btn btn-secondary mr-1" type="button" on:click={back}>
     <X16 />
     終了
   </button>
   {#if grok}
-    <button class="btn btn-primary mr-2" type="button" on:click={save}>
+    <button class="btn btn-primary mr-1" type="button" on:click={save}>
       <X16 />
       適用
     </button>
