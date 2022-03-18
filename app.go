@@ -47,12 +47,6 @@ type App struct {
 	memos                  []Memo
 }
 
-type Memo struct {
-	Time int64
-	Memo string
-	Log  string
-}
-
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{

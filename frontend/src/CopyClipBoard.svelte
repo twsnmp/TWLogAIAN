@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
 
-  export let selectedLogs;
+  export let copyText;
 
   let textarea;
 
@@ -11,4 +11,4 @@
   });
 </script>
 
-<textarea bind:value={selectedLogs} bind:this={textarea} />
+<textarea bind:value={copyText} bind:this={textarea} />

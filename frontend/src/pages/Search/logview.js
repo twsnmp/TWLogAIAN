@@ -27,7 +27,7 @@ const formatLevel = (level) => {
 const selectLogMap = new Map()
 
 export const getSelectedLogs = () => {
-  return Array.from(selectLogMap).join("\n");
+  return Array.from(selectLogMap.keys()).join("\n");
 }
 
 export const clearSelectedLogs = () => {

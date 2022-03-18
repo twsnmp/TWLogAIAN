@@ -8,6 +8,7 @@
     Trash16,
     Reply16,
     Copy16,
+    Pencil16,
   } from "svelte-octicons";
   import Query from "./Query.svelte";
   import Result from "./Result.svelte";
@@ -26,6 +27,7 @@
   import Graph from "../Report/Graph.svelte";
   import Globe from "../Report/Globe.svelte";
   import Heatmap from "../Report/Heatmap.svelte";
+  import Memo from "../Report/Memo.svelte";
   import { getTableLimit, loadFieldTypes } from "../../js/define";
   import numeral from "numeral";
   import CopyClipBoard from "../../CopyClipBoard.svelte";
@@ -146,6 +148,7 @@
   const handleDone = (e) => {
     page = "";
     report = "";
+    selectedLogs = "";
     updateChart();
   };
 
@@ -240,15 +243,35 @@
   let showCopy = false;
   const copy = () => {
     showCopy = true;
+    const copyText = selectedLogs;
     const app = new CopyClipBoard({
       target: document.getElementById("clipboard"),
-      props: { selectedLogs },
+      props: { copyText },
     });
     app.$destroy();
     setTimeout(()=>{
       showCopy = false;
     },2000);
   };
+  const findLog = (l) => {
+    for(let i = 0; i < result.Logs.length;i++) {
+      if (result.Logs[i].All == l) {
+        return result.Logs[i]
+      }
+     }
+     return undefined
+  }
+  const memo = () => {
+    selectedLogs.split("\n").forEach((l) =>{
+      const e = findLog(l);
+      if (e) {
+        window.go.main.App.AddMemo({
+          Time: e.Time,
+          Log: e.All,
+        });
+      }
+    })
+  }
 
   const chnageLogView = ()  => {
     setLogTable();
@@ -259,6 +282,8 @@
 <svelte:window on:resize={onResize} />
 {#if page == "result"}
   <Result {indexInfo} on:done={handleDone} />
+{:else if page == "memo"}
+  <Memo on:done={handleDone} />
 {:else if page == "ranking"}
   <Ranking fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "time"}
@@ -390,7 +415,7 @@
       {#if result && result.Hit > 0 }
         <!-- svelte-ignore a11y-no-onchange -->
         <select
-          class="form-select mr-2"
+          class="form-select mr-1"
           bind:value={logView}
           on:change={chnageLogView}
         >
@@ -414,7 +439,7 @@
         <span>保存中</span><span class="AnimatedEllipsis" />
       {:else}
         <select
-          class="form-select mr-2"
+          class="form-select mr-1"
           bind:value={exportType}
           on:change={exportLogs}
         >
@@ -429,11 +454,12 @@
       {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
         <!-- svelte-ignore a11y-no-onchange -->
         <select
-          class="form-select mr-2"
+          class="form-select mr-1"
           bind:value={report}
           on:change={showReport}
         >
           <option value="">レポート</option>
+          <option value="memo">メモ</option>
           <option value="ranking">ランキング分析</option>
           <option value="time">時系列分析</option>
           <option value="time3d">時系列3D分析</option>
@@ -447,16 +473,20 @@
         </select>
       {/if}
       {#if selectedLogs != ""}
-        <button class="btn btn-outline mr-2" type="button" on:click={copy}>
+        <button class="btn btn-outline mr-1" type="button" on:click={copy}>
           <Copy16 />
           コピー
         </button>
         {#if showCopy}
           <span class="branch-name">Copied</span>
         {/if}
+        <button class="btn btn-outline mr-1" type="button" on:click={memo}>
+          <Pencil16 />
+          メモ
+        </button>
       {/if}
       <button
-        class="btn  btn-outline mr-2"
+        class="btn  btn-outline mr-1"
         type="button"
         on:click={() => {
           page = "result";
