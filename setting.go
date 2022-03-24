@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -544,4 +545,31 @@ func (b *App) makeGrok(td string, grokMap map[string]string) string {
 		}
 	}
 	return r
+}
+
+func (b *App) LoadKeyword() []string {
+	ret := []string{}
+	file, err := wails.OpenFileDialog(b.ctx, wails.OpenDialogOptions{
+		Title: "キーワード",
+		Filters: []wails.FileFilter{{
+			DisplayName: "キーワードファイル",
+			Pattern:     "*.txt",
+		}},
+	})
+	if err != nil {
+		OutLog("LoadKeyword err=%v", err)
+		return ret
+	}
+	buf, err := ioutil.ReadFile(file)
+	if err != nil {
+		OutLog("LoadKeyword err=%v", err)
+		return ret
+	}
+	for _, k := range strings.Split(string(buf), "\n") {
+		k := strings.TrimSpace(k)
+		if k != "" {
+			ret = append(ret, k)
+		}
+	}
+	return ret
 }

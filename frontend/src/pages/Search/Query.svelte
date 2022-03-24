@@ -1,6 +1,6 @@
 <script>
   import { getFieldName,getFieldType } from "../../js/define";
-  import { Plus16,Trash16 } from "svelte-octicons";
+  import { Plus16,Trash16,File16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   export let conf;
   export let fields = [];
@@ -93,6 +93,15 @@
   const clear = () => {
     conf.history.length = 0;
   }
+
+  const loadKeyword = () => {
+    window.go.main.App.LoadKeyword().then((r) => {
+      if (r) {
+        dispatch("update", { query: r.join(" "), add: true });
+      }
+    });
+  }
+
 </script>
 
 <form>
@@ -179,6 +188,9 @@
       <div class="col-2 float-left">
         <button class="btn" type="button" on:click={addKeyword}>
           <Plus16 />
+        </button>
+        <button class="btn" type="button" on:click={loadKeyword}>
+          <File16 />
         </button>
       </div>
     </div>
