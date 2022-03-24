@@ -62,18 +62,22 @@ func (b *App) Start(c Config, noRead bool) string {
 	b.config = c
 	if !noRead {
 		if e := b.makeLogFileList(); e != "" {
+			OutLog("make log file list err=%s", e)
 			return e
 		}
 		if len(b.processStat.LogFiles) < 1 {
+			OutLog("no log files")
 			return "処理するファイルがありません"
 		}
 	}
 	if e := b.setupProcess(); e != "" {
+		OutLog("make log file list err=%s", e)
 		return e
 	}
 	b.wg = &sync.WaitGroup{}
 	b.stopProcess = false
 	if err := b.StartLogIndexer(); err != nil {
+		OutLog("start log indexer err=%v", err)
 		return fmt.Sprintf("インデクサーを起動できません。err=%v", err)
 	}
 	if noRead {

@@ -38,18 +38,20 @@ type GeoEnt struct {
 
 func (b *App) StartLogIndexer() error {
 	var err error
-	if b.config.InMemory {
-		b.indexer.config = bluge.InMemoryOnlyConfig()
-	} else {
-		dir := filepath.Join(b.workdir, "bluge")
-		if err := os.MkdirAll(dir, 0777); err != nil {
+	if b.indexer.writer == nil {
+		if b.config.InMemory {
+			b.indexer.config = bluge.InMemoryOnlyConfig()
+		} else {
+			dir := filepath.Join(b.workdir, "bluge")
+			if err := os.MkdirAll(dir, 0777); err != nil {
+				return err
+			}
+			b.indexer.config = bluge.DefaultConfig(dir)
+		}
+		b.indexer.writer, err = bluge.OpenWriter(b.indexer.config)
+		if err != nil {
 			return err
 		}
-		b.indexer.config = bluge.DefaultConfig(dir)
-	}
-	b.indexer.writer, err = bluge.OpenWriter(b.indexer.config)
-	if err != nil {
-		return err
 	}
 	b.indexer.logMap = make(map[string]*LogEnt)
 	b.indexer.logCh = make(chan *LogEnt, 10000)
@@ -71,7 +73,9 @@ func (b *App) HasIndex() bool {
 
 func (b *App) CloseIndexor() error {
 	if b.indexer.writer != nil {
-		return b.indexer.writer.Close()
+		err := b.indexer.writer.Close()
+		b.indexer.writer = nil
+		return err
 	}
 	return nil
 }
