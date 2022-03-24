@@ -54,7 +54,8 @@
   const copy = () => {
     let copyText = "";
     memos.forEach((e)=> {
-      copyText += formatTime(e.Time) + " " + e.Memo +"\n" + e.Log + "\n\n";
+      copyText += formatTime(e.Time) + " " + getTypeName(e.Type) + " " + e.Memo
+         + " " + e.Diff + "\n" + e.Log + "\n\n";
     });
     showCopy = true;
     const app = new CopyClipBoard({
@@ -70,6 +71,18 @@
   const back = () => {
     dispatch("done", {});
   };
+
+  const getTypeName = (t) => {
+    switch(t) {
+    case "info":
+      return "情報:";
+    case "warn":
+      return "注意:";
+    case "error":
+      return "エラー:";
+    }
+    return "";
+  }
 
 </script>
 
@@ -103,7 +116,7 @@
     </div>
   {/if}
   <div class="Box-body">
-    {#each memos as { Time, Type, Memo, Log },i}
+    {#each memos as { Time, Type, Memo, Log, Diff },i}
       <div class="TimelineItem">
         {#if Type == "error"}
           <div class="TimelineItem-badge color-bg-danger-emphasis color-fg-on-emphasis">
@@ -124,7 +137,7 @@
          {/if}
         <div class="TimelineItem-body">
           <p class="h4">
-            {formatTime(Time)} {Memo}
+            {formatTime(Time)} {getTypeName(Type)}{Memo} | {Diff}
           </p>
           <p class="f6">
             {Log}

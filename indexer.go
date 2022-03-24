@@ -52,7 +52,7 @@ func (b *App) StartLogIndexer() error {
 		return err
 	}
 	b.indexer.logMap = make(map[string]*LogEnt)
-	b.indexer.logCh = make(chan *LogEnt, 1000)
+	b.indexer.logCh = make(chan *LogEnt, 10000)
 	b.wg.Add(1)
 	go b.logIndexer()
 	return nil
@@ -97,6 +97,8 @@ func (b *App) logIndexer() {
 	timer := time.NewTicker(time.Millisecond * 200)
 	b.indexer.logBuffer = []*LogEnt{}
 	bFirstLog := true
+	skip := 0
+	total := 0
 	for {
 		select {
 		case l, ok := <-b.indexer.logCh:
@@ -122,7 +124,11 @@ func (b *App) logIndexer() {
 				}
 				// Index作成
 				b.addLogToIndex()
+				total += len(b.indexer.logBuffer)
 				b.indexer.logBuffer = []*LogEnt{}
+				OutLog("total=%d skip=%d", total, skip)
+			} else {
+				skip++
 			}
 		}
 	}
@@ -134,7 +140,6 @@ func (b *App) addLogToIndex() {
 		return
 	}
 	batch_len := 0
-	numCount := 0
 	batch := bluge.NewBatch()
 	for _, l := range b.indexer.logBuffer {
 		doc := bluge.NewDocument(l.ID)
@@ -151,7 +156,6 @@ func (b *App) addLogToIndex() {
 			case string:
 				doc.AddField(bluge.NewTextField(k, v))
 			case float64:
-				numCount++
 				if k == "delta" {
 					doc.AddField(bluge.NewNumericField(k, v).StoreValue())
 				} else {
@@ -177,7 +181,8 @@ func (b *App) addLogToIndex() {
 	if err := b.indexer.writer.Batch(batch); err != nil {
 		OutLog("error executing batch: %v", err)
 	}
-	OutLog("end batch %s numCount=%d", time.Since(st), numCount)
+	batch.Reset()
+	OutLog("end batch %s", time.Since(st))
 }
 
 type IndexInfo struct {

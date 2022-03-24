@@ -1,9 +1,13 @@
 package main
 
-import "sort"
+import (
+	"sort"
+	"time"
+)
 
 type Memo struct {
 	Time int64
+	Diff string
 	Memo string //
 	Type string // "","error","warn","normal"
 	Log  string
@@ -17,9 +21,7 @@ func (b *App) AddMemo(memo Memo) {
 		}
 	}
 	b.memos = append(b.memos, memo)
-	sort.Slice(b.memos, func(i, j int) bool {
-		return b.memos[i].Time < b.memos[j].Time
-	})
+	b.sortAndCalcDiffMemo()
 }
 
 // SetMemo : メモを更新する
@@ -48,9 +50,24 @@ func (b *App) DeleteMemo(memo Memo) {
 		tmp = append(tmp, m)
 	}
 	b.memos = tmp
-	sort.Slice(b.memos, func(i, j int) bool {
-		return b.memos[i].Time < b.memos[j].Time
-	})
+	b.sortAndCalcDiffMemo()
+}
+
+// sortAndCalcDiffMemo : メモを時刻順に並べて時差を再計算する
+func (b *App) sortAndCalcDiffMemo() {
+	if len(b.memos) > 1 {
+		sort.Slice(b.memos, func(i, j int) bool {
+			return b.memos[i].Time < b.memos[j].Time
+		})
+	}
+	if len(b.memos) > 0 {
+		b.memos[0].Diff = ""
+		for i := 1; i < len(b.memos); i++ {
+			ts := time.Unix(0, b.memos[i-1].Time)
+			te := time.Unix(0, b.memos[i].Time)
+			b.memos[i].Diff = te.Sub(ts).String()
+		}
+	}
 }
 
 // ClearMemos : すべてのメモを削除する
