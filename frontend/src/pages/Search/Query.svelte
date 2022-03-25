@@ -21,8 +21,8 @@
     if( !conf.keyword.field || !conf.keyword.key){
       return
     }
-    const q =
-      " " + conf.keyword.mode + conf.keyword.field + ":" + conf.keyword.key;
+    const q = conf.keyword.field == "" ? " " + conf.keyword.mode + conf.keyword.key
+     : " " + conf.keyword.mode + conf.keyword.field + ":" + conf.keyword.key;
     dispatch("update", { query: q, add: true });
   };
 
@@ -78,9 +78,6 @@
     }
     if (getFieldType(f) == "string") {
       hasStringField = true;
-      if(conf.keyword.field=="" ){
-        conf.keyword.field = f;
-      }
     }
     if (getFieldType(f) == "number") {
       hasNumberField = true;
@@ -97,7 +94,11 @@
   const loadKeyword = () => {
     window.go.main.App.LoadKeyword().then((r) => {
       if (r) {
-        dispatch("update", { query: r.join(" "), add: true });
+        r.forEach((k)=>{
+          const q =  conf.keyword.field == "" ? " " + conf.keyword.mode + k
+           : " "  + conf.keyword.mode + conf.keyword.field + ":" + k;
+          dispatch("update", { query: q, add: true });
+        });
       }
     });
   }
@@ -163,7 +164,8 @@
           aria-label="項目"
           bind:value={conf.keyword.field}
         >
-          {#each fields as f}
+        <option value="">全体</option>
+        {#each fields as f}
             {#if !f.startsWith("_") && getFieldType(f) == "string"}
               <option value={f}>{getFieldName(f)}</option>
             {/if}
