@@ -40,6 +40,8 @@
   const conf = {
     query: "",
     limit: "10000",
+    anomaly: "",
+    vector: "",
     history: [],
     keyword: {
       field: "",
@@ -107,12 +109,16 @@
     filter.et = false;
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
     busy = true;
-    window.go.main.App.SearchLog(conf.query, limit).then((r) => {
+    window.go.main.App.SearchLog(conf.query, conf.anomaly, conf.vector, limit).then((r) => {
       busy = false;
       if (r) {
         result = r;
         if (logView == "") {
           logView = r.View;
+        }
+        indexInfo.Fields = indexInfo.Fields.filter(f => f != "anomalyScore");
+        if (conf.anomaly != ""){
+          indexInfo.Fields.push("anomalyScore");
         }
         setLogTable();
         if (r.ErrorMsg == "") {
@@ -431,6 +437,9 @@
           {/if}
           {#if indexInfo.Fields.length > 0}
             <option value="data">抽出データ</option>
+          {/if}
+          {#if conf.anomaly != "" }
+            <option value="anomary">異常ログスコア</option>
           {/if}
         </select>
       {/if}

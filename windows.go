@@ -160,7 +160,7 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 				}
 			}
 		}
-		b.indexer.logCh <- &log
+		b.logCh <- &log
 		lf.Send += leng
 	}
 	return nil
@@ -254,7 +254,7 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 		if err := b.setKeyValuesToLogEnt(l, &log); err != nil {
 			continue
 		}
-		b.indexer.logCh <- &log
+		b.logCh <- &log
 		lf.Send += leng
 	}
 	return nil

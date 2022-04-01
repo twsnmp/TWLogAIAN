@@ -17,7 +17,6 @@ type LogIndexer struct {
 	config    bluge.Config
 	writer    *bluge.Writer
 	logBuffer []*LogEnt
-	logCh     chan *LogEnt
 	logMap    map[string]*LogEnt
 	duration  time.Duration
 }
@@ -54,7 +53,6 @@ func (b *App) StartLogIndexer() error {
 		}
 	}
 	b.indexer.logMap = make(map[string]*LogEnt)
-	b.indexer.logCh = make(chan *LogEnt, 10000)
 	b.wg.Add(1)
 	go b.logIndexer()
 	return nil
@@ -105,7 +103,7 @@ func (b *App) logIndexer() {
 	total := 0
 	for {
 		select {
-		case l, ok := <-b.indexer.logCh:
+		case l, ok := <-b.logCh:
 			if !ok {
 				timer.Stop()
 				if bFirstLog && len(b.indexer.logBuffer) > 0 {
@@ -198,6 +196,9 @@ type IndexInfo struct {
 func (b *App) GetIndexInfo() (IndexInfo, error) {
 	OutLog("GetIndexInfo")
 	ret := IndexInfo{}
+	if b.indexer.writer == nil {
+		return ret, nil
+	}
 	reader, err := b.indexer.writer.Reader()
 	if err != nil {
 		OutLog("GetIndexInfo err=%v", err)
@@ -234,7 +235,7 @@ type SearchResult struct {
 
 var regGeo = regexp.MustCompile(`\s*geo:(\S+)`)
 
-func (b *App) SearchLog(q string, limit int) SearchResult {
+func (b *App) SearchLog(q, anomaly, vector string, limit int) SearchResult {
 	OutLog("SearchLog q=%#v", q)
 	view := "timeonly"
 	if et := b.findExtractorType(); et != nil {
@@ -243,6 +244,9 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 	ret := SearchResult{
 		Logs: []*LogEnt{},
 		View: view,
+	}
+	if b.indexer.writer == nil {
+		return ret
 	}
 	reader, err := b.indexer.writer.Reader()
 	if err != nil {
@@ -364,6 +368,9 @@ func (b *App) SearchLog(q string, limit int) SearchResult {
 				ret.Logs = append(ret.Logs, &l)
 			}
 		} else {
+			if anomaly != "" {
+				b.setAnomalyScore(anomaly, vector, &ret)
+			}
 			return ret
 		}
 	}

@@ -38,6 +38,7 @@ type App struct {
 	processStat            ProcessStat
 	processConf            ProcessConf
 	indexer                LogIndexer
+	logCh                  chan *LogEnt
 	stopProcess            bool
 	wg                     *sync.WaitGroup
 	hostMap                map[string]string

@@ -7,8 +7,10 @@ require (
 	github.com/Songmu/timeout v0.4.0
 	github.com/blugelabs/bluge v0.1.9
 	github.com/blugelabs/query_string v0.3.0
+	github.com/codegaudi/go-iforest v0.0.1
 	github.com/gravwell/gravwell/v3 v3.8.5
 	github.com/oschwald/geoip2-golang v1.6.1
+	github.com/twsnmp/golof v1.0.0
 	github.com/viant/afs v1.16.0
 	github.com/vjeantet/grok v1.0.1
 	github.com/wailsapp/wails/v2 v2.0.0-beta.33

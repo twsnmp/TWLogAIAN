@@ -301,6 +301,26 @@
       </select>
     </div>
   </div>
+  <div class="container-lg clearfix mt-1">
+    <div class="col-2 float-left">異常ログ検知</div>
+    <div class="col-4 float-left">
+      <select class="form-select" bind:value={conf.anomaly}>
+        <option value="">検知しない</option>
+        <option value="iforest">Isolation Forest</option>
+        <option value="lof">LOF</option>
+        <option value="autoencoder">Auto Encoder</option>
+      </select>
+    </div>
+    {#if conf.anomaly}
+    <div class="col-2 float-left">特徴量</div>
+    <div class="col-4 float-left">
+      <select class="form-select" bind:value={conf.vector}>
+        <option value="">数値データ</option>
+        <option value="access">アクセスログ</option>
+      </select>
+    </div>
+    {/if}
+  </div>
 </form>
 
 <style>

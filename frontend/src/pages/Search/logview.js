@@ -74,7 +74,10 @@ const columnsTimeOnly = [
   },
 ];
 
-const getTimeOnlyLogData = (r, filter) => {
+const getTimeOnlyLogData = (r, filter,scoreField) => {
+  if (!scoreField) {
+    scoreField = "score";
+  }
   clearSelectedLogs();
   const d = [];
   r.Logs.forEach((l) => {
@@ -83,7 +86,7 @@ const getTimeOnlyLogData = (r, filter) => {
         return
       }
     }
-    const score = l.KeyValue["score"] || 0.0;
+    const score = l.KeyValue[scoreField] || 0.0;
     d.push(["",getLogLevel(l),l.Time,score, l.All]);
   });
   return d;
@@ -351,6 +354,8 @@ export const getLogData = (r,view,filter) => {
     return getWindowsLogData(r,filter);
   case "data":
     return getExtractData(r,filter);
+  case "anomaly":
+    return getTimeOnlyLogData(r,filter,"anomalyScore");
   }
   return getTimeOnlyLogData(r,filter);
 }

@@ -76,12 +76,13 @@ func (b *App) Start(c Config, noRead bool) string {
 	}
 	b.wg = &sync.WaitGroup{}
 	b.stopProcess = false
+	b.logCh = make(chan *LogEnt, 10000)
 	if err := b.StartLogIndexer(); err != nil {
 		OutLog("start log indexer err=%v", err)
 		return fmt.Sprintf("インデクサーを起動できません。err=%v", err)
 	}
 	if noRead {
-		close(b.indexer.logCh)
+		close(b.logCh)
 		b.wg.Wait()
 		return ""
 	}
@@ -332,7 +333,7 @@ func (b *App) addLogFileFromSCP(src *LogSource) string {
 func (b *App) logReader() {
 	defer func() {
 		b.wg.Done()
-		close(b.indexer.logCh)
+		close(b.logCh)
 	}()
 	OutLog("start logReader")
 	for _, lf := range b.processStat.LogFiles {
@@ -649,7 +650,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		}
 		log.Time = lastTime
 		log.KeyValue["delta"] = float64(delta) / (1000.0 * 1000.0 * 1000.0)
-		b.indexer.logCh <- &log
+		b.logCh <- &log
 		lf.Send += int64(len(l))
 	}
 	if err := scanner.Err(); err != nil {
@@ -781,6 +782,15 @@ func (b *App) findGeo(sip string) *GeoEnt {
 		return e
 	}
 	ip := net.ParseIP(sip)
+	if ip == nil {
+		b.geoMap[sip] = &GeoEnt{
+			Lat:     0.0,
+			Long:    0.0,
+			Country: "",
+			City:    "",
+		}
+		return b.geoMap[sip]
+	}
 	if r, err := b.processConf.GeoIP.City(ip); err == nil {
 		b.geoMap[sip] = &GeoEnt{
 			Lat:     r.Location.Latitude,
