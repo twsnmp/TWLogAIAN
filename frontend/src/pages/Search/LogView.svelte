@@ -326,6 +326,9 @@
             "0,0"
           )}/検索時間:{result.Duration}
         {/if}
+        {#if result.Anomaly}
+        /異常検知:{result.Anomaly}
+        {/if}
       </span>
     </div>
     {#if result.ErrorMsg != ""}

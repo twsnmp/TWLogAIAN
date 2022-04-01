@@ -298,25 +298,30 @@
         <option value="20000">20000</option>
         <option value="50000">50000</option>
         <option value="100000">100000</option>
+        <option value="200000">200000</option>
       </select>
     </div>
   </div>
   <div class="container-lg clearfix mt-1">
-    <div class="col-2 float-left">異常ログ検知</div>
+    <div class="col-2 float-left">異常ログ検知方法</div>
     <div class="col-4 float-left">
       <select class="form-select" bind:value={conf.anomaly}>
         <option value="">検知しない</option>
         <option value="iforest">Isolation Forest</option>
-        <option value="lof">LOF</option>
+        <option value="lof">Local Outlier Factor</option>
         <option value="autoencoder">Auto Encoder</option>
       </select>
     </div>
     {#if conf.anomaly}
-    <div class="col-2 float-left">特徴量</div>
+    <div class="col-2 float-left">特徴量の計算方法</div>
     <div class="col-4 float-left">
       <select class="form-select" bind:value={conf.vector}>
         <option value="">数値データ</option>
-        <option value="access">アクセスログ</option>
+        <option value="time">数値データ+曜日と時間帯</option>
+        <option value="sql">SQLインジェクション</option>
+        <option value="oscmd">OSコマンドインジェクション</option>
+        <option value="dirt">ディレクトリトラバーサル</option>
+        <option value="walu">Waluの方法</option>
       </select>
     </div>
     {/if}

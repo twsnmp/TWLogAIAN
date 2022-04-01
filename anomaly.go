@@ -9,21 +9,69 @@ import (
 	"github.com/twsnmp/golof/lof"
 )
 
+var oscmdKeys = []string{
+	"rm%20", "cat%20", "wget%20",
+	"curl%20", "sudo%20", "ssh%20",
+	"usermod%20", "useradd%20", "grep%20", "ls%20",
+	";", "|", "&",
+	"/bin", "/dev", "/home", "/lib", "/misc", "/opt",
+	"/root", "/tftpboot", "/usr", "/boot", "/etc", "/initrd",
+	"/lost+found", "/mnt", "/proc", "/sbin", "/tmp", "/var",
+}
+
+var dirTraversalKeys = []string{
+	"../", "..\\", ":\\",
+	"/bin", "/dev", "/home", "/lib", "/misc", "/opt",
+	"/root", "/tftpboot", "/usr", "/boot", "/etc/", "/initrd",
+	"/lost+found", "/mnt", "/proc", "/sbin", "/tmp", "/var",
+}
+
+var sqlKeys = []string{
+	"&#039", "*", ";", "%20", "--",
+	"select", "delete", "create", "drop", "alter",
+	"insert", "update", "set", "from", "where",
+	"union", "all", "like",
+	"and", "&", "or", "|",
+	"user", "username", "passwd", "id", "admin", "information_schema",
+}
+
 func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 	OutLog("start setAnomalyScore")
 	st := time.Now()
 	var vectors [][]float64
-	if vmode == "access" {
-		OutLog("start make vector form Access log")
+	switch vmode {
+	case "walu":
+		OutLog("start make vector form Walu log")
 		for _, l := range sr.Logs {
-			v := toVector(&l.All)
+			v := getWaluVector(&l.All)
 			if len(v) > 20 {
 				vectors = append(vectors, v)
 			} else {
 				OutLog("v=%v %s", v, l.All)
 			}
 		}
-	} else {
+	case "sql":
+		for _, l := range sr.Logs {
+			v := getKeywordsVector(&l.All, &sqlKeys)
+			if len(v) == len(sqlKeys) {
+				vectors = append(vectors, v)
+			}
+		}
+	case "oscmd":
+		for _, l := range sr.Logs {
+			v := getKeywordsVector(&l.All, &oscmdKeys)
+			if len(v) == len(oscmdKeys) {
+				vectors = append(vectors, v)
+			}
+		}
+	case "dirt":
+		for _, l := range sr.Logs {
+			v := getKeywordsVector(&l.All, &dirTraversalKeys)
+			if len(v) == len(dirTraversalKeys) {
+				vectors = append(vectors, v)
+			}
+		}
+	default:
 		OutLog("start make vector form number fields")
 		keys := []string{}
 		for k, v := range sr.Logs[0].KeyValue {
@@ -31,10 +79,17 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 				keys = append(keys, string(k))
 			}
 		}
+		addTime := vmode == "time"
 		for _, l := range sr.Logs {
 			vector := []float64{}
 			for _, key := range keys {
 				vector = append(vector, l.KeyValue[key].(float64))
+			}
+			if addTime {
+				ts := time.Unix(0, l.Time).Local()
+				vector = append(vector, float64(ts.Day()))
+				vector = append(vector, float64(ts.Weekday()))
+				vector = append(vector, float64(ts.Hour()))
 			}
 			vectors = append(vectors, vector)
 		}
@@ -48,7 +103,7 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 			OutLog("NewIForest err=%v", err)
 			return
 		}
-		OutLog("start Calculate IForest AnomalyScore")
+		OutLog("IForest Calculate AnomalyScore")
 		for i, v := range vectors {
 			sr.Logs[i].KeyValue["anomalyScore"] = iforest.CalculateAnomalyScore(v)
 		}
@@ -56,25 +111,37 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 		OutLog("start LOF")
 		samples := lof.GetSamplesFromFloat64s(vectors)
 		lofGetter := lof.NewLOF(5)
-		OutLog("start LOF Train")
+		OutLog("LOF Train")
 		if err := lofGetter.Train(samples); err != nil {
 			OutLog("LOF err=%v", err)
 			return
 		}
-		OutLog("start Calculate LOF AnomalyScore")
+		OutLog("LOF Calculate AnomalyScore")
 		for i, s := range samples {
 			sr.Logs[i].KeyValue["anomalyScore"] = lofGetter.GetLOF(s, "fast")
 		}
 	default:
+		OutLog("Other set vector")
 		for i, v := range vectors {
 			sr.Logs[i].KeyValue["vector"] = v
 		}
 	}
 	sr.View = "anomaly"
+	sr.Anomaly = time.Since(st).String()
 	OutLog("end setAnomalyScore dur=%v", time.Since(st))
 }
 
-func toVector(s *string) []float64 {
+// getKeywordsVector : キーワードのりストから特徴ベクターを作成する
+func getKeywordsVector(s *string, keys *[]string) []float64 {
+	vector := []float64{}
+	for _, k := range *keys {
+		vector = append(vector, float64(strings.Count(*s, k)))
+	}
+	return vector
+}
+
+// https://github.com/Kanatoko/Walu
+func getWaluVector(s *string) []float64 {
 	vector := []float64{}
 	a := strings.Split(*s, "\"")
 	if len(a) < 2 {

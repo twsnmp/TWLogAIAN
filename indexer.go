@@ -231,6 +231,7 @@ type SearchResult struct {
 	Logs     []*LogEnt
 	ErrorMsg string
 	View     string
+	Anomaly  string
 }
 
 var regGeo = regexp.MustCompile(`\s*geo:(\S+)`)
