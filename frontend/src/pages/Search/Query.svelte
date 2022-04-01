@@ -304,7 +304,7 @@
   </div>
   <div class="container-lg clearfix mt-1">
     <div class="col-2 float-left">異常ログ検知方法</div>
-    <div class="col-4 float-left">
+    <div class="col-3 float-left">
       <select class="form-select" bind:value={conf.anomaly}>
         <option value="">検知しない</option>
         <option value="iforest">Isolation Forest</option>
@@ -314,14 +314,14 @@
     </div>
     {#if conf.anomaly}
     <div class="col-2 float-left">特徴量の計算方法</div>
-    <div class="col-4 float-left">
+    <div class="col-3 float-left">
       <select class="form-select" bind:value={conf.vector}>
         <option value="">数値データ</option>
         <option value="time">数値データ+曜日と時間帯</option>
         <option value="sql">SQLインジェクション</option>
         <option value="oscmd">OSコマンドインジェクション</option>
         <option value="dirt">ディレクトリトラバーサル</option>
-        <option value="walu">Waluの方法</option>
+        <option value="walu">アクセスログ(Waluの方法)</option>
       </select>
     </div>
     {/if}
