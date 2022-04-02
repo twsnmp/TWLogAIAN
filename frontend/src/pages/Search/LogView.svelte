@@ -31,6 +31,7 @@
   import { getTableLimit, loadFieldTypes } from "../../js/define";
   import numeral from "numeral";
   import CopyClipBoard from "../../CopyClipBoard.svelte";
+import AutoEncoder from "./AutoEncoder.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -120,10 +121,16 @@
         if (conf.anomaly != ""){
           indexInfo.Fields.push("anomalyScore");
         }
-        setLogTable();
         if (r.ErrorMsg == "") {
           conf.history.push(conf.query);
         }
+        if (conf.anomaly =="autoencoder") {
+          busy = true;
+          showAutoencoder = true;
+          console.log(result.Logs.length);
+          return
+        }
+        setLogTable();
         updateChart();
       }
     });
@@ -259,6 +266,7 @@
       showCopy = false;
     },2000);
   };
+
   const findLog = (l) => {
     for(let i = 0; i < result.Logs.length;i++) {
       if (result.Logs[i].All == l) {
@@ -282,6 +290,14 @@
   const chnageLogView = ()  => {
     setLogTable();
   };
+
+  let showAutoencoder = false;
+  const handleAutoencoder = () => {
+    showAutoencoder = false;
+    busy = false;
+    setLogTable();
+    updateChart();
+  }
 
 </script>
 
@@ -403,6 +419,11 @@
     {#if showQuery}
       <div class="Box-row">
         <Query {conf} fields={indexInfo.Fields} on:update={handleUpdateQuery} />
+      </div>
+    {/if}
+    {#if showAutoencoder}
+      <div class="Box-row">
+        <AutoEncoder logs={result.Logs} on:done={handleAutoencoder} />
       </div>
     {/if}
     <div class="Box-row">

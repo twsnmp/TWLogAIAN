@@ -83,7 +83,11 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 		for _, l := range sr.Logs {
 			vector := []float64{}
 			for _, key := range keys {
-				vector = append(vector, l.KeyValue[key].(float64))
+				if f, ok := l.KeyValue[key].(float64); ok {
+					vector = append(vector, f)
+				} else {
+					vector = append(vector, 0.0)
+				}
 			}
 			if addTime {
 				ts := time.Unix(0, l.Time).Local()
