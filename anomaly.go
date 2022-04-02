@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/md5"
 	"math/rand"
 	"strings"
 	"time"
@@ -73,18 +74,31 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 		}
 	default:
 		OutLog("start make vector form number fields")
-		keys := []string{}
+		numKeys := []string{}
+		strKeys := []string{}
+		addStr := vmode == "all" || vmode == "alltime"
 		for k, v := range sr.Logs[0].KeyValue {
 			if _, ok := v.(float64); ok {
-				keys = append(keys, string(k))
+				numKeys = append(numKeys, string(k))
+			} else if addStr {
+				if _, ok := v.(string); ok {
+					strKeys = append(strKeys, string(k))
+				}
 			}
 		}
-		addTime := vmode == "time"
+		addTime := vmode == "time" || vmode == "alltime"
 		for _, l := range sr.Logs {
 			vector := []float64{}
-			for _, key := range keys {
+			for _, key := range numKeys {
 				if f, ok := l.KeyValue[key].(float64); ok {
 					vector = append(vector, f)
+				} else {
+					vector = append(vector, 0.0)
+				}
+			}
+			for _, key := range strKeys {
+				if s, ok := l.KeyValue[key].(string); ok {
+					vector = append(vector, strToFloat(s))
 				} else {
 					vector = append(vector, 0.0)
 				}
@@ -133,6 +147,17 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 	sr.View = "anomaly"
 	sr.AnomalyDur = time.Now().UnixMilli() - st.UnixMilli()
 	OutLog("end setAnomalyScore dur=%v", time.Since(st))
+}
+
+// strToFloat : 文字列の識別するための数値を取得する、MD5の上位８バイト
+func strToFloat(s string) float64 {
+	var r int64
+	h := md5.Sum([]byte(s))
+	for i := 0; i < 8 && i < len(h); i++ {
+		r *= 256
+		r += int64(h[i])
+	}
+	return float64(r)
 }
 
 // getKeywordsVector : キーワードのりストから特徴ベクターを作成する

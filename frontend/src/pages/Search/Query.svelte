@@ -318,6 +318,8 @@
       <select class="form-select" bind:value={conf.vector}>
         <option value="">数値データ</option>
         <option value="time">数値データ+曜日と時間帯</option>
+        <option value="all">文字列と数値データ</option>
+        <option value="alltime">文字列と数値データ+曜日と時間帯</option>
         <option value="sql">SQLインジェクション</option>
         <option value="oscmd">OSコマンドインジェクション</option>
         <option value="dirt">ディレクトリトラバーサル</option>
