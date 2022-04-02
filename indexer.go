@@ -225,13 +225,13 @@ func (b *App) GetIndexInfo() (IndexInfo, error) {
 }
 
 type SearchResult struct {
-	Hit      uint64
-	Duration string
-	MaxScore float64
-	Logs     []*LogEnt
-	ErrorMsg string
-	View     string
-	Anomaly  string
+	Hit        uint64
+	Duration   string
+	MaxScore   float64
+	Logs       []*LogEnt
+	ErrorMsg   string
+	View       string
+	AnomalyDur int64
 }
 
 var regGeo = regexp.MustCompile(`\s*geo:(\S+)`)

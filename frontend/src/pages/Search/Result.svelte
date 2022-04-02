@@ -1,6 +1,7 @@
 <script>
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import AutoEncoder from "./AutoEncoder.svelte";
   import { onMount } from 'svelte';
   import numeral from 'numeral';
   import {
@@ -11,6 +12,9 @@
   } from "../../js/define";
 
   export let indexInfo;
+  export let aecdata;
+  export let dark = false;
+
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   let logFiles = [];
@@ -114,6 +118,12 @@
         </tbody>
       </table>
     </div>
+    {#if aecdata.length > 0}
+      <div class="Box-row">
+        <h5>Auto Encoderの学習状況</h5>
+        <AutoEncoder {dark} chartData={aecdata} />
+      </div>
+    {/if}
     <div class="Box-footer text-right">
       <button class="btn" type="button" on:click={back}>
         <X16 />

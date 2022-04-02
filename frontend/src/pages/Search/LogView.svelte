@@ -31,7 +31,7 @@
   import { getTableLimit, loadFieldTypes } from "../../js/define";
   import numeral from "numeral";
   import CopyClipBoard from "../../CopyClipBoard.svelte";
-import AutoEncoder from "./AutoEncoder.svelte";
+  import AutoEncoder from "./AutoEncoder.svelte";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -66,6 +66,9 @@ import AutoEncoder from "./AutoEncoder.svelte";
   };
   let data = [];
   let columns = [];
+  let aecdata = [];
+  let aeStart;
+  let anomalyTime = "";
   let indexInfo = {
     Total: 0,
     Fields: [],
@@ -106,6 +109,8 @@ import AutoEncoder from "./AutoEncoder.svelte";
   };
   const search = () => {
     data.length = 0; // 空にする
+    aecdata = [];
+    anomalyTime = "";
     filter.st = false; // 時間フィルターをリセットする
     filter.et = false;
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
@@ -118,17 +123,17 @@ import AutoEncoder from "./AutoEncoder.svelte";
           logView = r.View;
         }
         indexInfo.Fields = indexInfo.Fields.filter(f => f != "anomalyScore");
-        if (conf.anomaly != ""){
-          indexInfo.Fields.push("anomalyScore");
-        }
         if (r.ErrorMsg == "") {
           conf.history.push(conf.query);
         }
         if (conf.anomaly =="autoencoder") {
           busy = true;
           showAutoencoder = true;
-          console.log(result.Logs.length);
+          aeStart = new Date();
           return
+        } else if (conf.anomaly != ""){
+          anomalyTime = (r.AnomalyDur/1000.0).toFixed(3) + "s"; 
+          indexInfo.Fields.push("anomalyScore");
         }
         setLogTable();
         updateChart();
@@ -294,6 +299,8 @@ import AutoEncoder from "./AutoEncoder.svelte";
   let showAutoencoder = false;
   const handleAutoencoder = () => {
     showAutoencoder = false;
+    const aeEnd = new Date();
+    anomalyTime = ((result.AnomalyDur + aeEnd.getTime() - aeStart.getTime())/1000.0).toFixed(3) + "s";
     busy = false;
     setLogTable();
     updateChart();
@@ -303,7 +310,7 @@ import AutoEncoder from "./AutoEncoder.svelte";
 
 <svelte:window on:resize={onResize} />
 {#if page == "result"}
-  <Result {indexInfo} on:done={handleDone} />
+  <Result {indexInfo} {dark} {aecdata} on:done={handleDone} />
 {:else if page == "memo"}
   <Memo on:done={handleDone} />
 {:else if page == "ranking"}
@@ -341,9 +348,9 @@ import AutoEncoder from "./AutoEncoder.svelte";
           /ヒット数:{numeral(result.Hit).format(
             "0,0"
           )}/検索時間:{result.Duration}
-        {/if}
-        {#if result.Anomaly}
-        /異常検知:{result.Anomaly}
+          {#if anomalyTime }
+            /異常検知:{anomalyTime}
+          {/if}
         {/if}
       </span>
     </div>
@@ -423,7 +430,7 @@ import AutoEncoder from "./AutoEncoder.svelte";
     {/if}
     {#if showAutoencoder}
       <div class="Box-row">
-        <AutoEncoder logs={result.Logs} on:done={handleAutoencoder} />
+        <AutoEncoder {dark} chartData={aecdata} logs={result.Logs} on:done={handleAutoencoder} />
       </div>
     {/if}
     <div class="Box-row">
@@ -441,6 +448,7 @@ import AutoEncoder from "./AutoEncoder.svelte";
         on:rowClick={rowClick}
       />
     </div>
+  {#if !busy}
     <div class="Box-footer text-right">
       {#if result && result.Hit > 0 }
         <!-- svelte-ignore a11y-no-onchange -->
@@ -537,6 +545,7 @@ import AutoEncoder from "./AutoEncoder.svelte";
         終了
       </button>
     </div>
+  {/if}
   </div>
 {/if}
 <div id="clipboard" />
