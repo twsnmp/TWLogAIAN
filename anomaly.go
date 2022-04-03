@@ -38,6 +38,9 @@ var sqlKeys = []string{
 
 func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 	OutLog("start setAnomalyScore")
+	if sr == nil || len(sr.Logs) < 1 {
+		return
+	}
 	st := time.Now()
 	var vectors [][]float64
 	switch vmode {
