@@ -13,7 +13,7 @@ require (
 	github.com/twsnmp/golof v1.0.0
 	github.com/viant/afs v1.16.0
 	github.com/vjeantet/grok v1.0.1
-	github.com/wailsapp/wails/v2 v2.0.0-beta.33
+	github.com/wailsapp/wails/v2 v2.0.0-beta.34
 	github.com/xuri/excelize/v2 v2.5.0
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
@@ -57,7 +57,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leaanthony/go-ansi-parser v1.3.0 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v1.0.3-0.20220125181555-00f20a61c17d // indirect
+	github.com/leaanthony/go-webview2 v1.0.3-0.20220314105146-f44268990abe // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.6.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
