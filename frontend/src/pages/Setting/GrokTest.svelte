@@ -1,4 +1,5 @@
 <script>
+  import highlightWords from 'highlight-words';
   import { X16, Check16, StarFill16, Reply16 } from "svelte-octicons";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
@@ -59,8 +60,9 @@
     window.go.main.App.AutoGrok(testData).then((r) => {
       errorMsg = r.ErrorMsg;
       if (r.Grok) {
-        oldGrok = grok;
+        oldGrok.push(grok);
         grok = r.Grok;
+        hasOldGrock = oldGrok.length > 0;
       }
     });
   };
@@ -72,14 +74,42 @@
     grok = selected;
   };
 
-  let oldGrok = "";
+  const oldGrok = [];
+  let hasOldGrock = false;
   const resetGrok = () => {
-    grok = oldGrok;
-    oldGrok = "";
+    if (oldGrok.length > 0) {
+      grok = oldGrok.pop();
+    }
+    hasOldGrock = oldGrok.length > 0;
   };
-  let selectedGrok = "";
+
+  const getGrokPat = (s) => {
+    if (s.match(/^\d{1,3}(\.\d{1,3}){3}$/)){
+      return "%{IPV4:ipv4}";
+    }
+    if (s.match(/^[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}$/i)){
+      return "%{MAC:mac}";
+    }
+    if (s.match(/https?:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+/)){
+      return "%{URI:url}";
+    }
+    if (s.match(/^[A-Za-z0-9]{1}[A-Za-z0-9_.-]*@{1}[A-Za-z0-9_.-]+.[A-Za-z0-9]+$/)){
+      return "%{EMAILADDRESS:email}";
+    }
+    if (s.match(/^[+,-]?([1-9]\d*|0)$/)){
+      return "%{INT:int}";
+    }
+    if (s.match(/^[+,-]?([1-9]\d*|0)(\.\d+)?$/)){
+      return "%{NUMBER:number}";
+    }
+    if (s.match(/^\w+$/)){
+      return "%{WORD:word}";
+    }
+    return "%{GREEDYDATA:data}"
+  } 
+
   const replaceGrok = (e) => {
-    if ( e.key != 'Tab' || selectedGrok == "") {
+    if ( e.key != 'Tab' && e.key != 'Escape') {
       return;
     }
     if (!e.target || !e.target.selectionStart){
@@ -91,13 +121,19 @@
     if(sel == "") {
       return;
     }
-    oldGrok = grok;
+    const newPat = e.key == 'Tab' ? getGrokPat(sel) : ".+";
+    oldGrok.push(grok);
     grok = (
       value.slice(0, selectionStart) +
-      selectedGrok +
+      newPat +
       value.slice(selectionEnd)
     );
+    hasOldGrock = oldGrok.length > 0;
   };
+  $: grokChunks = highlightWords({
+      text: grok,
+      query: /(%\{.+?\})/
+  });
 </script>
 
 <div class="Box-header">
@@ -140,30 +176,9 @@
     <div class="form-group">
       <div class="form-group-header">
         <h5>抽出パターン
-          <select class="form-select select-sm" bind:value={selectedGrok}>
-            <option value="">TABキーで変換する項目を選択</option>
-            <option value="{`\s+`}">空白部分</option>
-            <option value="{`.*`}">無視する部分</option>
-            <option value="{`%{NUMBER:number}`}">数値</option>
-            <option value="{`%{INT:int}`}">整数</option>
-            <option value="{`%{IP:ip}`}">IPアドレス</option>
-            <option value="{`%{IPV4:ipv4}`}">IPv4アドレス</option>
-            <option value="{`%{IPV6:ipv6}`}">IPv6アドレス</option>
-            <option value="{`%{MAC:mac}`}">MACアドレス</option>
-            <option value="{`%{URI:uri}`}">URI</option>
-            <option value="{`%{LOGLEVEL:loglevel}`}">ログレベル</option>
-            <option value="{`%{EMAILADDRESS:email}`}">メールアドレス</option>
-            <option value="{`%{USER:user}`}">ユーザーID</option>
-            <option value="{`%{GREEDYDATA:data}`}">何か情報</option>
-            <option value="{`%{PATH:path}`}">パス</option>
-            <option value="{`%{HOSTNAME:host}`}">ホスト名</option>
-            <option value="{`%{IPHOST:iphost}`}">ホスト名またはIPアドレス</option>
-            <option value="{`\s+`}">ホスト名:ポート番号</option>
-            <option value="{`%{UUID:uuid}`}">UUID</option>
-          </select>
-        {#if oldGrok}
-          <button class="btn btn-sm ml-1" on:click="{resetGrok}"><Reply16/></button>
-        {/if}
+          {#if hasOldGrock }
+            <button class="btn btn-sm ml-1" on:click="{resetGrok}"><Reply16/></button>
+          {/if}
         </h5>
       </div>
       <div class="form-group-body">
@@ -176,6 +191,11 @@
           on:keydown={replaceGrok}
         />
       </div>
+    </div>
+    <div class="mt-1">
+      {#each grokChunks as chunk }
+        <span class:highlight="{chunk.match}">{chunk.text}</span>
+      {/each}
     </div>
     <div class="form-group">
       <div class="form-group-header">
@@ -256,4 +276,9 @@
     font-size: 10px;
     padding: 3px 6px;
   }
+  .highlight {
+    border-bottom: 1px solid rgb(210, 153, 34);
+    color: rgb(210, 153, 34);
+  }
+
 </style>
