@@ -304,6 +304,7 @@
     busy = false;
     setLogTable();
     updateChart();
+    indexInfo.Fields.push("anomalyScore");
   }
 
 </script>

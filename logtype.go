@@ -179,7 +179,7 @@ var fieldTypes = map[string]FieldType{
 	"rawrequest":           {Name: "リクエスト", Type: "string"},
 	"referrer":             {Name: "リファラー", Type: "string"},
 	"time":                 {Name: "日時", Type: "_time"},
-	"verb":                 {Name: "リクエスト", Type: "string"},
+	"verb":                 {Name: "メソッド", Type: "string"},
 	"_id":                  {Name: "内部ID", Type: "_id"},
 	"auth":                 {Name: "ユーザー名", Type: "string"},
 	"clientip":             {Name: "クライアントIP", Type: "string"},
@@ -228,6 +228,8 @@ var fieldTypes = map[string]FieldType{
 	"winComputer":          {Name: "コンピュータ名", Type: "string"},
 	"score":                {Name: "検索スコア", Type: "number"},
 	"anomalyScore":         {Name: "異常スコア", Type: "number"},
+	"host":                 {Name: "ホスト", Type: "string"},
+	"hostname":             {Name: "ホスト名", Type: "string"},
 }
 
 func (b *App) setFieldTypes(l *LogEnt) {
