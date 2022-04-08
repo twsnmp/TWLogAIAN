@@ -147,7 +147,6 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 			sr.Logs[i].KeyValue["vector"] = v
 		}
 	}
-	sr.View = "anomaly"
 	sr.AnomalyDur = time.Now().UnixMilli() - st.UnixMilli()
 	OutLog("end setAnomalyScore dur=%v", time.Since(st))
 }
