@@ -280,16 +280,23 @@
      }
      return undefined
   }
+  let showMemo = false;
   const memo = () => {
     selectedLogs.split("\n").forEach((l) =>{
       const e = findLog(l);
       if (e) {
+        showMemo = true;
         window.go.main.App.AddMemo({
           Time: e.Time,
           Log: e.All,
         });
       }
     })
+    if (showMemo){
+      setTimeout(()=>{
+        showMemo = false;
+      },2000);
+    }
   }
 
   const chnageLogView = ()  => {
@@ -516,15 +523,22 @@
       {/if}
       {#if selectedLogs != ""}
         <button class="btn btn-outline mr-1" type="button" on:click={copy}>
-          <Copy16 />
-          コピー
+          {#if showCopy}
+            <Check16 />
+            コピー済み
+          {:else}
+            <Copy16 />
+            コピー
+          {/if}
         </button>
-        {#if showCopy}
-          <span class="branch-name">Copied</span>
-        {/if}
         <button class="btn btn-outline mr-1" type="button" on:click={memo}>
-          <Pencil16 />
-          メモ
+          {#if showMemo}
+            <Check16 />
+            メモ済み
+          {:else}
+            <Pencil16 />
+            メモ
+          {/if}
         </button>
       {/if}
       <button
