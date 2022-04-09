@@ -132,8 +132,22 @@
   };
   $: grokChunks = highlightWords({
       text: grok,
-      query: /(%\{.+?\})/
+      query: /(%\{.+?\}|\.\+|\\s\+)/
   });
+
+  const getGrokClass = (c) => {
+    if (!c.match) {
+      return "";
+    }
+    if (c.text.includes("%{")) {
+      return "color-fg-attention text-underline";
+    }
+    if (c.text.includes("\s")) {
+      return "color-fg-accent";
+    }
+    return "color-fg-danger";
+  }
+
 </script>
 
 <div class="Box-header">
@@ -182,6 +196,9 @@
         </h5>
       </div>
       <div class="form-group-body">
+        <p class="f6 color-fg-accent">
+          選択後にTabキーで変数に変換、ESCキーで無視する部分に変換
+        </p>
         <input
           class="form-control grok"
           type="text"
@@ -194,7 +211,7 @@
     </div>
     <div class="mt-1">
       {#each grokChunks as chunk }
-        <span class:highlight="{chunk.match}">{chunk.text}</span>
+        <span class="{getGrokClass(chunk)}">{chunk.text}</span>
       {/each}
     </div>
     <div class="form-group">
@@ -276,9 +293,4 @@
     font-size: 10px;
     padding: 3px 6px;
   }
-  .highlight {
-    border-bottom: 1px solid rgb(210, 153, 34);
-    color: rgb(210, 153, 34);
-  }
-
 </style>
