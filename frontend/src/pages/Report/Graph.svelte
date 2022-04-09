@@ -120,7 +120,7 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">位置情報分析</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">グラフ(フロー)分析</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
