@@ -34,3 +34,5 @@ dist
 
 #test dir
 tmp
+
+.DS_Store
