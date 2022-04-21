@@ -359,3 +359,26 @@ export const getLogData = (r,view,filter) => {
   }
   return getTimeOnlyLogData(r,filter);
 }
+
+let timeIndex = 1;
+
+const gridSearch = {
+  enable: true,
+  selector: (cell, rowIndex, cellIndex) =>  (cellIndex == timeIndex) ? echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}') : cell
+}
+
+export const getGridSearch = (view) => {
+  switch (view) {
+  case "syslog":
+  case "access":
+  case "windows":
+    timeIndex = 1;
+    return gridSearch;
+  case "data":
+    timeIndex = 0;
+    return gridSearch;
+  default:
+    timeIndex = 2;
+    return gridSearch;
+  }
+}

@@ -14,7 +14,7 @@
   import Result from "./Result.svelte";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showLogChart, resizeLogChart, getLogChartImage } from "./logchart";
-  import { getLogData, getLogColums, getSelectedLogs, clearSelectedLogs } from "./logview";
+  import { getLogData, getLogColums, getSelectedLogs, clearSelectedLogs, getGridSearch } from "./logview";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import Ranking from "../Report/Ranking.svelte";
@@ -87,17 +87,19 @@
     }
   });
   let pagination = false;
+  let logView  = "";
+  let gridSearch = true;
   let filter = {
     st: false,
     et: false,
   };
-  let logView  = "";
   let selectedLogs = "";
   const setLogTable = () => {
     selectedLogs = "";
     clearSelectedLogs();
     columns = getLogColums(logView, indexInfo.Fields);
     data = getLogData(result,logView, filter);
+    gridSearch = getGridSearch(logView);
     if (data.length > 10) {
       pagination = {
         limit: getTableLimit(),
@@ -449,7 +451,7 @@
         {data}
         sort
         resizable
-        search
+        search={gridSearch}
         {pagination}
         {columns}
         language={jaJP}
