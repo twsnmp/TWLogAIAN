@@ -63,6 +63,7 @@
       long: "",
       range: "",
     },
+    extractor: '',
   };
   let data = [];
   let columns = [];
@@ -80,6 +81,7 @@
     Hit: 0,
     Duration: 0.0,
     ErrorMsg: "",
+    Fields: [],
   };
   window.go.main.App.GetIndexInfo().then((r) => {
     if (r) {
@@ -97,7 +99,7 @@
   const setLogTable = () => {
     selectedLogs = "";
     clearSelectedLogs();
-    columns = getLogColums(logView, indexInfo.Fields);
+    columns = getLogColums(logView, result.Fields);
     data = getLogData(result,logView, filter);
     gridSearch = getGridSearch(logView);
     if (data.length > 10) {
@@ -117,14 +119,13 @@
     filter.et = false;
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
     busy = true;
-    window.go.main.App.SearchLog(conf.query, conf.anomaly, conf.vector, limit).then((r) => {
+    window.go.main.App.SearchLog(conf.query, conf.anomaly, conf.vector,conf.extractor, limit).then((r) => {
       busy = false;
       if (r) {
         result = r;
         if (logView == "") {
           logView = r.View;
         }
-        indexInfo.Fields = indexInfo.Fields.filter(f => f != "anomalyScore");
         if (r.ErrorMsg == "") {
           conf.history.push(conf.query);
         }
@@ -135,19 +136,23 @@
           return
         } else if (conf.anomaly != ""){
           anomalyTime = (r.AnomalyDur/1000.0).toFixed(3) + "s"; 
-          indexInfo.Fields.push("anomalyScore");
         }
         setLogTable();
         updateChart();
       }
     });
   };
-
+  let extractorTypes = [];
   onMount(() => {
     loadFieldTypes();
     window.go.main.App.GetDark().then((v) => {
       dark = v;
       updateChart();
+    });
+    window.go.main.App.GetExtractorTypes().then((r) => {
+      if(r) {
+        extractorTypes = r;
+      }
     });
   });
 
@@ -313,7 +318,6 @@
     busy = false;
     setLogTable();
     updateChart();
-    indexInfo.Fields.push("anomalyScore");
   }
 
 </script>
@@ -324,37 +328,41 @@
 {:else if page == "memo"}
   <Memo on:done={handleDone} />
 {:else if page == "ranking"}
-  <Ranking fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <Ranking fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "time"}
-  <Time fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <Time fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "time3d"}
-  <Time3D fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <Time3D fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "cluster"}
-  <Cluster fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <Cluster fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "histogram"}
   <Histogram
-    fields={indexInfo.Fields}
+    fields={result.Fields}
     logs={result.Logs}
     on:done={handleDone}
   />
 {:else if page == "fft"}
-  <FFT fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <FFT fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "world"}
-  <World fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <World fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "graph"}
-  <Graph fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <Graph fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "globe"}
-  <Globe fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <Globe fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "heatmap"}
-  <Heatmap fields={indexInfo.Fields} logs={result.Logs} on:done={handleDone} />
+  <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header d-flex flex-items-center">
       <h3 class="Box-title overflow-hidden flex-auto">ログ分析</h3>
       <span class="f6">
-        ログ総数:{numeral(indexInfo.Total).format("0,0")}/項目数:{indexInfo
-          .Fields.length}/処理時間:{indexInfo.Duration}
+        ログ総数:{numeral(indexInfo.Total).format("0,0")}
+        /処理時間:{indexInfo.Duration}
+        {#if result.Hit < 1 }
+          /項目数:{indexInfo.Fields.length}
+        {/if}
         {#if result.Hit > 0}
+          /項目数:{result.Fields.length}
           /ヒット数:{numeral(result.Hit).format(
             "0,0"
           )}/検索時間:{result.Duration}
@@ -435,7 +443,7 @@
     </div>
     {#if showQuery}
       <div class="Box-row">
-        <Query {conf} fields={indexInfo.Fields} on:update={handleUpdateQuery} />
+        <Query {conf} fields={indexInfo.Fields} {extractorTypes} on:update={handleUpdateQuery} />
       </div>
     {/if}
     {#if showAutoencoder}

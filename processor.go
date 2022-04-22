@@ -698,18 +698,17 @@ func (b *App) testGrok(l, p string) int {
 	return len(values)
 }
 
-func (b *App) findExtractorType() *ExtractorType {
+func (b *App) findExtractorType(extractor string) *ExtractorType {
 	for _, e := range extractorTypes {
-		if e.Key == b.config.Extractor {
+		if e.Key == extractor {
 			return &e
 		}
 	}
 	for _, e := range b.importedExtractorTypes {
-		if e.Key == b.config.Extractor {
+		if e.Key == extractor {
 			return &e
 		}
 	}
-	OutLog(b.config.Extractor)
 	return nil
 }
 
@@ -720,7 +719,7 @@ func (b *App) setExtractor() error {
 	}
 	grstr := b.config.Grok
 	if b.config.Extractor != "custom" {
-		et := b.findExtractorType()
+		et := b.findExtractorType(b.config.Extractor)
 		if et == nil {
 			return fmt.Errorf("invalid extractor type %s", b.processConf.Extractor)
 		}

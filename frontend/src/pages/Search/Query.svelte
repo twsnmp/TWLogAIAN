@@ -1,9 +1,11 @@
 <script>
   import { getFieldName,getFieldType } from "../../js/define";
   import { Plus16,Trash16,File16 } from "svelte-octicons";
-  import { createEventDispatcher, onMount, tick } from "svelte";
+  import { createEventDispatcher} from "svelte";
   export let conf;
   export let fields = [];
+  export let extractorTypes = [];
+
   let hasStringField = false;
   let hasNumberField = false;
   const geoFields = [];
@@ -102,7 +104,6 @@
       }
     });
   }
-
 </script>
 
 <form>
@@ -290,7 +291,7 @@
   <div class="container-lg clearfix mt-1">
     <div class="col-2 float-left">最大件数</div>
     <div class="col-10 float-left">
-      <select class="form-select" aria-label="最大件数" bind:value={conf.limit}>
+      <select class="form-select" bind:value={conf.limit}>
         <option value="1000">1000</option>
         <option value="2000">2000</option>
         <option value="5000">5000</option>
@@ -327,6 +328,17 @@
       </select>
     </div>
     {/if}
+  </div>
+  <div class="container-lg clearfix mt-1">
+    <div class="col-2 float-left">追加のデータ抽出</div>
+    <div class="col-3 float-left">
+      <select class="form-select" bind:value={conf.extractor}>
+        <option value="">しない</option>
+        {#each extractorTypes as { Key, Name }}
+          <option value="{Key}">{Name}</option>
+        {/each}
+      </select>
+    </div>
   </div>
 </form>
 

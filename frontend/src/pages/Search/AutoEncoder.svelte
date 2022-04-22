@@ -77,23 +77,18 @@
   }
   const autoencoder = async () =>{
     tf.setBackend('cpu');
-    console.log(tf.getBackend());
     if(logs.length < 10) {
-      console.log("no logs",logs.length);
       dispatch("done", {});
       return;
     }
     if(!logs[0].KeyValue["vector"] || logs[0].KeyValue["vector"].length <1 ) {
-      console.log("no vector",logs.length);
       dispatch("done", {});
       return;
     }
-    console.log("start autoencoder");
     const vectors = [];
     logs.forEach((l) => {
       vectors.push(l.KeyValue["vector"]);
     });
-    console.log("vector="+ vectors.length);
 
     const dataLen = vectors[0].length;
     const input = tf.input({ shape: [dataLen] });
@@ -110,7 +105,6 @@
         batchSize: 32,
         callbacks:{
           onEpochEnd: (e,logs) => {
-            console.log(e,logs);
             const t = new Date();
             const name = echarts.time.format(t, "{HH}:{mm}:{ss}");
             chartData.push({
@@ -135,7 +129,6 @@
         logs[i].KeyValue["anomalyScore"] = d[0];
       }
     }
-    console.log("autoencode done");
     dispatch("done", {});
   }
 

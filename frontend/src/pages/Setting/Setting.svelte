@@ -444,7 +444,7 @@
             >
               <option value="timeonly">タイムスタンプのみ</option>
               {#each extractorTypes as { Key, Name }}
-                <option value={Key}>{Name}</option>
+                <option value="{Key}">{Name}</option>
               {/each}
               <option value="custom">カスタム</option>
             </select>

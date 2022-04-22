@@ -11,6 +11,7 @@ import (
 
 	"github.com/blugelabs/bluge"
 	querystr "github.com/blugelabs/query_string"
+	"github.com/vjeantet/grok"
 )
 
 type LogIndexer struct {
@@ -229,6 +230,7 @@ type SearchResult struct {
 	Duration   string
 	MaxScore   float64
 	Logs       []*LogEnt
+	Fields     []string
 	ErrorMsg   string
 	View       string
 	AnomalyDur int64
@@ -236,10 +238,10 @@ type SearchResult struct {
 
 var regGeo = regexp.MustCompile(`\s*geo:(\S+)`)
 
-func (b *App) SearchLog(q, anomaly, vector string, limit int) SearchResult {
+func (b *App) SearchLog(q, anomaly, vector, extractor string, limit int) SearchResult {
 	OutLog("SearchLog q=%#v", q)
 	view := "timeonly"
-	if et := b.findExtractorType(); et != nil {
+	if et := b.findExtractorType(b.config.Extractor); et != nil {
 		view = et.View
 	}
 	ret := SearchResult{
@@ -369,11 +371,41 @@ func (b *App) SearchLog(q, anomaly, vector string, limit int) SearchResult {
 				ret.Logs = append(ret.Logs, &l)
 			}
 		} else {
+			ret.Fields, _ = reader.Fields()
 			if anomaly != "" {
 				b.setAnomalyScore(anomaly, vector, &ret)
+				ret.Fields = append(ret.Fields, "anomalyScore")
 			}
+			if extractor != "" {
+				b.grokParseLogs(extractor, &ret)
+			}
+			setFields(&ret)
 			return ret
 		}
+	}
+}
+
+// 検索結果に追加のフィールドを設定する
+func setFields(sr *SearchResult) {
+	if len(sr.Logs) < 1 {
+		return
+	}
+	fmap := make(map[string]bool)
+	for _, f := range sr.Fields {
+		// 内部利用のフィールドは除外
+		if !strings.HasPrefix(f, "_") {
+			fmap[f] = true
+		}
+	}
+	for k := range sr.Logs[0].KeyValue {
+		if _, ok := fmap[k]; !ok {
+			fmap[k] = true
+			sr.Fields = append(sr.Fields, k)
+		}
+	}
+	sr.Fields = []string{}
+	for k := range fmap {
+		sr.Fields = append(sr.Fields, k)
 	}
 }
 
@@ -425,4 +457,75 @@ func (b *App) parseLogEnt(l *LogEnt) {
 			}
 		}
 	}
+}
+
+func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
+	OutLog("start grokParseLogs")
+	if sr == nil || len(sr.Logs) < 1 {
+		return
+	}
+	st := time.Now()
+	et := b.findExtractorType(extractor)
+	if et == nil {
+		OutLog("grokParseLogs %s not found", extractor)
+		return
+	}
+	config := grok.Config{
+		Patterns:          make(map[string]string),
+		NamedCapturesOnly: true,
+	}
+	config.Patterns["TWLOGAIAN"] = et.Grok
+	g, err := grok.NewWithConfig(&config)
+	if err != nil {
+		OutLog("%#v err=%v", config, err)
+		return
+	}
+	for _, l := range sr.Logs {
+		values, err := g.Parse("%{TWLOGAIAN}", l.All)
+		if err != nil {
+			OutLog("parseLogEnt err=%v", err)
+			continue
+		}
+		for k, v := range values {
+			if k == "TWLOGAIAN" {
+				continue
+			}
+			if fv, err := strconv.ParseFloat(v, 64); err == nil {
+				l.KeyValue[k] = fv
+			} else {
+				l.KeyValue[k] = v
+			}
+		}
+		if b.config.GeoIP {
+			for _, f := range strings.Split(et.IPFields, ",") {
+				if ip, ok := l.KeyValue[f]; ok {
+					if e := b.findGeo(ip.(string)); e != nil {
+						l.KeyValue[f+"_geo"] = e
+						l.KeyValue[f+"_country"] = e.Country
+						l.KeyValue[f+"_city"] = e.City
+						l.KeyValue[f+"_latlong"] = fmt.Sprintf("%0.3f,%0.3f", e.Lat, e.Long)
+					}
+				}
+			}
+		}
+		if b.config.HostName {
+			for _, f := range strings.Split(et.IPFields, ",") {
+				if ip, ok := l.KeyValue[f]; ok {
+					if e := b.findHost(ip.(string)); e != "" {
+						l.KeyValue[f+"_host"] = e
+					}
+				}
+			}
+		}
+		if b.config.VendorName {
+			for _, f := range strings.Split(et.MACFields, ",") {
+				if ip, ok := l.KeyValue[f]; ok {
+					if e := b.findVendor(ip.(string)); e != "" {
+						l.KeyValue[f+"_vendor"] = e
+					}
+				}
+			}
+		}
+	}
+	OutLog("end grokParseLogs dur=%v", time.Since(st))
 }

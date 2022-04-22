@@ -9,7 +9,6 @@ const calcRegression = (logs, field, chartType) => {
   logs.forEach((l) => {
     data.push([l.Time / (1000 * 1000), l.KeyValue[field] || 0.0]);
   });
-  console.log(data);
   return ecStat.regression(chartType, data);
 }
 

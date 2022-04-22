@@ -211,7 +211,7 @@ const makeDataColumns = (fields) => {
     convert: true,
   });
   fields.forEach((f) => {
-    if (f == "time"|| f == "timestamp" || f.startsWith("_")){
+    if (f == "time" || f.startsWith("_")){
       return;
     }
     colums.push({
@@ -312,7 +312,7 @@ const getExtractData = (r,filter) => {
     }
     const ent = { time:l.Time}
     Object.keys(l.KeyValue).forEach((k) => {
-      if (k == "time" || k == "timestamp" ||  k.startsWith("_")){
+      if (k == "time" ||  k.startsWith("_")){
         return;
       }
       ent[k] = l.KeyValue[k];
