@@ -423,13 +423,13 @@ type AutoGrokResp struct {
 var grokTestMap = map[string][]string{
 	"timestamp": {
 		"%{TIMESTAMP_ISO8601:timestamp}",
-		"%{SYSLOGTIMESTAMP:timestamp}",
-		"%{DATESTAMP_RFC822:timestamp}",
-		"%{DATESTAMP_RFC2822:timestamp}",
-		"%{DATESTAMP_OTHER:timestamp}",
-		"%{DATESTAMP_EVENTLOG:timestamp}",
 		"%{HTTPDERROR_DATE:timestamp}",
 		"%{HTTPDATE:timestamp}",
+		"%{DATESTAMP_EVENTLOG:timestamp}",
+		"%{DATESTAMP_RFC2822:timestamp}",
+		"%{SYSLOGTIMESTAMP:timestamp}",
+		"%{DATESTAMP_OTHER:timestamp}",
+		"%{DATESTAMP_RFC822:timestamp}",
 	}, // Time
 	"ipv4": {
 		"%{IPV4:ipv4}",
@@ -450,103 +450,65 @@ var grokTestMap = map[string][]string{
 
 // AutoGrok : 抽出パターンを自動生成する
 func (b *App) AutoGrok(testData string) AutoGrokResp {
-	ret := AutoGrokResp{}
-	grokMap := make(map[string]string)
-	for f, ps := range grokTestMap {
-		r, err := b.findGrok(f, testData, ps)
-		if err == nil && r != "" {
-			grokMap[f] = r
-			OutLog("%s=%s", f, r)
+	for _, l := range strings.Split(testData, "\n") {
+		l = strings.TrimSpace(l)
+		if l != "" {
+			testData = l
+			break
 		}
 	}
-	if len(grokMap) < 1 {
+	ret := AutoGrokResp{}
+	replaceMap := make(map[string]string)
+	for f, ps := range grokTestMap {
+		findGrok(f, testData, ps, replaceMap)
+	}
+	findSplunkPat(testData, replaceMap)
+	if len(replaceMap) < 1 {
 		ret.ErrorMsg = "フィールドを検知できません"
 		return ret
 	}
-	ret.Grok = b.makeGrok(testData, grokMap)
+	ret.Grok = b.makeGrok(testData, replaceMap)
 	return ret
 }
 
-func (b *App) findGrok(field, td string, groks []string) (string, error) {
+func findGrok(field, td string, groks []string, rmap map[string]string) {
 	config := grok.Config{
 		Patterns:          make(map[string]string),
 		NamedCapturesOnly: true,
 	}
-	scores := make(map[string]int)
 	for _, p := range groks {
 		config.Patterns["TWLOGAIAN"] = p
 		g, err := grok.NewWithConfig(&config)
 		if err != nil {
 			OutLog("find Grok err=%v", err)
-			return "", err
+			continue
 		}
-		for _, l := range strings.Split(td, "\n") {
-			if strings.TrimSpace(l) == "" {
-				continue
-			}
-			values, err := g.Parse("%{TWLOGAIAN}", l)
-			if err != nil {
-				OutLog("find Grok err=%v", err)
-				break
-			} else if len(values) > 0 {
-				for k, v := range values {
-					if k == field && v != "" {
-						if _, ok := scores[p]; !ok {
-							scores[p] = 1
-						} else {
-							scores[p]++
-						}
-					}
-				}
-			}
-		}
-	}
-	rtp := ""
-	max := 0
-	for p, c := range scores {
-		if c > max {
-			max = c
-			rtp = p
-		}
-	}
-	if rtp == "" {
-		return "", fmt.Errorf("pattern not fond")
-	}
-	return rtp, nil
-}
-
-func (b *App) makeGrok(td string, grokMap map[string]string) string {
-	l := ""
-	for _, l = range strings.Split(td, "\n") {
-		l = strings.TrimSpace(l)
-		if l != "" {
+		values, err := g.Parse("%{TWLOGAIAN}", td)
+		if err != nil {
+			OutLog("find Grok err=%v", err)
 			break
-		}
-	}
-	r := regexp.QuoteMeta(l)
-	config := grok.Config{
-		Patterns:          make(map[string]string),
-		NamedCapturesOnly: true,
-	}
-	for f, p := range grokMap {
-		config.Patterns["TWLOGAIAN"] = p
-		g, err := grok.NewWithConfig(&config)
-		if err != nil {
-			OutLog("makeGrok err=%v", err)
-			continue
-		}
-		values, err := g.Parse("%{TWLOGAIAN}", l)
-		if err != nil {
-			OutLog("makeGrok err=%v", err)
-			continue
 		} else if len(values) > 0 {
 			for k, v := range values {
-				if k == f && v != "" {
-					r = strings.ReplaceAll(r, regexp.QuoteMeta(v), p)
-					break
+				if k == field && v != "" {
+					rmap[v] = p
 				}
 			}
 		}
+	}
+}
+
+func findSplunkPat(td string, rmap map[string]string) {
+	reg := regexp.MustCompile(`([a-zA-Z0-9]+)=(\w+)`)
+	for _, m := range reg.FindAllStringSubmatch(td, -1) {
+		rmap[m[0]] = fmt.Sprintf("%s=%%{WORD:%s}", m[1], m[1])
+		OutLog("rmap %s -> %s", m[0], rmap[m[0]])
+	}
+}
+
+func (b *App) makeGrok(td string, rmap map[string]string) string {
+	r := regexp.QuoteMeta(td)
+	for s, d := range rmap {
+		r = strings.ReplaceAll(r, regexp.QuoteMeta(s), d)
 	}
 	return r
 }

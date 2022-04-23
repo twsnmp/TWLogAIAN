@@ -62,7 +62,6 @@
       if (r.Grok) {
         oldGrok.push(grok);
         grok = r.Grok;
-        hasOldGrock = oldGrok.length > 0;
       }
     });
   };
@@ -75,12 +74,12 @@
   };
 
   const oldGrok = [];
-  let hasOldGrock = false;
   const resetGrok = () => {
     if (oldGrok.length > 0) {
       grok = oldGrok.pop();
+    } else {
+      grok = "";
     }
-    hasOldGrock = oldGrok.length > 0;
   };
 
   const getGrokPat = (s) => {
@@ -105,6 +104,9 @@
     if (s.match(/^\w+$/)){
       return "%{WORD:word}";
     }
+    if (s.match(/^\s+$/)){
+      return "\\s+";
+    }
     return "%{GREEDYDATA:data}"
   } 
 
@@ -128,7 +130,6 @@
       newPat +
       value.slice(selectionEnd)
     );
-    hasOldGrock = oldGrok.length > 0;
   };
   $: grokChunks = highlightWords({
       text: grok,
@@ -147,7 +148,6 @@
     }
     return "color-fg-danger";
   }
-
 </script>
 
 <div class="Box-header">
@@ -190,9 +190,7 @@
     <div class="form-group">
       <div class="form-group-header">
         <h5>抽出パターン
-          {#if hasOldGrock }
-            <button class="btn btn-sm ml-1" on:click="{resetGrok}"><Reply16/></button>
-          {/if}
+          <button type="button" class="btn btn-sm ml-1" on:click="{resetGrok}"><Reply16/></button>
         </h5>
       </div>
       <div class="form-group-body">
@@ -203,7 +201,6 @@
           class="form-control grok"
           type="text"
           placeholder="抽出パターン"
-          aria-label="抽出パターン"
           bind:value={grok}
           on:keydown={replaceGrok}
         />
