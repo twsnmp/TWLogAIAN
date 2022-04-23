@@ -277,6 +277,10 @@ func (b *App) saveResultToDB() error {
 func (b *App) CloseWorkDir() string {
 	b.CloseIndexor()
 	b.saveResultToDB()
+	if b.processConf.GeoIP != nil {
+		b.processConf.GeoIP.Close()
+		b.processConf.GeoIP = nil
+	}
 	b.workdir = ""
 	if b.db != nil {
 		b.db.Close()

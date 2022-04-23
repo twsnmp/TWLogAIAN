@@ -79,7 +79,7 @@ func (b *App) CloseIndexor() error {
 	return nil
 }
 
-// 作業ディレクトリにインデックスがあるか？
+// 作業ディレクトリのインデックスを削除
 func (b *App) ClearIndex() string {
 	if b.config.InMemory {
 		return ""
@@ -392,15 +392,14 @@ func setFields(sr *SearchResult) {
 	}
 	fmap := make(map[string]bool)
 	for _, f := range sr.Fields {
-		// 内部利用のフィールドは除外
-		if !strings.HasPrefix(f, "_") {
+		// 内部利用のフィールドは除外,geoフィールドも除外
+		if !strings.HasPrefix(f, "_") && !strings.HasSuffix(f, "_geo") {
 			fmap[f] = true
 		}
 	}
 	for k := range sr.Logs[0].KeyValue {
 		if _, ok := fmap[k]; !ok {
 			fmap[k] = true
-			sr.Fields = append(sr.Fields, k)
 		}
 	}
 	sr.Fields = []string{}
@@ -432,9 +431,9 @@ func (b *App) parseLogEnt(l *LogEnt) {
 			if ip, ok := l.KeyValue[f]; ok {
 				if e := b.findGeo(ip.(string)); e != nil {
 					l.KeyValue[f+"_geo"] = e
-					l.KeyValue[f+"_country"] = e.Country
-					l.KeyValue[f+"_city"] = e.City
-					l.KeyValue[f+"_latlong"] = fmt.Sprintf("%0.3f,%0.3f", e.Lat, e.Long)
+					l.KeyValue[f+"_geo_country"] = e.Country
+					l.KeyValue[f+"_geo_city"] = e.City
+					l.KeyValue[f+"_geo_latlong"] = fmt.Sprintf("%0.3f,%0.3f", e.Lat, e.Long)
 				}
 			}
 		}
@@ -501,9 +500,14 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 				if ip, ok := l.KeyValue[f]; ok {
 					if e := b.findGeo(ip.(string)); e != nil {
 						l.KeyValue[f+"_geo"] = e
-						l.KeyValue[f+"_country"] = e.Country
-						l.KeyValue[f+"_city"] = e.City
-						l.KeyValue[f+"_latlong"] = fmt.Sprintf("%0.3f,%0.3f", e.Lat, e.Long)
+						l.KeyValue[f+"_geo_country"] = e.Country
+						l.KeyValue[f+"_geo_city"] = e.City
+						l.KeyValue[f+"_geo_latlong"] = fmt.Sprintf("%0.3f,%0.3f", e.Lat, e.Long)
+					} else {
+						l.KeyValue[f+"_geo"] = &GeoEnt{}
+						l.KeyValue[f+"_geo_country"] = ""
+						l.KeyValue[f+"_geo_city"] = ""
+						l.KeyValue[f+"_geo_latlong"] = ""
 					}
 				}
 			}
@@ -513,6 +517,8 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 				if ip, ok := l.KeyValue[f]; ok {
 					if e := b.findHost(ip.(string)); e != "" {
 						l.KeyValue[f+"_host"] = e
+					} else {
+						l.KeyValue[f+"_host"] = ""
 					}
 				}
 			}
@@ -522,6 +528,8 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 				if ip, ok := l.KeyValue[f]; ok {
 					if e := b.findVendor(ip.(string)); e != "" {
 						l.KeyValue[f+"_vendor"] = e
+					} else {
+						l.KeyValue[f+"_vendor"] = ""
 					}
 				}
 			}

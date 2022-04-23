@@ -230,6 +230,7 @@ var fieldTypes = map[string]FieldType{
 	"anomalyScore":         {Name: "異常スコア", Type: "number"},
 	"host":                 {Name: "ホスト", Type: "string"},
 	"hostname":             {Name: "ホスト名", Type: "string"},
+	"level":                {Name: "レベル", Type: "string"},
 }
 
 func (b *App) setFieldTypes(l *LogEnt) {

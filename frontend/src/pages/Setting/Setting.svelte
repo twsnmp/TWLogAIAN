@@ -1,5 +1,14 @@
 <script>
-  import { X16, Plus16, Check16, File16, Checklist16, Trash16, Search16, Download16 } from "svelte-octicons";
+  import {
+    X16,
+    Plus16,
+    Check16,
+    File16,
+    Checklist16,
+    Trash16,
+    Search16,
+    Download16,
+  } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
@@ -95,19 +104,49 @@
   };
 
   const getLSPath = (e) => {
-    switch(e.Type) {
-    case "ssh":
-    case "scp":
-      return e.Server + ":" + e.Path;
-    case "twsnmp":
-      return e.Server + "/?start=" +e.Start + "&end="+ e.End + "&host=" + e.Host + "&tag=" + e.Tag + "&message=" +e.Pattern;
-    case "gravwell":
-      return e.Server + "/?start=" +e.Start + "&end="+ e.End + "&qeury=`" + e.Pattern +"`";
-    case "windows":
-      return e.Server + "/?start=" +e.Start + "&end="+ e.End + "&channel=`" + e.Channel +"`";
+    switch (e.Type) {
+      case "ssh":
+      case "scp":
+        return e.Server + ":" + e.Path;
+      case "twsnmp":
+        return (
+          e.Server +
+          "/?start=" +
+          e.Start +
+          "&end=" +
+          e.End +
+          "&host=" +
+          e.Host +
+          "&tag=" +
+          e.Tag +
+          "&message=" +
+          e.Pattern
+        );
+      case "gravwell":
+        return (
+          e.Server +
+          "/?start=" +
+          e.Start +
+          "&end=" +
+          e.End +
+          "&qeury=`" +
+          e.Pattern +
+          "`"
+        );
+      case "windows":
+        return (
+          e.Server +
+          "/?start=" +
+          e.Start +
+          "&end=" +
+          e.End +
+          "&channel=`" +
+          e.Channel +
+          "`"
+        );
     }
     return e.Path;
-  }
+  };
 
   let pagination = false;
   const getLogSources = () => {
@@ -133,21 +172,13 @@
     });
   };
   let extractorTypes = [];
-  const hasIPMap = {};
-  const hasMACMap = {};
   const extractorMap = {};
   const getExtractorTypes = () => {
     window.go.main.App.GetExtractorTypes().then((r) => {
       extractorTypes = r;
       extractorTypes.forEach((e) => {
-        hasIPMap[e.Key] = e.IPFields != "";
-        hasMACMap[e.Key] = e.MACFields != "";
         extractorMap[e.Key] = e;
       });
-      hasIPMap["timeonly"] = false;
-      hasMACMap["timeonly"] = false;
-      hasIPMap["custom"] = true;
-      hasMACMap["custom"] = true;
     });
   };
   onMount(() => {
@@ -249,7 +280,7 @@
   const start = () => {
     // Index作成を開始
     busy = true;
-    window.go.main.App.Start(config,false).then((e) => {
+    window.go.main.App.Start(config, false).then((e) => {
       busy = false;
       if (e && e != "") {
         errorMsg = e;
@@ -261,7 +292,7 @@
 
   const clear = () => {
     // Indexをクリア
-    busy = true
+    busy = true;
     window.go.main.App.ClearIndex().then((e) => {
       busy = false;
       if (e && e != "") {
@@ -275,7 +306,7 @@
   const search = () => {
     // 既存のIndexで検索開始
     busy = true;
-    window.go.main.App.Start(config,true).then((e) => {
+    window.go.main.App.Start(config, true).then((e) => {
       busy = false;
       if (e && e != "") {
         errorMsg = e;
@@ -347,12 +378,14 @@
 </script>
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
-  {#if busy }
+  {#if busy}
     <div class="Box-header">
       <h3 class="Box-title">ログ分析起動</h3>
     </div>
     <div class="flash mt-2">
-      ログの読み込みを準備しています。お待ち下さい<span class="AnimatedEllipsis"></span>
+      ログの読み込みを準備しています。お待ち下さい<span
+        class="AnimatedEllipsis"
+      />
     </div>
   {:else if page == "edit"}
     <LogSource {logSource} on:done={handleDone} />
@@ -444,7 +477,7 @@
             >
               <option value="timeonly">タイムスタンプのみ</option>
               {#each extractorTypes as { Key, Name }}
-                <option value="{Key}">{Name}</option>
+                <option value={Key}>{Name}</option>
               {/each}
               <option value="custom">カスタム</option>
             </select>
@@ -464,39 +497,29 @@
             </div>
           </div>
         </div>
-        {#if hasIPMap[config.Extractor] || hasMACMap[config.Extractor]}
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5>アドレス情報</h5>
-            </div>
-            <div class="form-group-body">
-              {#if hasIPMap[config.Extractor]}
-                <label>
-                  <input type="checkbox" bind:checked={config.HostName} />
-                  ホスト名を調べる
-                </label>
-                <label>
-                  <input
-                    class="ml-2"
-                    type="checkbox"
-                    bind:checked={config.GeoIP}
-                  />
-                  位置情報を調べる
-                </label>
-              {/if}
-              {#if hasMACMap[config.Extractor]}
-                <label>
-                  <input
-                    class="ml-2"
-                    type="checkbox"
-                    bind:checked={config.VendorName}
-                  />
-                  ベンダー名を調べる
-                </label>
-              {/if}
-            </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>アドレス情報</h5>
           </div>
-        {/if}
+          <div class="form-group-body">
+            <label>
+              <input type="checkbox" bind:checked={config.HostName} />
+              ホスト名を調べる
+            </label>
+            <label>
+              <input class="ml-2" type="checkbox" bind:checked={config.GeoIP} />
+              位置情報を調べる
+            </label>
+            <label>
+              <input
+                class="ml-2"
+                type="checkbox"
+                bind:checked={config.VendorName}
+              />
+              ベンダー名を調べる
+            </label>
+          </div>
+        </div>
         {#if config.Extractor == "custom" || config.Extractor.startsWith("EXT")}
           <div class="form-group">
             <div class="form-group-header">
@@ -602,13 +625,13 @@
     </div>
     <div class="Box-footer text-right">
       {#if hasImportedLogType}
-          <button
-            class="btn btn-danger mr-1"
-            type="button"
-            on:click={deleteLogTypes}
-            >
-            <Trash16 />
-            ログ定義削除
+        <button
+          class="btn btn-danger mr-1"
+          type="button"
+          on:click={deleteLogTypes}
+        >
+          <Trash16 />
+          ログ定義削除
         </button>
       {:else}
         <button

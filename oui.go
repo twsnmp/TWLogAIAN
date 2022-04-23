@@ -31,6 +31,7 @@ func (b *App) setMACFields() {
 
 // LoadOUIMap : Load OUI Data
 func (b *App) loadOUIMap() {
+	b.processConf.OuiMap = make(map[string]string)
 	f := bytes.NewBuffer(ouiList)
 	r := csv.NewReader(f)
 	for {

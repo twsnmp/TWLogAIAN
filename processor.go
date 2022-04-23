@@ -139,10 +139,6 @@ func (b *App) setupProcess() string {
 
 func (b *App) cleanupProcess() {
 	OutLog("cleanupProcess")
-	if b.processConf.GeoIP != nil {
-		b.processConf.GeoIP.Close()
-		b.processConf.GeoIP = nil
-	}
 	for _, s := range b.logSources {
 		if s.scpSvc != nil {
 			s.scpSvc.Close()
@@ -754,9 +750,9 @@ func (b *App) setGeoIP() error {
 			b.processConf.GeoFields = append(b.processConf.GeoFields, f)
 		}
 	}
-	if len(b.processConf.GeoFields) < 1 {
-		b.config.GeoIP = false
-		return nil
+	if b.processConf.GeoIP != nil {
+		b.processConf.GeoIP.Close()
+		b.processConf.GeoIP = nil
 	}
 	var err error
 	b.processConf.GeoIP, err = geoip2.Open(b.config.GeoIPDB)
