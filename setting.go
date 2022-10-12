@@ -53,6 +53,12 @@ type LogSource struct {
 	Channel string
 	Auth    string
 }
+type WindowSettings struct {
+	X     int
+	Y     int
+	Width int
+	Hight int
+}
 
 // SelectFile : ファイル/フォルダを選択する
 func (b *App) SelectFile(t string) string {
@@ -190,6 +196,16 @@ func (b *App) loadSettingsFromDB() error {
 				return err
 			}
 		}
+		v = bkt.Get([]byte("window"))
+		if v != nil && b.ctx != nil {
+			var win WindowSettings
+			if err := json.Unmarshal(v, &win); err == nil {
+				if win.Hight > 0 && win.Width > 0 {
+					wails.WindowSetPosition(b.ctx, win.X, win.Y)
+					wails.WindowSetSize(b.ctx, win.Width, win.Hight)
+				}
+			}
+		}
 		bkt = tx.Bucket([]byte("result"))
 		v = bkt.Get([]byte("logFiles"))
 		if v == nil {
@@ -283,9 +299,32 @@ func (b *App) CloseWorkDir() string {
 	}
 	b.workdir = ""
 	if b.db != nil {
+		if err := b.saveWindow(); err != nil {
+			OutLog("saveWindow err=%v", err)
+		}
 		b.db.Close()
 	}
 	return ""
+}
+
+// saveWindow : Windoを位置、サイズを保存する
+func (b *App) saveWindow() error {
+	var win WindowSettings
+	if b.ctx != nil {
+		win.X, win.Y = wails.WindowGetPosition(b.ctx)
+		win.Width, win.Hight = wails.WindowGetSize(b.ctx)
+	}
+	if win.Hight < 1 {
+		return nil
+	}
+	return b.db.Update(func(tx *bbolt.Tx) error {
+		b := tx.Bucket([]byte("settings"))
+		OutLog("save window=%v", win)
+		if j, err := json.Marshal(&win); err == nil {
+			return b.Put([]byte("window"), j)
+		}
+		return nil
+	})
 }
 
 // addWorkDirs : 作業ディレクトリ履歴に追加
