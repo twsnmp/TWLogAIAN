@@ -8,10 +8,8 @@ const formatCode = (code) => {
     return html(`<div class="color-fg-default">${code}</div>`);
   } else if (code < 400) {
     return html(`<div class="color-fg-attention">${code}</div>`);
-  } else if (code < 500) {
-    return html(`<div class="color-fg-danger">${code}</div>`);
   }
-  return html(`<div class="color-fg-danger-emphasis">${code}</div>`);
+  return html(`<div class="color-fg-danger">${code}</div>`);
 };
 
 const formatLevel = (level) => {
