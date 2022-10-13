@@ -4,11 +4,14 @@ import (
 	"embed"
 	"log"
 	"os"
+	"os/exec"
 
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
@@ -29,15 +32,19 @@ func main() {
 		debug = true
 		log.Println("debug mode on")
 	}
+	mainMenu := menu.NewMenu()
+	mainMenu.Append(menu.AppMenu())
+	fileMenu := mainMenu.AddSubmenu("File")
+	fileMenu.AddText("&New", keys.CmdOrCtrl("n"), newWindow)
+	mainMenu.Append(menu.EditMenu())
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:     "AIアシストログ分析ツール(TWLogAIAN)",
-		Width:     1024,
-		Height:    900,
-		MinWidth:  720,
-		MinHeight: 570,
-		// MaxWidth:          1280,
-		// MaxHeight:         1024,
+		Title:             "AIアシストログ分析ツール(TWLogAIAN)",
+		Width:             1024,
+		Height:            900,
+		MinWidth:          720,
+		MinHeight:         570,
+		Menu:              mainMenu,
 		DisableResize:     false,
 		Fullscreen:        false,
 		Frameless:         false,
@@ -81,5 +88,11 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func newWindow(cd *menu.CallbackData) {
+	if ex, err := os.Executable(); err == nil {
+		exec.Command(ex).Start()
 	}
 }
