@@ -46,13 +46,15 @@ type App struct {
 	importedExtractorTypes []ExtractorType
 	importedFieldTypes     map[string]FieldType
 	memos                  []Memo
+	readFiles              map[string]bool
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{
-		hostMap: make(map[string]string),
-		geoMap:  make(map[string]*GeoEnt),
+		hostMap:   make(map[string]string),
+		geoMap:    make(map[string]*GeoEnt),
+		readFiles: make(map[string]bool),
 	}
 }
 

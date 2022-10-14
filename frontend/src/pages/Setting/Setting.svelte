@@ -587,6 +587,7 @@
               <label>
                 <input
                   type="checkbox"
+                  disabled={hasIndex}
                   bind:checked={config.InMemory}
                   aria-describedby="help-text-for-inmemory"
                 />

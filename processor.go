@@ -356,6 +356,10 @@ func (b *App) logReader() {
 			b.readLogFromWinEventLog(lf)
 			continue
 		}
+		if _, ok := b.readFiles[lf.Path]; ok {
+			continue
+		}
+		b.readFiles[lf.Path] = true
 		ext := strings.ToLower(filepath.Ext(lf.Path))
 		if ext == ".zip" {
 			if err := b.readLogFromZIP(lf); err != nil {

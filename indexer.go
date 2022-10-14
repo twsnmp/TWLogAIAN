@@ -52,8 +52,8 @@ func (b *App) StartLogIndexer() error {
 		if err != nil {
 			return err
 		}
+		b.indexer.logMap = make(map[string]*LogEnt)
 	}
-	b.indexer.logMap = make(map[string]*LogEnt)
 	b.wg.Add(1)
 	go b.logIndexer()
 	return nil
@@ -62,7 +62,7 @@ func (b *App) StartLogIndexer() error {
 // 作業ディレクトリにインデックスがあるか？
 func (b *App) HasIndex() bool {
 	if b.config.InMemory {
-		return false
+		return b.indexer.writer != nil
 	}
 	if st, err := os.Stat(filepath.Join(b.workdir, "bluge")); err == nil && st.IsDir() {
 		return true
@@ -74,6 +74,9 @@ func (b *App) CloseIndexor() error {
 	if b.indexer.writer != nil {
 		err := b.indexer.writer.Close()
 		b.indexer.writer = nil
+		if b.config.InMemory {
+			b.readFiles = make(map[string]bool)
+		}
 		return err
 	}
 	return nil
@@ -81,6 +84,8 @@ func (b *App) CloseIndexor() error {
 
 // 作業ディレクトリのインデックスを削除
 func (b *App) ClearIndex() string {
+	b.CloseIndexor()
+	b.readFiles = make(map[string]bool)
 	if b.config.InMemory {
 		return ""
 	}

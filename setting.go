@@ -206,26 +206,35 @@ func (b *App) loadSettingsFromDB() error {
 				}
 			}
 		}
-		bkt = tx.Bucket([]byte("result"))
-		v = bkt.Get([]byte("logFiles"))
-		if v == nil {
-			return nil
-		}
+		return b.loadResult(tx)
+	})
+}
+
+func (b *App) loadResult(tx *bbolt.Tx) error {
+	bkt := tx.Bucket([]byte("result"))
+	v := bkt.Get([]byte("logFiles"))
+	if v != nil {
 		lfs := []LogFile{}
 		if err := json.Unmarshal(v, &lfs); err == nil {
 			for _, lf := range lfs {
 				b.processStat.LogFiles = append(b.processStat.LogFiles, &lf)
 			}
 		}
-		v = bkt.Get([]byte("memos"))
-		if v == nil {
-			return nil
-		}
+	}
+	v = bkt.Get([]byte("memos"))
+	if v != nil {
 		if err := json.Unmarshal(v, &b.memos); err != nil {
 			return err
 		}
-		return nil
-	})
+	}
+	v = bkt.Get([]byte("readFiles"))
+	b.readFiles = make(map[string]bool)
+	if v != nil {
+		if err := json.Unmarshal(v, &b.readFiles); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // saveSettingsToDB : 設定をDBに書き込む
@@ -277,6 +286,10 @@ func (b *App) saveResultToDB() error {
 	if err != nil {
 		return err
 	}
+	jrf, err := json.Marshal(b.readFiles)
+	if err != nil {
+		return err
+	}
 	return b.db.Update(func(tx *bbolt.Tx) error {
 		bkt := tx.Bucket([]byte("result"))
 		if bkt == nil {
@@ -285,6 +298,7 @@ func (b *App) saveResultToDB() error {
 		if err := bkt.Put([]byte("logFiles"), jlfs); err != nil {
 			return err
 		}
+		bkt.Put([]byte("readFiles"), jrf)
 		return bkt.Put([]byte("memos"), jmemos)
 	})
 }
