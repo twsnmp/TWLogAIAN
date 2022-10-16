@@ -339,6 +339,9 @@ func (b *App) ImportLogTypes() string {
 			Pattern:     "*.yaml",
 		}},
 	})
+	if file == "" {
+		return ""
+	}
 	if err != nil {
 		OutLog("importLogTypes err=%v", err)
 		return "ファイルを選択できません err=" + err.Error()
@@ -347,7 +350,7 @@ func (b *App) ImportLogTypes() string {
 	b.importedFieldTypes = make(map[string]FieldType)
 	d, err := ioutil.ReadFile(file)
 	if err != nil {
-		OutLog("importLogTypes err=%v", err)
+		OutLog("importLogTypes file=%v err=%v", file, err)
 		return "ファイルを読み込めません err=" + err.Error()
 	}
 	export := new(exportLogType)
