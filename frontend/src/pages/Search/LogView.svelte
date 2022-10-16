@@ -103,6 +103,7 @@
     gridSearch = getGridSearch(logView);
     if (data.length > 10) {
       pagination = {
+        page: 0,
         limit: getTableLimit(),
         enable: true,
       };
@@ -110,6 +111,7 @@
       pagination = false;
     }
   };
+
   const search = () => {
     data.length = 0; // 空にする
     aecdata = [];
@@ -246,7 +248,31 @@
 
   const onResize = () => {
     resizeLogChart();
+    if(pagination) {
+      pagination.limit = getTableLimit();
+    }
   };
+
+  let dY = 0;
+  const onWheel = (e) => {
+    if (!pagination || logView == "data") {
+      return;
+    }
+    dY += e.deltaY;
+    if (dY > 120) {
+      dY = 0;
+      if (data.length > (pagination.page + 1) * pagination.limit){
+        pagination.page++;
+      }
+    }
+    if (dY < -120 ){
+      dY = 0;
+      if (pagination.page > 0) {
+        pagination.page--;
+      }
+    }
+    e.preventDefault();
+  }
 
   const handleUpdateQuery = (e) => {
     if (e && e.detail && e.detail.query) {
@@ -408,7 +434,7 @@
   };
 </script>
 
-<svelte:window on:resize={onResize} />
+<svelte:window on:resize={onResize}  on:wheel={onWheel} />
 {#if page == "result"}
   <Result {indexInfo} {dark} {aecdata} on:done={handleDone} />
 {:else if page == "memo"}
