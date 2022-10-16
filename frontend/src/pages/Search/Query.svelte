@@ -1,7 +1,7 @@
 <script>
-  import { getFieldName,getFieldType } from "../../js/define";
-  import { Plus16,Trash16,File16 } from "svelte-octicons";
-  import { createEventDispatcher} from "svelte";
+  import { getFieldName, getFieldType } from "../../js/define";
+  import { Plus16, Trash16, File16 } from "svelte-octicons";
+  import { createEventDispatcher } from "svelte";
   export let conf;
   export let fields = [];
   export let extractorTypes = [];
@@ -20,19 +20,21 @@
   };
 
   const addKeyword = () => {
-    if( !conf.keyword.field || !conf.keyword.key){
-      return
+    if (!conf.keyword.key) {
+      return;
     }
-    const q = conf.keyword.field == "" ? " " + conf.keyword.mode + conf.keyword.key
-     : " " + conf.keyword.mode + conf.keyword.field + ":" + conf.keyword.key;
+    const q =
+      conf.keyword.field == ""
+        ? " " + conf.keyword.mode + conf.keyword.key
+        : " " + conf.keyword.mode + conf.keyword.field + ":" + conf.keyword.key;
     dispatch("update", { query: q, add: true });
   };
 
   const addNumber = () => {
-    if( !conf.number.field || !conf.number.oper || !conf.number.value){
-      return
+    if (!conf.number.field || !conf.number.oper || !conf.number.value) {
+      return;
     }
-    const oper = (conf.number.oper == "=") ? "=" : ":" + conf.number.oper
+    const oper = conf.number.oper == "=" ? "=" : ":" + conf.number.oper;
     const q = " " + conf.number.field + oper + conf.number.value;
     dispatch("update", { query: q, add: true });
   };
@@ -40,23 +42,19 @@
   const addRange = () => {
     let q = "";
     if (conf.range.start) {
-      q += ` +time:>="` +
-      conf.range.start +
-      `:00+09:00"`;
+      q += ` +time:>="` + conf.range.start + `:00+09:00"`;
     }
     if (conf.range.end) {
-      q += ` +time:<="` +
-      conf.range.end +
-      `:00+09:00"`;
+      q += ` +time:<="` + conf.range.end + `:00+09:00"`;
     }
     if (!q) {
-      return
+      return;
     }
     dispatch("update", { query: q, add: true });
   };
   const addGeo = () => {
-    if( !conf.geo.field || !conf.geo.lat || !conf.geo.long || !conf.geo.range ){
-      return
+    if (!conf.geo.field || !conf.geo.lat || !conf.geo.long || !conf.geo.range) {
+      return;
     }
     const q =
       " geo:" +
@@ -66,24 +64,25 @@
       "," +
       conf.geo.long +
       "," +
-      conf.geo.range + "km";
+      conf.geo.range +
+      "km";
     dispatch("update", { query: q, add: true });
   };
 
   fields.forEach((f) => {
     if (f.includes("_geo_latlong")) {
       geoFields.push(f);
-      return
+      return;
     }
     if (f.startsWith("_")) {
-      return
+      return;
     }
     if (getFieldType(f) == "string") {
       hasStringField = true;
     }
     if (getFieldType(f) == "number") {
       hasNumberField = true;
-      if(conf.number.field=="" ){
+      if (conf.number.field == "") {
         conf.number.field = f;
       }
     }
@@ -91,19 +90,21 @@
 
   const clear = () => {
     conf.history.length = 0;
-  }
+  };
 
   const loadKeyword = () => {
     window.go.main.App.LoadKeyword().then((r) => {
       if (r) {
-        r.forEach((k)=>{
-          const q =  conf.keyword.field == "" ? " " + conf.keyword.mode + k
-           : " "  + conf.keyword.mode + conf.keyword.field + ":" + k;
+        r.forEach((k) => {
+          const q =
+            conf.keyword.field == ""
+              ? " " + conf.keyword.mode + k
+              : " " + conf.keyword.mode + conf.keyword.field + ":" + k;
           dispatch("update", { query: q, add: true });
         });
       }
     });
-  }
+  };
 </script>
 
 <form>
@@ -126,10 +127,10 @@
         </select>
       </div>
       <div class="col-2 float-left" />
-        <button class="btn btn-danger" type="button" on:click={clear}>
-          <Trash16 />
-        </button>
-      </div>
+      <button class="btn btn-danger" type="button" on:click={clear}>
+        <Trash16 />
+      </button>
+    </div>
   {/if}
   <div class="container-lg clearfix">
     <div class="col-2 float-left">検索期間</div>
@@ -165,8 +166,8 @@
           aria-label="項目"
           bind:value={conf.keyword.field}
         >
-        <option value="">全体</option>
-        {#each fields as f}
+          <option value="">全体</option>
+          {#each fields as f}
             {#if !f.startsWith("_") && getFieldType(f) == "string"}
               <option value={f}>{getFieldName(f)}</option>
             {/if}
@@ -183,9 +184,8 @@
         />
         が
         <select class="form-select" bind:value={conf.keyword.mode}>
-          <option value="">含まれる</option>
           <option value="+">必須</option>
-          <option value="-">含まれない</option>
+          <option value="-">除外</option>
         </select>
       </div>
       <div class="col-2 float-left">
@@ -314,19 +314,19 @@
       </select>
     </div>
     {#if conf.anomaly}
-    <div class="col-2 float-left">特徴量の計算方法</div>
-    <div class="col-3 float-left">
-      <select class="form-select" bind:value={conf.vector}>
-        <option value="">数値データ</option>
-        <option value="time">数値データ+曜日と時間帯</option>
-        <option value="all">文字列と数値データ</option>
-        <option value="alltime">文字列と数値データ+曜日と時間帯</option>
-        <option value="sql">SQLインジェクション</option>
-        <option value="oscmd">OSコマンドインジェクション</option>
-        <option value="dirt">ディレクトリトラバーサル</option>
-        <option value="walu">アクセスログ(Waluの方法)</option>
-      </select>
-    </div>
+      <div class="col-2 float-left">特徴量の計算方法</div>
+      <div class="col-3 float-left">
+        <select class="form-select" bind:value={conf.vector}>
+          <option value="">数値データ</option>
+          <option value="time">数値データ+曜日と時間帯</option>
+          <option value="all">文字列と数値データ</option>
+          <option value="alltime">文字列と数値データ+曜日と時間帯</option>
+          <option value="sql">SQLインジェクション</option>
+          <option value="oscmd">OSコマンドインジェクション</option>
+          <option value="dirt">ディレクトリトラバーサル</option>
+          <option value="walu">アクセスログ(Waluの方法)</option>
+        </select>
+      </div>
     {/if}
   </div>
   <div class="container-lg clearfix mt-1">
@@ -335,7 +335,7 @@
       <select class="form-select" bind:value={conf.extractor}>
         <option value="">しない</option>
         {#each extractorTypes as { Key, Name }}
-          <option value="{Key}">{Name}</option>
+          <option value={Key}>{Name}</option>
         {/each}
       </select>
     </div>

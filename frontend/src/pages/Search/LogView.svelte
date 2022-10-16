@@ -14,7 +14,7 @@
   import Result from "./Result.svelte";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showLogChart, resizeLogChart, getLogChartImage } from "./logchart";
-  import { getLogData, getLogColums, getSelectedLogs, clearSelectedLogs, getGridSearch } from "./logview";
+  import { getLogData, getLogColums, getGridSearch } from "./logview";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import Ranking from "../Report/Ranking.svelte";
@@ -28,10 +28,10 @@
   import Globe from "../Report/Globe.svelte";
   import Heatmap from "../Report/Heatmap.svelte";
   import Memo from "../Report/Memo.svelte";
-  import { getTableLimit, loadFieldTypes } from "../../js/define";
+  import { getTableLimit, loadFieldTypes, getFieldType } from "../../js/define";
   import numeral from "numeral";
-  import CopyClipBoard from "../../CopyClipBoard.svelte";
   import AutoEncoder from "./AutoEncoder.svelte";
+  import * as echarts from "echarts";
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -46,7 +46,7 @@
     history: [],
     keyword: {
       field: "",
-      mode: "",
+      mode: "+",
       key: "",
     },
     number: {
@@ -63,12 +63,14 @@
       long: "",
       range: "",
     },
-    extractor: '',
+    extractor: "",
   };
   let data = [];
   let columns = [];
   let aecdata = [];
   let aeStart;
+  let infoMsg = "";
+  let errorMsg = "";
   let anomalyTime = "";
   let indexInfo = {
     Total: 0,
@@ -89,18 +91,15 @@
     }
   });
   let pagination = false;
-  let logView  = "";
+  let logView = "";
   let gridSearch = true;
   let filter = {
     st: false,
     et: false,
   };
-  let selectedLogs = "";
   const setLogTable = () => {
-    selectedLogs = "";
-    clearSelectedLogs();
     columns = getLogColums(logView, result.Fields);
-    data = getLogData(result,logView, filter);
+    data = getLogData(result, logView, filter);
     gridSearch = getGridSearch(logView);
     if (data.length > 10) {
       pagination = {
@@ -119,7 +118,13 @@
     filter.et = false;
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
     busy = true;
-    window.go.main.App.SearchLog(conf.query, conf.anomaly, conf.vector,conf.extractor, limit).then((r) => {
+    window.go.main.App.SearchLog(
+      conf.query,
+      conf.anomaly,
+      conf.vector,
+      conf.extractor,
+      limit
+    ).then((r) => {
       busy = false;
       if (r) {
         result = r;
@@ -129,14 +134,15 @@
         if (r.ErrorMsg == "") {
           conf.history.push(conf.query);
         }
-        if (conf.anomaly =="autoencoder") {
+        if (conf.anomaly == "autoencoder") {
           busy = true;
           showAutoencoder = true;
           aeStart = new Date();
-          return
-        } else if (conf.anomaly != ""){
-          anomalyTime = (r.AnomalyDur/1000.0).toFixed(3) + "s"; 
+          return;
+        } else if (conf.anomaly != "") {
+          anomalyTime = (r.AnomalyDur / 1000.0).toFixed(3) + "s";
         }
+        errorMsg = r.ErrorMsg;
         setLogTable();
         updateChart();
       }
@@ -150,7 +156,7 @@
       updateChart();
     });
     window.go.main.App.GetExtractorTypes().then((r) => {
-      if(r) {
+      if (r) {
         extractorTypes = r;
       }
     });
@@ -166,14 +172,14 @@
   };
 
   const clearMsg = () => {
-    result.ErrorMsg = "";
+    infoMsg = "";
+    errorMsg = "";
   };
   let report = "";
 
   const handleDone = (e) => {
     page = "";
     report = "";
-    selectedLogs = "";
     updateChart();
   };
 
@@ -217,13 +223,10 @@
         const row = [];
         if (logView == "data") {
           columns.forEach((c) => {
-            const v =
-              c.convert && c.formatter
-                ? c.formatter(l[c.id])
-                : l[c.id];
-            row.push(v)
+            const v = c.convert && c.formatter ? c.formatter(l[c.id]) : l[c.id];
+            row.push(v);
           });
-        }else {
+        } else {
           l.forEach((e, i) => {
             const v =
               columns[i] && columns[i].convert && columns[i].formatter
@@ -259,54 +262,134 @@
     conf.query = "";
   };
 
-  const rowClick = (e) => {
-    setTimeout(()=>{
-      selectedLogs = getSelectedLogs();
-    },10);
+  const formatTime = (cell, query) => {
+    return echarts.time.format(
+      new Date(cell / (1000 * 1000)),
+      query
+        ? "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00"
+        : "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}"
+    );
   };
 
-  let showCopy = false;
-  const copy = () => {
-    showCopy = true;
-    const copyText = selectedLogs;
-    const app = new CopyClipBoard({
-      target: document.getElementById("clipboard"),
-      props: { copyText },
-    });
-    app.$destroy();
-    setTimeout(()=>{
-      showCopy = false;
-    },2000);
-  };
-
-  const findLog = (l) => {
-    for(let i = 0; i < result.Logs.length;i++) {
-      if (result.Logs[i].All == l) {
-        return result.Logs[i]
-      }
-     }
-     return undefined
-  }
-  let showMemo = false;
-  const memo = () => {
-    selectedLogs.split("\n").forEach((l) =>{
-      const e = findLog(l);
-      if (e) {
-        showMemo = true;
-        window.go.main.App.AddMemo({
-          Time: e.Time,
-          Log: e.All,
-        });
-      }
-    })
-    if (showMemo){
-      setTimeout(()=>{
-        showMemo = false;
-      },2000);
+  const cellClick = (e) => {
+    if (!e || !e.detail || e.detail.length < 4) {
+      return;
     }
-  }
+    const me = e.detail[0];
+    const cell = e.detail[1];
+    const col = e.detail[2];
+    const row = e.detail[3];
 
-  const chnageLogView = ()  => {
+    if (col.id == "copy") {
+      copyLog(row._cells);
+      return;
+    } else if (col.id == "memo") {
+      memoLog(row._cells);
+      return;
+    }
+    // それ以外はmetaキー(Command?)を押していたらフィルターに入力
+    if (!me.metaKey || !cell || !cell.data) {
+      return;
+    }
+    // altキーを押した場合は、除外
+    conf.query += getFilter(col.id, cell.data, me.altKey);
+  };
+
+  const exFieldList = ["level","score","anomalyScore","copy","memo","extract","all"];
+
+  const getFilter = (id, data, exclude) => {
+    if (!data) {
+      return "";
+    }
+    if (exFieldList.includes(id)) {
+      return "";
+    }
+    let op = "";
+    if (id == "timestamp") {
+      op = exclude ? "<=" : ">=";
+      const time = formatTime(data * 1, true);
+      return ` +time:${op}"${time}"`;
+    }
+    switch (getFieldType(id)) {
+      case "number":
+        op = exclude ? "<" : "=";
+        return ` ${id}:${op}${data}`;
+      case "string":
+        if (id == "clientip") {
+          const a = data.split("(");
+          if (a.length > 1) {
+            data = a[0];
+          }
+        }
+        op = exclude ? "-" : "+";
+        return ` ${op}${id}:${data}`;
+    }
+    return "";
+  };
+
+  const copyLog = (cells) => {
+    const list = [];
+    const timeIndex = logView == "data" ? 0 : 1;
+    const d = logView == "timeonly" ? 3 : 2;
+    if (cells.length < d + 1) {
+      return;
+    }
+    for (let i = 0; i < cells.length - d ; i++) {
+      list.push(
+        i == timeIndex ? formatTime(cells[i].data, false) : cells[i].data
+      );
+    }
+    copy(list.join("\t"));
+  };
+
+  const copy = (text) => {
+    if (!navigator.clipboard || !navigator.clipboard) {
+      errorMsg = "コピーできません。";
+    }
+    navigator.clipboard.writeText(text).then(
+      () => {
+        infoMsg = "コピーしました。";
+        setTimeout(() => {
+          infoMsg = "";
+        }, 2000);
+      },
+      () => {
+        errorMsg = "コピーエラーです。";
+      }
+    );
+  };
+
+  const memoLog = (cells) => {
+    const list = [];
+    const timeIndex = logView == "data" ? 0 : 1;
+    const d = logView == "timeonly" ? 3 : 2;
+    if (cells.length < d + 1) {
+      return;
+    }
+    for (let i = 0; i < cells.length - d; i++) {
+      if (i == timeIndex) {
+        continue;
+      }
+      list.push(cells[i].data);
+    }
+    if (list.length < 1) {
+      return;
+    }
+    memo(cells[timeIndex].data * 1, list.join("\t"));
+  };
+
+  const memo = (time, text) => {
+    infoMsg = "メモしました。";
+    window.go.main.App.AddMemo({
+      Time: time,
+      Log: text,
+    });
+    setTimeout(() => {
+      infoMsg = "";
+    }, 2000);
+  };
+
+  const chnageLogView = () => {
     setLogTable();
   };
 
@@ -314,12 +397,15 @@
   const handleAutoencoder = () => {
     showAutoencoder = false;
     const aeEnd = new Date();
-    anomalyTime = ((result.AnomalyDur + aeEnd.getTime() - aeStart.getTime())/1000.0).toFixed(3) + "s";
+    anomalyTime =
+      (
+        (result.AnomalyDur + aeEnd.getTime() - aeStart.getTime()) /
+        1000.0
+      ).toFixed(3) + "s";
     busy = false;
     setLogTable();
     updateChart();
-  }
-
+  };
 </script>
 
 <svelte:window on:resize={onResize} />
@@ -336,11 +422,7 @@
 {:else if page == "cluster"}
   <Cluster fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "histogram"}
-  <Histogram
-    fields={result.Fields}
-    logs={result.Logs}
-    on:done={handleDone}
-  />
+  <Histogram fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "fft"}
   <FFT fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "world"}
@@ -358,7 +440,7 @@
       <span class="f6">
         ログ総数:{numeral(indexInfo.Total).format("0,0")}
         /処理時間:{indexInfo.Duration}
-        {#if result.Hit < 1 }
+        {#if result.Hit < 1}
           /項目数:{indexInfo.Fields.length}
         {/if}
         {#if result.Hit > 0}
@@ -366,15 +448,28 @@
           /ヒット数:{numeral(result.Hit).format(
             "0,0"
           )}/検索時間:{result.Duration}
-          {#if anomalyTime }
+          {#if anomalyTime}
             /異常検知:{anomalyTime}
           {/if}
         {/if}
       </span>
     </div>
-    {#if result.ErrorMsg != ""}
+    {#if errorMsg != ""}
       <div class="flash flash-error">
-        {result.ErrorMsg}
+        {errorMsg}
+        <button
+          class="flash-close js-flash-close"
+          type="button"
+          aria-label="Close"
+          on:click={clearMsg}
+        >
+          <X16 />
+        </button>
+      </div>
+    {/if}
+    {#if infoMsg != ""}
+      <div class="flash">
+        {infoMsg}
         <button
           class="flash-close js-flash-close"
           type="button"
@@ -443,12 +538,22 @@
     </div>
     {#if showQuery}
       <div class="Box-row">
-        <Query {conf} fields={indexInfo.Fields} {extractorTypes} on:update={handleUpdateQuery} />
+        <Query
+          {conf}
+          fields={indexInfo.Fields}
+          {extractorTypes}
+          on:update={handleUpdateQuery}
+        />
       </div>
     {/if}
     {#if showAutoencoder}
       <div class="Box-row">
-        <AutoEncoder {dark} chartData={aecdata} logs={result.Logs} on:done={handleAutoencoder} />
+        <AutoEncoder
+          {dark}
+          chartData={aecdata}
+          logs={result.Logs}
+          on:done={handleAutoencoder}
+        />
       </div>
     {/if}
     <div class="Box-row">
@@ -463,114 +568,94 @@
         {pagination}
         {columns}
         language={jaJP}
-        on:rowClick={rowClick}
+        on:cellClick={cellClick}
       />
     </div>
-  {#if !busy}
-    <div class="Box-footer text-right">
-      {#if result && result.Hit > 0 }
+    {#if !busy}
+      <div class="Box-footer text-right">
+        {#if result && result.Hit > 0}
+          <!-- svelte-ignore a11y-no-onchange -->
+          <select
+            class="form-select mr-1"
+            bind:value={logView}
+            on:change={chnageLogView}
+          >
+            <option value="timeonly">タイムオンリー</option>
+            {#if result.View == "syslog"}
+              <option value="syslog">syslog</option>
+            {/if}
+            {#if result.View == "access"}
+              <option value="access">アクセスログ</option>
+            {/if}
+            {#if result.View == "windows"}
+              <option value="windows">Windows</option>
+            {/if}
+            {#if indexInfo.Fields.length > 0}
+              <option value="data">抽出データ</option>
+            {/if}
+            {#if conf.anomaly != ""}
+              <option value="anomary">異常ログスコア</option>
+            {/if}
+          </select>
+        {/if}
         <!-- svelte-ignore a11y-no-onchange -->
-        <select
-          class="form-select mr-1"
-          bind:value={logView}
-          on:change={chnageLogView}
+        {#if saveBusy}
+          <span>保存中</span><span class="AnimatedEllipsis" />
+        {:else}
+          <select
+            class="form-select mr-1"
+            bind:value={exportType}
+            on:change={exportLogs}
+          >
+            <option value="">エクスポート</option>
+            {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
+              <option value="csv">CSV</option>
+              <option value="excel">Excel</option>
+            {/if}
+            <option value="logtypes">ログ種別定義</option>
+          </select>
+        {/if}
+        {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
+          <!-- svelte-ignore a11y-no-onchange -->
+          <select
+            class="form-select mr-1"
+            bind:value={report}
+            on:change={showReport}
+          >
+            <option value="">レポート</option>
+            <option value="memo">メモ</option>
+            <option value="ranking">ランキング分析</option>
+            <option value="time">時系列分析</option>
+            <option value="time3d">時系列3D分析</option>
+            <option value="cluster">クラスター分析</option>
+            <option value="histogram">ヒストグラム分析</option>
+            <option value="fft">FFT分析</option>
+            <option value="world">位置情報分析</option>
+            <option value="graph">グラフ（フロー）分析</option>
+            <option value="globe">フロー分析（地球儀)</option>
+            <option value="heatmap">ヒートマップ</option>
+          </select>
+        {/if}
+        <button
+          class="btn  btn-outline mr-1"
+          type="button"
+          on:click={() => {
+            page = "result";
+          }}
         >
-          <option value="timeonly">タイムオンリー</option>
-          {#if result.View == "syslog"}
-            <option value="syslog">syslog</option>
-          {/if}
-          {#if result.View == "access"}
-            <option value="access">アクセスログ</option>
-          {/if}
-          {#if result.View == "windows"}
-            <option value="windows">Windows</option>
-          {/if}
-          {#if indexInfo.Fields.length > 0}
-            <option value="data">抽出データ</option>
-          {/if}
-          {#if conf.anomaly != "" }
-            <option value="anomary">異常ログスコア</option>
-          {/if}
-        </select>
-      {/if}
-      <!-- svelte-ignore a11y-no-onchange -->
-      {#if saveBusy}
-        <span>保存中</span><span class="AnimatedEllipsis" />
-      {:else}
-        <select
-          class="form-select mr-1"
-          bind:value={exportType}
-          on:change={exportLogs}
-        >
-          <option value="">エクスポート</option>
-          {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
-            <option value="csv">CSV</option>
-            <option value="excel">Excel</option>
-          {/if}
-          <option value="logtypes">ログ種別定義</option>
-        </select>
-      {/if}
-      {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
-        <!-- svelte-ignore a11y-no-onchange -->
-        <select
-          class="form-select mr-1"
-          bind:value={report}
-          on:change={showReport}
-        >
-          <option value="">レポート</option>
-          <option value="memo">メモ</option>
-          <option value="ranking">ランキング分析</option>
-          <option value="time">時系列分析</option>
-          <option value="time3d">時系列3D分析</option>
-          <option value="cluster">クラスター分析</option>
-          <option value="histogram">ヒストグラム分析</option>
-          <option value="fft">FFT分析</option>
-          <option value="world">位置情報分析</option>
-          <option value="graph">グラフ（フロー）分析</option>
-          <option value="globe">フロー分析（地球儀)</option>
-          <option value="heatmap">ヒートマップ</option>
-        </select>
-      {/if}
-      {#if selectedLogs != ""}
-        <button class="btn btn-outline mr-1" type="button" on:click={copy}>
-          {#if showCopy}
-            <Check16 />
-            コピー済み
-          {:else}
-            <Copy16 />
-            コピー
-          {/if}
+          <Check16 />
+          処理結果
         </button>
-        <button class="btn btn-outline mr-1" type="button" on:click={memo}>
-          {#if showMemo}
-            <Check16 />
-            メモ済み
-          {:else}
-            <Pencil16 />
-            メモ
-          {/if}
+        <button class="btn  btn-secondary mr-1" type="button" on:click={back}>
+          <Reply16 />
+          戻る
         </button>
-      {/if}
-      <button
-        class="btn  btn-outline mr-1"
-        type="button"
-        on:click={() => {
-          page = "result";
-        }}
-      >
-        <Check16 />
-        処理結果
-      </button>
-      <button class="btn  btn-secondary mr-1" type="button" on:click={back}>
-        <Reply16 />
-        戻る
-      </button>
-      <button class="btn  btn-secondary" type="button" on:click={end}>
-        <X16 />
-        終了
-      </button>
-    </div>
-  {/if}
+        <button class="btn  btn-secondary" type="button" on:click={end}>
+          <X16 />
+          終了
+        </button>
+      </div>
+    {/if}
   </div>
 {/if}
 <div id="clipboard" />

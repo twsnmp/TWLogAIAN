@@ -1,6 +1,5 @@
 <script>
   import { X16, Copy16,Pencil16,Trash16,XCircle16,Stop16,Info16,Circle16,Check16 } from "svelte-octicons";
-  import CopyClipBoard from "../../CopyClipBoard.svelte";
   import { createEventDispatcher, onMount } from "svelte";
   import * as echarts from "echarts";
 
@@ -49,24 +48,32 @@
   onMount(() => {
     updateMemo()
   });
-
-  let showCopy = false;
+  let infoMsg = "";
+  let errorMsg = "";
   const copy = () => {
     let copyText = "";
     memos.forEach((e)=> {
       copyText += formatTime(e.Time) + " " + getTypeName(e.Type) + " " + e.Memo
          + " " + e.Diff + "\n" + e.Log + "\n\n";
     });
-    showCopy = true;
-    const app = new CopyClipBoard({
-      target: document.getElementById("memoCopy"),
-      props: { copyText },
+    if (!navigator.clipboard || !navigator.clipboard) {
+      errorMsg = "コピーできません。";
+      return;
+    } 
+    navigator.clipboard.writeText(copyText).then(() => {
+      infoMsg = "コピーしました。"
+      setTimeout(() => {
+        infoMsg = "";
+      }, 2000);
+    }, () => {
+      errorMsg = "コピーエラーです。";
     });
-    app.$destroy();
-    setTimeout(()=>{
-      showCopy = false;
-    },2000);
   };
+
+  const clearMsg = () => {
+    errorMsg = "";
+    infoMsg =  "";
+  }
 
   const back = () => {
     dispatch("done", {});
@@ -90,7 +97,33 @@
   <div class="Box-header d-flex flex-items-center">
     <h3 class="Box-title overflow-hidden flex-auto">メモ</h3>
   </div>
-  {#if editMode}
+  {#if errorMsg != ""}
+  <div class="flash flash-error">
+    {errorMsg}
+    <button
+      class="flash-close js-flash-close"
+      type="button"
+      aria-label="Close"
+      on:click={clearMsg}
+    >
+      <X16 />
+    </button>
+  </div>
+{/if}
+{#if infoMsg != ""}
+  <div class="flash">
+    {infoMsg}
+    <button
+      class="flash-close js-flash-close"
+      type="button"
+      aria-label="Close"
+      on:click={clearMsg}
+    >
+      <X16 />
+    </button>
+  </div>
+{/if}
+{#if editMode}
     <div class="Box-row">
       <select
         class="form-select"
@@ -160,9 +193,6 @@
         <Copy16 />
         コピー
       </button>
-      {#if showCopy}
-        <span class="branch-name">Copied</span>
-      {/if}
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />

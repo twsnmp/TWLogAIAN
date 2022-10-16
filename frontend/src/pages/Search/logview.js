@@ -22,40 +22,11 @@ const formatLevel = (level) => {
   return html(`<div class="color-fg-default">正常</div>`);
 };
 
-const selectLogMap = new Map();
-
-export const getSelectedLogs = () => {
-  return Array.from(selectLogMap.keys()).join("\n");
-};
-
-export const clearSelectedLogs = () => {
-  selectLogMap.clear();
-};
-
 const columnsTimeOnly = [
-  {
-    id: "select",
-    name: "",
-    width: "5%",
-    sort: false,
-    formatter: (cell, row) => {
-      return h("input", {
-        type: "checkbox",
-        onChange: () => {
-          const key = row.cells[4].data;
-          if (selectLogMap.has(key)) {
-            selectLogMap.delete(key);
-          } else {
-            selectLogMap.set(key, true);
-          }
-        },
-      });
-    },
-  },
   {
     id: "level",
     name: "レベル",
-    width: "10%",
+    width: "6%",
     formatter: (cell) => formatLevel(cell),
   },
   {
@@ -70,21 +41,50 @@ const columnsTimeOnly = [
     convert: true,
   },
   {
+    id: "score",
     name: "スコア",
-    width: "10%",
+    width: "5%",
     formatter: (cell) => cell.toFixed(2),
   },
   {
+    id: "all",
     name: "ログ",
     width: "60%",
   },
+  {
+    id: "copy",
+    name: "C",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Copy">
+      <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg>
+    </button>`),
+  },
+  {
+    id: "memo",
+    name: "M",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Memo">
+    <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
+    </button>`),
+  },
+  {
+    id: "extract",
+    name: "E",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Extract">
+    <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M7.429 1.525a6.593 6.593 0 011.142 0c.036.003.108.036.137.146l.289 1.105c.147.56.55.967.997 1.189.174.086.341.183.501.29.417.278.97.423 1.53.27l1.102-.303c.11-.03.175.016.195.046.219.31.41.641.573.989.014.031.022.11-.059.19l-.815.806c-.411.406-.562.957-.53 1.456a4.588 4.588 0 010 .582c-.032.499.119 1.05.53 1.456l.815.806c.08.08.073.159.059.19a6.494 6.494 0 01-.573.99c-.02.029-.086.074-.195.045l-1.103-.303c-.559-.153-1.112-.008-1.529.27-.16.107-.327.204-.5.29-.449.222-.851.628-.998 1.189l-.289 1.105c-.029.11-.101.143-.137.146a6.613 6.613 0 01-1.142 0c-.036-.003-.108-.037-.137-.146l-.289-1.105c-.147-.56-.55-.967-.997-1.189a4.502 4.502 0 01-.501-.29c-.417-.278-.97-.423-1.53-.27l-1.102.303c-.11.03-.175-.016-.195-.046a6.492 6.492 0 01-.573-.989c-.014-.031-.022-.11.059-.19l.815-.806c.411-.406.562-.957.53-1.456a4.587 4.587 0 010-.582c.032-.499-.119-1.05-.53-1.456l-.815-.806c-.08-.08-.073-.159-.059-.19a6.44 6.44 0 01.573-.99c.02-.029.086-.075.195-.045l1.103.303c.559.153 1.112.008 1.529-.27.16-.107.327-.204.5-.29.449-.222.851-.628.998-1.189l.289-1.105c.029-.11.101-.143.137-.146zM8 0c-.236 0-.47.01-.701.03-.743.065-1.29.615-1.458 1.261l-.29 1.106c-.017.066-.078.158-.211.224a5.994 5.994 0 00-.668.386c-.123.082-.233.09-.3.071L3.27 2.776c-.644-.177-1.392.02-1.82.63a7.977 7.977 0 00-.704 1.217c-.315.675-.111 1.422.363 1.891l.815.806c.05.048.098.147.088.294a6.084 6.084 0 000 .772c.01.147-.038.246-.088.294l-.815.806c-.474.469-.678 1.216-.363 1.891.2.428.436.835.704 1.218.428.609 1.176.806 1.82.63l1.103-.303c.066-.019.176-.011.299.071.213.143.436.272.668.386.133.066.194.158.212.224l.289 1.106c.169.646.715 1.196 1.458 1.26a8.094 8.094 0 001.402 0c.743-.064 1.29-.614 1.458-1.26l.29-1.106c.017-.066.078-.158.211-.224a5.98 5.98 0 00.668-.386c.123-.082.233-.09.3-.071l1.102.302c.644.177 1.392-.02 1.82-.63.268-.382.505-.789.704-1.217.315-.675.111-1.422-.364-1.891l-.814-.806c-.05-.048-.098-.147-.088-.294a6.1 6.1 0 000-.772c-.01-.147.039-.246.088-.294l.814-.806c.475-.469.679-1.216.364-1.891a7.992 7.992 0 00-.704-1.218c-.428-.609-1.176-.806-1.82-.63l-1.103.303c-.066.019-.176.011-.299-.071a5.991 5.991 0 00-.668-.386c-.133-.066-.194-.158-.212-.224L10.16 1.29C9.99.645 9.444.095 8.701.031A8.094 8.094 0 008 0zm1.5 8a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM11 8a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+    </button>`),
+  },
+
 ];
 
 const getTimeOnlyLogData = (r, filter, scoreField) => {
   if (!scoreField) {
     scoreField = "score";
   }
-  clearSelectedLogs();
   const d = [];
   r.Logs.forEach((l) => {
     if (filter && filter.st) {
@@ -93,7 +93,7 @@ const getTimeOnlyLogData = (r, filter, scoreField) => {
       }
     }
     const score = l.KeyValue[scoreField] || 0.0;
-    d.push(["", getLogLevel(l), l.Time, score, l.All]);
+    d.push([getLogLevel(l), l.Time, score, l.All,"copy","memo","extract"]);
   });
   return d;
 };
@@ -102,7 +102,7 @@ const columnsSyslog = [
   {
     id: "level",
     name: "レベル",
-    width: "10%",
+    width: "6%",
     formatter: (cell) => formatLevel(cell),
   },
   {
@@ -119,17 +119,35 @@ const columnsSyslog = [
   {
     id: "logsrc",
     name: "送信元",
-    width: "15%",
+    width: "14%",
   },
   {
     id: "tag",
     name: "タグ",
-    width: "20%",
+    width: "19%",
   },
   {
     id: "message",
     name: "メッセージ",
     width: "40%",
+  },
+  {
+    id: "copy",
+    name: "C",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Copy">
+      <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg>
+    </button>`),
+  },
+  {
+    id: "memo",
+    name: "M",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Memo">
+    <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
+    </button>`),
   },
 ];
 
@@ -137,7 +155,7 @@ const columnsAccessLog = [
   {
     id: "code",
     name: "応答",
-    width: "8%",
+    width: "6%",
     formatter: (cell) => formatCode(cell),
   },
   {
@@ -152,29 +170,47 @@ const columnsAccessLog = [
     convert: true,
   },
   {
-    id: "req",
+    id: "verb",
     name: "リクエスト",
-    width: "10%",
+    width: "8%",
   },
   {
-    id: "size",
+    id: "bytes",
     name: "サイズ",
     width: "8%",
   },
   {
-    id: "client",
+    id: "clientip",
     name: "アクセス元",
     width: "25%",
   },
   {
-    id: "ISO",
+    id: "clientip_geo_country",
     name: "国",
-    width: "8%",
+    width: "6%",
   },
   {
-    id: "path",
+    id: "request",
     name: "パス",
     width: "26%",
+  },
+  {
+    id: "copy",
+    name: "C",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Copy">
+      <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg>
+    </button>`),
+  },
+  {
+    id: "memo",
+    name: "M",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Memo">
+    <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
+    </button>`),
   },
 ];
 
@@ -232,6 +268,24 @@ const columnsWindowsLog = [
     name: "プロバイダー",
     width: "20%",
   },
+  {
+    id: "copy",
+    name: "C",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Copy">
+      <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg>
+    </button>`),
+  },
+  {
+    id: "memo",
+    name: "M",
+    sort: false,
+    width: "3%",
+    formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Memo">
+    <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
+    </button>`),
+  },
 ];
 
 const makeDataColumns = (fields) => {
@@ -255,6 +309,31 @@ const makeDataColumns = (fields) => {
       name: getFieldName(f),
     });
   });
+  colums.sort((a,b)=> {
+    return a.id < b.id ? -1 : 1;
+  });
+  colums.push(
+    {
+      id: "copy",
+      name: "C",
+      sort: false,
+      width: "3%",
+      formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Copy">
+        <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg>
+      </button>`),
+    }
+  );
+  colums.push(
+      {
+      id: "memo",
+      name: "M",
+      sort: false,
+      width: "3%",
+      formatter: (cell) => html(`<button class="btn-octicon" type="button" aria-label="Memo">
+      <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
+      </button>`),
+    },
+  );
   return colums;
 };
 
@@ -290,6 +369,8 @@ const getAccessLogData = (r, filter) => {
         : l.KeyValue.clientip,
       l.KeyValue.clientip_geo_country || "",
       l.KeyValue.request,
+      "copy",
+      "memo",
     ]);
   });
   return d;
@@ -340,7 +421,7 @@ const getSyslogData = (r, filter) => {
       (l.KeyValue.program || "") + (pid ? "[" + pid + "]" : "");
     const src = l.KeyValue.logsource || "";
     const level = getLogLevel(l);
-    d.push([level, l.Time, src, tag, message]);
+    d.push([level, l.Time, src, tag, message,"copy","memo"]);
   });
   return d;
 };
@@ -381,6 +462,8 @@ const getWindowsLogData = (r, filter) => {
       l.KeyValue.winEventRecordID || 0,
       l.KeyValue.winChannel || "",
       l.KeyValue.winProvider || "",
+      "copy",
+      "memo",
     ]);
   });
   return d;
@@ -416,17 +499,6 @@ const gridSearch = {
 };
 
 export const getGridSearch = (view) => {
-  switch (view) {
-    case "syslog":
-    case "access":
-    case "windows":
-      timeIndex = 1;
-      return gridSearch;
-    case "data":
-      timeIndex = 0;
-      return gridSearch;
-    default:
-      timeIndex = 2;
-      return gridSearch;
-  }
+  timeIndex =  view == "data" ? 0 : 1;
+  return gridSearch;
 };
