@@ -234,6 +234,13 @@ func (b *App) loadResult(tx *bbolt.Tx) error {
 			return err
 		}
 	}
+	v = bkt.Get([]byte("history"))
+	b.history = []string{}
+	if v != nil {
+		if err := json.Unmarshal(v, &b.history); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -290,6 +297,10 @@ func (b *App) saveResultToDB() error {
 	if err != nil {
 		return err
 	}
+	jh, err := json.Marshal(b.history)
+	if err != nil {
+		return err
+	}
 	return b.db.Update(func(tx *bbolt.Tx) error {
 		bkt := tx.Bucket([]byte("result"))
 		if bkt == nil {
@@ -299,6 +310,7 @@ func (b *App) saveResultToDB() error {
 			return err
 		}
 		bkt.Put([]byte("readFiles"), jrf)
+		bkt.Put([]byte("history"), jh)
 		return bkt.Put([]byte("memos"), jmemos)
 	})
 }
@@ -591,4 +603,16 @@ func (b *App) LoadKeyword() []string {
 		}
 	}
 	return ret
+}
+
+// GetHistory : 履歴の取得
+func (b *App) GetHistory() []string {
+	OutLog("GetHisttory")
+	return b.history
+}
+
+// SaveHistory : 履歴の保存
+func (b *App) SaveHistory(h []string) {
+	OutLog("SaveHistory")
+	b.history = h
 }

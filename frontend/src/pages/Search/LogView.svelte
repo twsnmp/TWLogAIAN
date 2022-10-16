@@ -133,7 +133,8 @@
         if (logView == "") {
           logView = r.View;
         }
-        if (r.ErrorMsg == "") {
+        if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "" ) {
+          conf.history = conf.history.filter((h) => h != conf.query);
           conf.history.push(conf.query);
         }
         if (conf.anomaly == "autoencoder") {
@@ -162,14 +163,21 @@
         extractorTypes = r;
       }
     });
+    window.go.main.App.GetHistory().then((r) => {
+      if (r) {
+        conf.history = r;
+      }
+    });
   });
 
   const end = () => {
+    window.go.main.App.SaveHistory(conf.history);
     window.go.main.App.CloseWorkDir();
     dispatch("done", { page: "wellcome" });
   };
 
   const back = () => {
+    window.go.main.App.SaveHistory(conf.history);
     dispatch("done", { page: "setting" });
   };
 

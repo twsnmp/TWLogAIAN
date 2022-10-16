@@ -47,6 +47,7 @@ type App struct {
 	importedFieldTypes     map[string]FieldType
 	memos                  []Memo
 	readFiles              map[string]bool
+	history                []string
 }
 
 // NewApp creates a new App application struct

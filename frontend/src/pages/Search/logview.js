@@ -153,7 +153,7 @@ const columnsSyslog = [
 
 const columnsAccessLog = [
   {
-    id: "code",
+    id: "response",
     name: "応答",
     width: "6%",
     formatter: (cell) => formatCode(cell),
