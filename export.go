@@ -24,8 +24,6 @@ type ExportData struct {
 func (b *App) Export(exportType string, data *ExportData) string {
 	var err error
 	switch exportType {
-	case "logtypes":
-		err = b.ExportLogTypes()
 	case "excel":
 		err = b.exportExcel(data)
 	case "csv":

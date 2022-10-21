@@ -235,3 +235,8 @@ table.gridjs-table {
   padding: 5px 5px;
 }
 
+/* Button in table */
+td .btn-sm {
+  line-height: 16px;
+}
+

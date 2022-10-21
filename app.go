@@ -31,23 +31,21 @@ type App struct {
 		DarkMode     bool
 		LastWorkDirs []string
 	}
-	workdir                string
-	db                     *bbolt.DB
-	config                 Config
-	logSources             []*LogSource
-	processStat            ProcessStat
-	processConf            ProcessConf
-	indexer                LogIndexer
-	logCh                  chan *LogEnt
-	stopProcess            bool
-	wg                     *sync.WaitGroup
-	hostMap                map[string]string
-	geoMap                 map[string]*GeoEnt
-	importedExtractorTypes []ExtractorType
-	importedFieldTypes     map[string]FieldType
-	memos                  []Memo
-	readFiles              map[string]bool
-	history                []string
+	workdir     string
+	db          *bbolt.DB
+	config      Config
+	logSources  []*LogSource
+	processStat ProcessStat
+	processConf ProcessConf
+	indexer     LogIndexer
+	logCh       chan *LogEnt
+	stopProcess bool
+	wg          *sync.WaitGroup
+	hostMap     map[string]string
+	geoMap      map[string]*GeoEnt
+	memos       []Memo
+	readFiles   map[string]bool
+	history     []string
 }
 
 // NewApp creates a new App application struct

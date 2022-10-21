@@ -1,32 +1,29 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
-	"time"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 	"gopkg.in/yaml.v2"
 )
 
-// GetExtractorTypes : 定義済みのログタイプのリスト情報を提供する
-func (b *App) GetExtractorTypes() []ExtractorType {
-	ret := []ExtractorType{}
-	ret = append(ret, extractorTypes...)
-	ret = append(ret, b.importedExtractorTypes...)
-	return ret
-}
+var extractorTypes = make(map[string]ExtractorType)
+var fieldTypes = make(map[string]FieldType)
 
-// GetFieldTypes : 定義済みのログタイプのリスト情報を提供する
-func (b *App) GetFieldTypes() map[string]FieldType {
-	ret := make(map[string]FieldType)
-	for k, v := range fieldTypes {
-		ret[k] = v
+func makeDefalutLogTypes() {
+	OutLog("makeDefalutLogTypes")
+	extractorTypes = make(map[string]ExtractorType)
+	fieldTypes = make(map[string]FieldType)
+	for k, v := range defalutExtractorTypes {
+		v.Key = k
+		extractorTypes[k] = v
 	}
-	for k, v := range b.importedFieldTypes {
-		ret[k] = v
+	for k, v := range defalutFieldTypes {
+		v.Key = k
+		fieldTypes[k] = v
 	}
-	return ret
 }
 
 // ExtractorType : ログからデータを取得するパターン定義
@@ -38,55 +35,49 @@ type ExtractorType struct {
 	IPFields  string
 	MACFields string
 	View      string
+	CanEdit   bool
 }
 
-var extractorTypes = []ExtractorType{
-	{
-		Key:       "syslog",
+var defalutExtractorTypes = map[string]ExtractorType{
+	"syslog": {
 		Name:      "syslog(BSD)",
 		TimeField: "timestamp",
 		Grok:      `%{SYSLOGBASE} %{GREEDYDATA:message}`,
 		View:      "syslog",
 	},
-	{
-		Key:       "syslogBSD_NOPID",
+	"syslogBSD_NOPID": {
 		Name:      "syslog(BSD/PIDなし)",
 		TimeField: "timestamp",
 		Grok:      `%{SYSLOGTIMESTAMP:timestamp}\s+%{SYSLOGHOST:logsource}\s+%{NOTSPACE:tag}:\s+%{GREEDYDATA:message}`,
 		View:      "syslog",
 	},
-	{
-		Key:       "syslogBSD_PRI",
+	"syslogBSD_PRI": {
 		Name:      "syslog(BSD/文字列PRI付き)",
 		TimeField: "timestamp",
 		Grok:      `%{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:logsource}\s+%{NOTSPACE:facility_str}\.%{NOTSPACE:severity_str}\s+%{SYSLOGPROG}:\s+%{GREEDYDATA:message}`,
 		View:      "syslog",
 	},
-	{
-		Key:       "syslogIETF",
+	"syslogIETF": {
 		Name:      "syslog(IETF)",
 		TimeField: "timestamp",
 		Grok:      `%{TIMESTAMP_ISO8601:timestamp}\s+(?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource}\s+%{NOTSPACE:tag}:\s+%{GREEDYDATA:message}`,
 		View:      "syslog",
 	},
-	{
-		Key:       "apacheCommon",
+	"apacheCommon": {
 		Name:      "Apache(Common)",
 		TimeField: "timestamp",
 		Grok:      `%{COMMONAPACHELOG}`,
 		IPFields:  "clientip",
 		View:      "access",
 	},
-	{
-		Key:       "apacheConbined",
+	"apacheConbined": {
 		Name:      "Apache(Conbined)",
 		TimeField: "timestamp",
 		Grok:      `%{COMBINEDAPACHELOG}`,
 		IPFields:  "clientip",
 		View:      "access",
 	},
-	{
-		Key:      "SSHLOGIN",
+	"SSHLOGIN": {
 		Name:     "SSHのログイン",
 		Grok:     `%{NOTSPACE:stat} (password|publickey) for( invalid user | )%{USER:user} from %{IP:clientip}`,
 		IPFields: "clientip",
@@ -161,13 +152,15 @@ var extractorTypes = []ExtractorType{
 }
 
 type FieldType struct {
-	Key  string
-	Name string
-	Type string // number,string,latlong,time
-	Unit string
+	Key     string
+	Name    string
+	Type    string // number,string,latlong,time
+	Unit    string
+	Mul     float64
+	CanEdit bool
 }
 
-var fieldTypes = map[string]FieldType{
+var defalutFieldTypes = map[string]FieldType{
 	"_all":                 {Name: "ログの行全体", Type: "_all"},
 	"httpversion":          {Name: "HTTPバージョン", Type: "string"},
 	"ident":                {Name: "ユーザーID", Type: "string"},
@@ -251,13 +244,81 @@ func (b *App) setFieldTypes(l *LogEnt) {
 
 func (b *App) setFieldType(f, t string) {
 	if _, ok := fieldTypes[f]; !ok {
-		if _, ok := b.importedFieldTypes[f]; !ok {
-			b.importedFieldTypes[f] = FieldType{
-				Name: f + "(自動追加)",
-				Type: t,
-			}
+		fieldTypes[f] = FieldType{
+			Name: f + "(自動追加)",
+			Type: t,
 		}
 	}
+}
+
+// GetExtractorTypes : 定義済みのログタイプのリスト情報を提供する
+func (b *App) GetExtractorTypes() map[string]ExtractorType {
+	OutLog("GetExtractorTypes")
+	return extractorTypes
+}
+
+// SaveExtractorType : 抽出パターンを保存する
+func (b *App) SaveExtractorType(et ExtractorType) string {
+	if oldet, ok := extractorTypes[et.Key]; ok && !oldet.CanEdit {
+		return "抽出パターンを変更できません"
+	}
+	extractorTypes[et.Key] = et
+	return ""
+}
+
+// DeleteExtractorType : 抽出パターンを削除する
+func (b *App) DeleteExtractorType(key string) string {
+	if et, ok := extractorTypes[key]; ok && !et.CanEdit {
+		return "抽出パターンを削除できません"
+	}
+	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
+		Type:          wails.QuestionDialog,
+		Title:         "抽出パターンの削除",
+		Message:       "削除しますか?",
+		Buttons:       []string{"Yes", "No"},
+		DefaultButton: "No",
+		CancelButton:  "No",
+	})
+	if err != nil || result == "No" {
+		return ""
+	}
+	delete(extractorTypes, key)
+	return ""
+}
+
+// GetFieldTypes : 定義済みのログタイプのリスト情報を提供する
+func (b *App) GetFieldTypes() map[string]FieldType {
+	OutLog("GetFieldTypes")
+	return fieldTypes
+}
+
+// SaveFieldType : フィールドタイプを削除する
+func (b *App) SaveFieldType(ft FieldType) string {
+	if oldft, ok := fieldTypes[ft.Key]; ok && !oldft.CanEdit {
+		return "フィールドタイプを保存できません"
+	}
+	fieldTypes[ft.Key] = ft
+	return ""
+}
+
+// DeleteFieldType : フィールドタイプを削除する
+func (b *App) DeleteFieldType(key string) string {
+	if ft, ok := fieldTypes[key]; ok && !ft.CanEdit {
+		return "フィールドタイプを削除できません"
+	}
+	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
+		Type:          wails.QuestionDialog,
+		Title:         "フィールドタイプの削除",
+		Message:       "削除しますか?",
+		Buttons:       []string{"Yes", "No"},
+		DefaultButton: "No",
+		CancelButton:  "No",
+	})
+	if err != nil || result == "No" {
+		return ""
+	}
+	delete(fieldTypes, key)
+	return ""
 }
 
 type exportLogType struct {
@@ -265,7 +326,7 @@ type exportLogType struct {
 	FieldTypes     []FieldType
 }
 
-func (b *App) ExportLogTypes() error {
+func (b *App) ExportLogTypes() string {
 	file, err := wails.SaveFileDialog(b.ctx, wails.SaveDialogOptions{
 		DefaultFilename:      "logtypes.yaml",
 		CanCreateDirectories: false,
@@ -276,40 +337,29 @@ func (b *App) ExportLogTypes() error {
 	})
 	if err != nil {
 		OutLog("ExportLogTypes err=%v", err)
-		return err
+		return fmt.Sprintf("エクスポートできません。 err=%v", err)
 	}
 	export := exportLogType{}
-	if b.config.Extractor == "custom" {
-		d := time.Now().Format("20060102150405")
-		export.ExtractorTypes = append(export.ExtractorTypes, ExtractorType{
-			Key:       "custom_" + d,
-			Name:      "カスタム" + d,
-			Grok:      b.config.Grok,
-			IPFields:  b.getIPFields(),
-			MACFields: b.config.MACFields,
-			TimeField: b.config.TimeField,
-		})
-	} else {
-		export.ExtractorTypes = append(export.ExtractorTypes, extractorTypes...)
-		export.ExtractorTypes = append(export.ExtractorTypes, b.importedExtractorTypes...)
-		for k, e := range fieldTypes {
+	for _, et := range extractorTypes {
+		if et.CanEdit {
+			export.ExtractorTypes = append(export.ExtractorTypes, et)
+		}
+	}
+	for k, e := range fieldTypes {
+		if e.CanEdit {
 			e.Key = k
 			export.FieldTypes = append(export.FieldTypes, e)
 		}
 	}
-	for k, e := range b.importedFieldTypes {
-		e.Key = k
-		export.FieldTypes = append(export.FieldTypes, e)
-	}
 	d, err := yaml.Marshal(&export)
 	if err != nil {
-		return err
+		return fmt.Sprintf("エクスポートできません。 err=%v", err)
 	}
 	err = ioutil.WriteFile(file, d, 0660)
 	if err != nil {
-		return err
+		return fmt.Sprintf("エクスポートできません。 err=%v", err)
 	}
-	return nil
+	return ""
 }
 
 func (b *App) getIPFields() string {
@@ -346,8 +396,6 @@ func (b *App) ImportLogTypes() string {
 		OutLog("importLogTypes err=%v", err)
 		return "ファイルを選択できません err=" + err.Error()
 	}
-	b.importedExtractorTypes = []ExtractorType{}
-	b.importedFieldTypes = make(map[string]FieldType)
 	d, err := ioutil.ReadFile(file)
 	if err != nil {
 		OutLog("importLogTypes file=%v err=%v", file, err)
@@ -359,21 +407,31 @@ func (b *App) ImportLogTypes() string {
 		OutLog("importLogTypes err=%v", err)
 		return "ファイルのフォーマットが違います err=" + err.Error()
 	}
-	b.importedExtractorTypes = append(b.importedExtractorTypes, export.ExtractorTypes...)
+	etKeyMap := make(map[string]*ExtractorType)
+	for _, et := range extractorTypes {
+		etKeyMap[et.Key] = &et
+	}
+	for _, iet := range export.ExtractorTypes {
+		if et, ok := etKeyMap[iet.Key]; ok && !et.CanEdit {
+			return "組み込みと同じ定義があります。 name=" + iet.Name
+		}
+	}
+	for _, iet := range export.ExtractorTypes {
+		if et, ok := etKeyMap[iet.Key]; ok {
+			et.Name = iet.Name
+			et.Grok = iet.Grok
+			et.TimeField = iet.TimeField
+			et.IPFields = iet.IPFields
+			et.MACFields = iet.MACFields
+		} else {
+			iet.CanEdit = true
+			extractorTypes[iet.Key] = iet
+		}
+	}
 	for _, e := range export.FieldTypes {
-		b.importedFieldTypes[e.Key] = e
+		if ft, ok := fieldTypes[e.Key]; !ok || ft.CanEdit {
+			fieldTypes[e.Key] = e
+		}
 	}
 	return ""
-}
-
-// DeleteLogTypes : インポートしたログタイプを削除する
-func (b *App) DeleteLogTypes() string {
-	b.importedExtractorTypes = []ExtractorType{}
-	b.importedFieldTypes = make(map[string]FieldType)
-	return ""
-}
-
-// HasImportedLogTypes : インポートしたログタイプの有無を返す
-func (b *App) HasImportedLogTypes() bool {
-	return len(b.importedExtractorTypes) > 0
 }

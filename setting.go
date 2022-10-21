@@ -121,8 +121,7 @@ func (b *App) SetWorkDir(wd string) string {
 	}
 	b.logSources = []*LogSource{}
 	b.config = Config{}
-	b.importedExtractorTypes = []ExtractorType{}
-	b.importedFieldTypes = make(map[string]FieldType)
+	makeDefalutLogTypes()
 	err = b.openDB(wd)
 	if err != nil {
 		return fmt.Sprintf("データベースを開けません err=%v", err)
@@ -186,14 +185,25 @@ func (b *App) loadSettingsFromDB() error {
 		}
 		v = bkt.Get([]byte("extractorTypes"))
 		if len(v) > 1 {
-			if err := json.Unmarshal(v, &b.importedExtractorTypes); err != nil {
-				return err
+			var list []ExtractorType
+			if err := json.Unmarshal(v, &list); err == nil {
+				for _, iet := range list {
+					if et, ok := extractorTypes[iet.Key]; !ok || et.CanEdit {
+						iet.CanEdit = true
+						extractorTypes[iet.Key] = iet
+					}
+				}
 			}
 		}
 		v = bkt.Get([]byte("fieldTypes"))
 		if len(v) > 1 {
-			if err := json.Unmarshal(v, &b.importedFieldTypes); err != nil {
-				return err
+			var list []FieldType
+			if err := json.Unmarshal(v, &list); err == nil {
+				for _, ift := range list {
+					if ft, ok := fieldTypes[ift.Key]; !ok || ft.CanEdit {
+						fieldTypes[ift.Key] = ft
+					}
+				}
 			}
 		}
 		v = bkt.Get([]byte("window"))
@@ -254,11 +264,23 @@ func (b *App) saveSettingsToDB() error {
 	if err != nil {
 		return err
 	}
-	ietj, err := json.Marshal(b.importedExtractorTypes)
+	etList := []ExtractorType{}
+	for _, et := range extractorTypes {
+		if et.CanEdit {
+			etList = append(etList, et)
+		}
+	}
+	ietj, err := json.Marshal(etList)
 	if err != nil {
 		return err
 	}
-	iftj, err := json.Marshal(b.importedFieldTypes)
+	ftList := []FieldType{}
+	for _, ft := range fieldTypes {
+		if ft.CanEdit {
+			ftList = append(ftList, ft)
+		}
+	}
+	iftj, err := json.Marshal(ftList)
 	if err != nil {
 		return err
 	}
@@ -318,6 +340,7 @@ func (b *App) saveResultToDB() error {
 // CloseWorkDir : 作業フォルダを閉じる
 func (b *App) CloseWorkDir() string {
 	b.CloseIndexor()
+	b.saveSettingsToDB()
 	b.saveResultToDB()
 	if b.processConf.GeoIP != nil {
 		b.processConf.GeoIP.Close()

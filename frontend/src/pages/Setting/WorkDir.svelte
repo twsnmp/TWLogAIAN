@@ -9,7 +9,7 @@
 
   window.go.main.App.GetLastWorkDirs().then((wds) => {
     lastWorkDirs = wds;
-    if(lastWorkDirs.length > 0 && workdir == "") {
+    if (lastWorkDirs.length > 0 && workdir == "") {
       // 最後に利用したディレクトリが初期値
       workdir = lastWorkDirs[0];
     }
@@ -51,7 +51,7 @@
   </div>
   {#if ErrorMsg != ""}
     <div class="flash flash-error">
-      { ErrorMsg }
+      {ErrorMsg}
       <button
         class="flash-close js-flash-close"
         type="button"
@@ -63,37 +63,35 @@
     </div>
   {/if}
   <div class="Box-body">
-    <form>
-      <div class="input-group mb-5">
-        <input
-          class="form-control"
-          type="text"
-          placeholder="作業フォルダー"
-          aria-label="作業フォルダー"
-          bind:value={workdir}
-        />
-        <span class="input-group-button">
-          <button class="btn" type="button" on:click={selectWorkDir}>
-            <FileDirectory16 />
-          </button>
-        </span>
-      </div>
-      {#if lastWorkDirs.length > 0}
-        <p>最近使ったフォルダー</p>
-        <!-- svelte-ignore a11y-no-onchange -->
-        <select
-          class="form-select"
-          aria-label="最近使ったフォルダー"
-          bind:value={selLast}
-          on:change={checkSelectWorkDir}
-        >
-          <option value="">選択してください。</option>
-          {#each lastWorkDirs as d}
-            <option value={d}>{d}</option>
-          {/each}
-        </select>
-      {/if}
-    </form>
+    <div class="input-group mb-5">
+      <input
+        class="form-control"
+        type="text"
+        placeholder="作業フォルダー"
+        aria-label="作業フォルダー"
+        bind:value={workdir}
+      />
+      <span class="input-group-button">
+        <button class="btn" type="button" on:click={selectWorkDir}>
+          <FileDirectory16 />
+        </button>
+      </span>
+    </div>
+    {#if lastWorkDirs.length > 0}
+      <p>最近使ったフォルダー</p>
+      <!-- svelte-ignore a11y-no-onchange -->
+      <select
+        class="form-select"
+        aria-label="最近使ったフォルダー"
+        bind:value={selLast}
+        on:change={checkSelectWorkDir}
+      >
+        <option value="">選択してください。</option>
+        {#each lastWorkDirs as d}
+          <option value={d}>{d}</option>
+        {/each}
+      </select>
+    {/if}
   </div>
   <div class="Box-footer text-right">
     <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>

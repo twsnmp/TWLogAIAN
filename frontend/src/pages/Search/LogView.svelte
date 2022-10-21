@@ -28,6 +28,7 @@
   import Globe from "../Report/Globe.svelte";
   import Heatmap from "../Report/Heatmap.svelte";
   import Memo from "../Report/Memo.svelte";
+  import EditExtractorType from "../Setting/EditExtractorType.svelte";
   import { getTableLimit, loadFieldTypes, getFieldType } from "../../js/define";
   import numeral from "numeral";
   import AutoEncoder from "./AutoEncoder.svelte";
@@ -151,17 +152,16 @@
       }
     });
   };
-  let extractorTypes = [];
+
+  let extractorTypes = {};
+  let extractorTypeList = [];
+
   onMount(() => {
     loadFieldTypes();
+    getExtractorTypes();
     window.go.main.App.GetDark().then((v) => {
       dark = v;
       updateChart();
-    });
-    window.go.main.App.GetExtractorTypes().then((r) => {
-      if (r) {
-        extractorTypes = r;
-      }
     });
     window.go.main.App.GetHistory().then((r) => {
       if (r) {
@@ -169,6 +169,20 @@
       }
     });
   });
+
+  const getExtractorTypes = () => {
+    window.go.main.App.GetExtractorTypes().then((r) => {
+      if (r) {
+        extractorTypes = r;
+        extractorTypeList = [];
+        for (let k in extractorTypes) {
+          extractorTypeList.push(extractorTypes[k]);
+        }
+        extractorTypeList = extractorTypeList.sort((a, b) => a.Name < b.Name);
+      }
+    });
+  };
+ 
 
   const end = () => {
     window.go.main.App.SaveHistory(conf.history);
@@ -225,29 +239,27 @@
     if (exportType == "excel") {
       exportData.Image = getLogChartImage();
     }
-    if (exportType != "logtypes") {
-      columns.forEach((e) => {
-        exportData.Header.push(e.name);
-      });
-      data.forEach((l) => {
-        const row = [];
-        if (logView == "data") {
-          columns.forEach((c) => {
-            const v = c.convert && c.formatter ? c.formatter(l[c.id]) : l[c.id];
-            row.push(v);
-          });
-        } else {
-          l.forEach((e, i) => {
-            const v =
-              columns[i] && columns[i].convert && columns[i].formatter
-                ? columns[i].formatter(e)
-                : e;
-            row.push(v);
-          });
-        }
-        exportData.Data.push(row);
-      });
-    }
+    columns.forEach((e) => {
+      exportData.Header.push(e.name);
+    });
+    data.forEach((l) => {
+      const row = [];
+      if (logView == "data") {
+        columns.forEach((c) => {
+          const v = c.convert && c.formatter ? c.formatter(l[c.id]) : l[c.id];
+          row.push(v);
+        });
+      } else {
+        l.forEach((e, i) => {
+          const v =
+            columns[i] && columns[i].convert && columns[i].formatter
+              ? columns[i].formatter(e)
+              : e;
+          row.push(v);
+        });
+      }
+      exportData.Data.push(row);
+    });
     window.go.main.App.Export(exportType, exportData).then(() => {
       saveBusy = false;
       exportType = "";
@@ -319,6 +331,9 @@
       return;
     } else if (col.id == "memo") {
       memoLog(row._cells);
+      return;
+    } else if (col.id == "extractor") {
+      showEditExtractorType(cell.data,me.metaKey);
       return;
     }
     // それ以外はmetaキー(Command?)を押していたらフィルターに入力
@@ -440,6 +455,45 @@
     setLogTable();
     updateChart();
   };
+  
+  let extractorType = {
+    Key: "",
+    Name: "",
+    Grok: "",
+    CanEdit: true,
+  }
+
+  let testLog = "";
+  const add = true;
+  const showEditExtractorType = (log,cmd) => {
+    if (cmd) {
+      if (testLog != "") {
+        testLog += "\n";
+      }
+      testLog += log;
+    } else {
+      testLog = log;
+    }
+    const now = new Date();
+    extractorType = {
+      Key: "e" + now.getTime(),
+      Name: "New",
+      Grok: "",
+      CanEdit: true,
+    }    
+    page = "extractorType";
+  }
+
+  const handleEditExtractorDone = (e) => {
+    if (e && e.detail && e.detail.save) {
+      loadFieldTypes();
+      getExtractorTypes();
+    }
+    page = "";
+    updateChart();
+  };
+
+
 </script>
 
 <svelte:window on:resize={onResize}  on:wheel={onWheel} />
@@ -467,6 +521,8 @@
   <Globe fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "heatmap"}
   <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+{:else if page == "extractorType"}
+  <EditExtractorType {extractorType} {add} {testLog} on:done={handleEditExtractorDone} />
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header d-flex flex-items-center">
@@ -575,7 +631,7 @@
         <Query
           {conf}
           fields={indexInfo.Fields}
-          {extractorTypes}
+          {extractorTypeList}
           on:update={handleUpdateQuery}
         />
       </div>
@@ -646,7 +702,6 @@
               <option value="csv">CSV</option>
               <option value="excel">Excel</option>
             {/if}
-            <option value="logtypes">ログ種別定義</option>
           </select>
         {/if}
         {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}

@@ -13,7 +13,7 @@
   import Grid from "gridjs-svelte";
   import { h, html } from "gridjs";
   import LogSource from "./LogSource.svelte";
-  import GrokTest from "./GrokTest.svelte";
+  import LogType from "./LogType.svelte";
   import { onMount } from "svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { loadFieldTypes } from "../../js/define";
@@ -60,7 +60,6 @@
   let page = "";
   let orgConfig;
   let hasIndex = false;
-  let hasImportedLogType = false;
 
   const getConfig = () => {
     window.go.main.App.GetConfig().then((c) => {
@@ -72,34 +71,6 @@
   const getHasIndex = () => {
     window.go.main.App.HasIndex().then((r) => {
       hasIndex = r;
-    });
-  };
-
-  const getHasImportedLogTypes = () => {
-    window.go.main.App.HasImportedLogTypes().then((r) => {
-      hasImportedLogType = r;
-    });
-  };
-
-  const importLogTypes = () => {
-    window.go.main.App.ImportLogTypes().then((r) => {
-      errorMsg = r;
-      if (r == "") {
-        getHasImportedLogTypes();
-        getExtractorTypes();
-        loadFieldTypes();
-      }
-    });
-  };
-
-  const deleteLogTypes = () => {
-    window.go.main.App.DeleteLogTypes().then((r) => {
-      errorMsg = r;
-      if (r == "") {
-        getHasImportedLogTypes();
-        getExtractorTypes();
-        loadFieldTypes();
-      }
     });
   };
 
@@ -171,23 +142,29 @@
       }
     });
   };
-  let extractorTypes = [];
-  const extractorMap = {};
+
+  let extractorTypes = {};
+  let extractorTypeList = [];
+
   const getExtractorTypes = () => {
     window.go.main.App.GetExtractorTypes().then((r) => {
-      extractorTypes = r;
-      extractorTypes.forEach((e) => {
-        extractorMap[e.Key] = e;
-      });
+      if (r) {
+        extractorTypes = r;
+        extractorTypeList = [];
+        for (let k in extractorTypes) {
+          extractorTypeList.push(extractorTypes[k]);
+        }
+        extractorTypeList.sort((a, b) => a.Name < b.Name);
+      }
     });
   };
+
   onMount(() => {
     loadFieldTypes();
     getConfig();
     getLogSources();
     getExtractorTypes();
     getHasIndex();
-    getHasImportedLogTypes();
   });
 
   const editLogSource = (sno) => {
@@ -213,7 +190,14 @@
     } else {
       logSource = logSources[no - 1];
     }
-    page = "edit";
+    page = "logSource";
+  };
+
+  const deleteLogSource = (sno) => {
+    const no = sno * 1;
+    window.go.main.App.DeleteLogSource(no).then((e) => {
+      errorMsg = e;
+    });
   };
 
   const formatLogSourceType = (t) => {
@@ -238,7 +222,7 @@
     return "";
   };
 
-  const actionButtons = (_, row) => {
+  const editLogSourceButtons = (_, row) => {
     const no = row.cells[0].data;
     return h(
       "button",
@@ -247,7 +231,21 @@
         onClick: () => editLogSource(no),
       },
       html(
-        `<svg xmlns="http://www.w3.org/2000/svg" class="octicon" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>`
+        `<svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>`
+      )
+    );
+  };
+
+  const deleteLogSourceButtons = (_, row) => {
+    const no = row.cells[0].data;
+    return h(
+      "button",
+      {
+        className: "btn btn-sm btn-danger",
+        onClick: () => deleteLogSource(no),
+      },
+      html(
+        `<svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M6.5 1.75a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3V1.75zm4.5 0V3h2.25a.75.75 0 010 1.5H2.75a.75.75 0 010-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75zM4.496 6.675a.75.75 0 10-1.492.15l.66 6.6A1.75 1.75 0 005.405 15h5.19c.9 0 1.652-.681 1.741-1.576l.66-6.6a.75.75 0 00-1.492-.149l-.66 6.6a.25.25 0 01-.249.225h-5.19a.25.25 0 01-.249-.225l-.66-6.6z"></path></svg>`
       )
     );
   };
@@ -267,13 +265,19 @@
     {
       name: "パス",
       sort: true,
-      width: "60%",
+      width: "50%",
     },
     {
       name: "編集",
       sort: false,
       width: "10%",
-      formatter: actionButtons,
+      formatter: editLogSourceButtons,
+    },
+    {
+      name: "削除",
+      sort: false,
+      width: "10%",
+      formatter: deleteLogSourceButtons,
     },
   ];
   let busy = false;
@@ -333,7 +337,7 @@
   };
 
   const changeExtractor = () => {
-    const e = extractorMap[config.Extractor];
+    const e = extractorTypes[config.Extractor];
     if (e) {
       config.Grok = e.Grok;
       config.TimeField = e.TimeField;
@@ -349,31 +353,15 @@
     }
   };
 
-  const testSampleLog = () => {
-    clearMsg();
-    if (config.SampleLog == "") {
-      errorMsg = "サンプルログが空欄では私にはログの種類を判断できません";
-      return;
-    }
-    window.go.main.App.TestSampleLog(config).then((et) => {
-      if (!et) {
-        errorMsg = "私にはログの種類を判断できませんでした";
-      } else {
-        infoMsg = "ログの種類を" + et.Name + "に設定しました。";
-        config.Extractor = et.Key;
-      }
-    });
-  };
-
   const handleDone = (e) => {
     if (e && e.detail && e.detail.update) {
       getLogSources();
     }
-    if (e && e.detail && e.detail.grok) {
-      config.Grok = e.detail.grok;
-      config.Extractor = "custom";
-    }
     page = "";
+  };
+
+  const showLogTypePage = () => {
+    page = "logType";
   };
 </script>
 
@@ -387,10 +375,10 @@
         class="AnimatedEllipsis"
       />
     </div>
-  {:else if page == "edit"}
+  {:else if page == "logSource"}
     <LogSource {logSource} on:done={handleDone} />
-  {:else if page == "grok"}
-    <GrokTest {extractorTypes} grok={config.Grok} on:done={handleDone} />
+  {:else if page == "logType"}
+    <LogType on:done={handleDone} />
   {:else}
     <div class="Box-header">
       <h3 class="Box-title">ログ分析の設定</h3>
@@ -422,237 +410,200 @@
       </div>
     {/if}
     <div class="Box-body">
-      <form>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>
-              ログを読み込む場所
-              <button
-                class="btn btn-sm float-right"
-                type="button"
-                on:click={() => editLogSource("")}
-              >
-                <Plus16 />
-              </button>
-            </h5>
-          </div>
-          <div class="form-group-body markdown-body mt-3">
-            <Grid {data} {pagination} {columns} language={jaJP} />
-            <label>
-              <input type="checkbox" bind:checked={config.Recursive} />
-              tar.gzの再帰読み込み
-            </label>
-            <label>
-              <input type="checkbox" bind:checked={config.ForceUTC} />
-              タイムゾーン不明はUTC
-            </label>
-          </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5 class="pb-1">
+            ログを読み込む場所
+            <button
+              class="btn btn-sm float-right"
+              type="button"
+              on:click={() => editLogSource("")}
+            >
+              <Plus16 />
+            </button>
+          </h5>
         </div>
+        <div class="form-group-body markdown-body mt-3">
+          <Grid {data} {pagination} {columns} language={jaJP} />
+          <label class="p-1">
+            <input type="checkbox" bind:checked={config.Recursive} />
+            tar.gzの再帰読み込み
+          </label>
+          <label class="p-1">
+            <input type="checkbox" bind:checked={config.ForceUTC} />
+            タイムゾーン不明はUTC
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5 class="pb-1">フィルター</h5>
+        </div>
+        <div class="form-group-body">
+          <input
+            class="form-control input-block"
+            type="text"
+            style="width: 100%;"
+            placeholder="フィルター"
+            aria-label="フィルター"
+            bind:value={config.Filter}
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5 class="pb-1">ログの種類</h5>
+        </div>
+        <div class="form-group-body">
+          <!-- svelte-ignore a11y-no-onchange -->
+          <select
+            class="form-select"
+            aria-label="抽出パターン"
+            bind:value={config.Extractor}
+            on:change={changeExtractor}
+          >
+            <option value="timeonly">タイムスタンプのみ</option>
+            {#each extractorTypeList as { Key, Name }}
+              <option value={Key}>{Name}</option>
+            {/each}
+            <option value="custom">カスタム</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5 class="pb-1">アドレス情報</h5>
+        </div>
+        <div class="form-group-body">
+          <label class="p-1">
+            <input type="checkbox" bind:checked={config.HostName} />
+            ホスト名を調べる
+          </label>
+          <label class="p-1">
+            <input class="ml-2" type="checkbox" bind:checked={config.GeoIP} />
+            位置情報を調べる
+          </label>
+          <label class="p-1">
+            <input
+              class="ml-2"
+              type="checkbox"
+              bind:checked={config.VendorName}
+            />
+            ベンダー名を調べる
+          </label>
+        </div>
+      </div>
+      {#if config.Extractor == "custom" || config.Extractor.startsWith("EXT")}
         <div class="form-group">
           <div class="form-group-header">
-            <h5>フィルター</h5>
+            <h5 class="pb-1">抽出パターン</h5>
           </div>
           <div class="form-group-body">
             <input
               class="form-control input-block"
               type="text"
+              placeholder="GROKパターン"
+              aria-label="GROKパターン"
               style="width: 100%;"
-              placeholder="フィルター"
-              aria-label="フィルター"
-              bind:value={config.Filter}
+              bind:value={config.Grok}
             />
           </div>
         </div>
         <div class="form-group">
           <div class="form-group-header">
-            <h5>ログの種類</h5>
+            <h5 class="pb-1">取得情報</h5>
           </div>
           <div class="form-group-body">
-            <!-- svelte-ignore a11y-no-onchange -->
-            <select
-              class="form-select"
-              aria-label="抽出パターン"
-              bind:value={config.Extractor}
-              on:change={changeExtractor}
-            >
-              <option value="timeonly">タイムスタンプのみ</option>
-              {#each extractorTypes as { Key, Name }}
-                <option value={Key}>{Name}</option>
-              {/each}
-              <option value="custom">カスタム</option>
-            </select>
-            <div class="input-group mt-2">
+            <input
+              class="form-control"
+              type="text"
+              style="width: 15%;"
+              placeholder="タイムスタンプ項目"
+              bind:value={config.TimeField}
+            />
+            {#if config.HostName}
               <input
                 class="form-control"
                 type="text"
-                placeholder="ログのサンプル"
-                aria-label="ログのサンプル"
-                bind:value={config.SampleLog}
+                style="width: 25%;"
+                placeholder="ホスト名解決項目"
+                bind:value={config.HostFields}
+              />
+            {/if}
+            {#if config.GeoIP}
+              <input
+                class="form-control"
+                type="text"
+                placeholder="IP位置情報項目"
+                style="width: 25%;"
+                bind:value={config.GeoFields}
+              />
+            {/if}
+            {#if config.VendorName}
+              <input
+                class="form-control"
+                type="text"
+                placeholder="MACアドレス項目"
+                style="width: 20%;"
+                bind:value={config.MACFields}
+              />
+            {/if}
+          </div>
+        </div>
+      {/if}
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5 class="pb-1">インデクサー設定</h5>
+        </div>
+        <div class="form-group-body">
+          <div class="form-checkbox">
+            <label>
+              <input
+                type="checkbox"
+                disabled={hasIndex}
+                bind:checked={config.InMemory}
+                aria-describedby="help-text-for-inmemory"
+              />
+              インデックスをメモリ上に作成
+            </label>
+            <p class="note" id="help-text-for-inmemory">
+              メモリに余裕があればオンにすると多少高速化できます。
+            </p>
+          </div>
+        </div>
+      </div>
+      {#if config.GeoIP}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5 class="pb-1">IP位置情報データベース</h5>
+          </div>
+          <div class="form-group-body">
+            <div class="input-group">
+              <input
+                class="form-control"
+                type="text"
+                placeholder="Geo IPデータベース"
+                aria-label="Geo IPデータベース"
+                bind:value={config.GeoIPDB}
               />
               <span class="input-group-button">
-                <button class="btn" type="button" on:click={testSampleLog}>
-                  <Check16 />
+                <button class="btn" type="button" on:click={selectGeoIPDB}>
+                  <File16 />
                 </button>
               </span>
             </div>
           </div>
         </div>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>アドレス情報</h5>
-          </div>
-          <div class="form-group-body">
-            <label>
-              <input type="checkbox" bind:checked={config.HostName} />
-              ホスト名を調べる
-            </label>
-            <label>
-              <input class="ml-2" type="checkbox" bind:checked={config.GeoIP} />
-              位置情報を調べる
-            </label>
-            <label>
-              <input
-                class="ml-2"
-                type="checkbox"
-                bind:checked={config.VendorName}
-              />
-              ベンダー名を調べる
-            </label>
-          </div>
-        </div>
-        {#if config.Extractor == "custom" || config.Extractor.startsWith("EXT")}
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5>抽出パターン</h5>
-            </div>
-            <div class="form-group-body">
-              <input
-                class="form-control input-block"
-                type="text"
-                placeholder="GROKパターン"
-                aria-label="GROKパターン"
-                style="width: 100%;"
-                bind:value={config.Grok}
-              />
-            </div>
-          </div>
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5>取得情報</h5>
-            </div>
-            <div class="form-group-body">
-              <input
-                class="form-control"
-                type="text"
-                style="width: 15%;"
-                placeholder="タイムスタンプ項目"
-                bind:value={config.TimeField}
-              />
-              {#if config.HostName}
-                <input
-                  class="form-control"
-                  type="text"
-                  style="width: 25%;"
-                  placeholder="ホスト名解決項目"
-                  bind:value={config.HostFields}
-                />
-              {/if}
-              {#if config.GeoIP}
-                <input
-                  class="form-control"
-                  type="text"
-                  placeholder="IP位置情報項目"
-                  style="width: 25%;"
-                  bind:value={config.GeoFields}
-                />
-              {/if}
-              {#if config.VendorName}
-                <input
-                  class="form-control"
-                  type="text"
-                  placeholder="MACアドレス項目"
-                  style="width: 20%;"
-                  bind:value={config.MACFields}
-                />
-              {/if}
-            </div>
-          </div>
-        {/if}
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5>インデクサー設定</h5>
-          </div>
-          <div class="form-group-body">
-            <div class="form-checkbox">
-              <label>
-                <input
-                  type="checkbox"
-                  disabled={hasIndex}
-                  bind:checked={config.InMemory}
-                  aria-describedby="help-text-for-inmemory"
-                />
-                インデックスをメモリ上に作成
-              </label>
-              <p class="note" id="help-text-for-inmemory">
-                メモリに余裕があればオンにすると多少高速化できます。
-              </p>
-            </div>
-          </div>
-        </div>
-        {#if config.GeoIP}
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5>IP位置情報データベース</h5>
-            </div>
-            <div class="form-group-body">
-              <div class="input-group">
-                <input
-                  class="form-control"
-                  type="text"
-                  placeholder="Geo IPデータベース"
-                  aria-label="Geo IPデータベース"
-                  bind:value={config.GeoIPDB}
-                />
-                <span class="input-group-button">
-                  <button class="btn" type="button" on:click={selectGeoIPDB}>
-                    <File16 />
-                  </button>
-                </span>
-              </div>
-            </div>
-          </div>
-        {/if}
-      </form>
+      {/if}
     </div>
     <div class="Box-footer text-right">
-      {#if hasImportedLogType}
-        <button
-          class="btn btn-danger mr-1"
-          type="button"
-          on:click={deleteLogTypes}
-        >
-          <Trash16 />
-          ログ定義削除
-        </button>
-      {:else}
-        <button
-          class="btn btn-outline mr-1"
-          type="button"
-          on:click={importLogTypes}
-        >
-          <Download16 />
-          ログ定義インポート
-        </button>
-      {/if}
       <button
         class="btn btn-outline mr-1"
         type="button"
-        on:click={() => {
-          page = "grok";
-        }}
+        on:click={showLogTypePage}
       >
         <Checklist16 />
-        抽出テスト
+        ログ定義
       </button>
       <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
         <X16 />

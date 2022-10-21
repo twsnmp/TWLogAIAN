@@ -86,7 +86,6 @@ func (b *App) Start(c Config, noRead bool) string {
 		b.wg.Wait()
 		return ""
 	}
-	b.saveSettingsToDB()
 	b.wg.Add(1)
 	go b.logReader()
 	return ""
@@ -96,10 +95,10 @@ func (b *App) Start(c Config, noRead bool) string {
 func (b *App) TestSampleLog(c Config) *ExtractorType {
 	max := 0
 	var ret *ExtractorType
-	for i, e := range extractorTypes {
+	for _, e := range extractorTypes {
 		s := b.testGrok(c.SampleLog, e.Grok)
 		if s > max {
-			ret = &extractorTypes[i]
+			ret = &e
 			max = s
 		}
 	}
@@ -699,15 +698,8 @@ func (b *App) testGrok(l, p string) int {
 }
 
 func (b *App) findExtractorType(extractor string) *ExtractorType {
-	for _, e := range extractorTypes {
-		if e.Key == extractor {
-			return &e
-		}
-	}
-	for _, e := range b.importedExtractorTypes {
-		if e.Key == extractor {
-			return &e
-		}
+	if e, ok := extractorTypes[extractor]; ok {
+		return &e
 	}
 	return nil
 }

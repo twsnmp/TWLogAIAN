@@ -1,8 +1,5 @@
 <script>
-  import {
-    X16,
-    PaperAirplane16,
-  } from "svelte-octicons";
+  import { X16, PaperAirplane16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   let feedbackSent = false;
@@ -36,7 +33,9 @@
     <h3 class="Box-title">フィードバック</h3>
   </div>
   {#if feedbackWait}
-    <div class="flash">フィードバックを送信中<span class="AnimatedEllipsis"></span></div>
+    <div class="flash">
+      フィードバックを送信中<span class="AnimatedEllipsis" />
+    </div>
   {:else if feedbackErr}
     <div class="flash flash-error">
       フィードバックの送信に失敗しました
@@ -63,20 +62,18 @@
     </div>
   {/if}
   <div class="Box-body">
-    <form>
-      <div class="form-group" class:errored={feedbackErr}>
-        <div class="form-group-header">
-          <label for="feedbackMsg">メッセージ</label>
-        </div>
-        <div class="form-group-body">
-          <textarea
-            class="form-control"
-            id="feedbackMsg"
-            bind:value={feedbackMsg}
-          />
-        </div>
+    <div class="form-group" class:errored={feedbackErr}>
+      <div class="form-group-header">
+        <label for="feedbackMsg">メッセージ</label>
       </div>
-    </form>
+      <div class="form-group-body">
+        <textarea
+          class="form-control"
+          id="feedbackMsg"
+          bind:value={feedbackMsg}
+        />
+      </div>
+    </div>
   </div>
   <div class="Box-footer text-right">
     {#if !feedbackWait}
