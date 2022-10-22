@@ -14,8 +14,6 @@ import (
 )
 
 type ExportData struct {
-	Type   string
-	Title  string
 	Header []string
 	Data   [][]interface{}
 	Image  string
@@ -41,7 +39,7 @@ func (b *App) Export(exportType string, data *ExportData) string {
 func (b *App) exportExcel(data *ExportData) error {
 	d := time.Now().Format("20060102150405")
 	file, err := wails.SaveFileDialog(b.ctx, wails.SaveDialogOptions{
-		DefaultFilename:      "TWLogAIAN_Export_" + data.Type + "_" + d + ".xlsx",
+		DefaultFilename:      "TWLogAIAN_Export_Log_" + d + ".xlsx",
 		CanCreateDirectories: true,
 		Filters: []wails.FileFilter{{
 			DisplayName: "Excelファイル",
@@ -51,8 +49,11 @@ func (b *App) exportExcel(data *ExportData) error {
 	if err != nil {
 		return err
 	}
+	if file == "" {
+		return nil
+	}
 	f := excelize.NewFile()
-	f.SetCellValue("Sheet1", "A1", data.Title)
+	f.SetCellValue("Sheet1", "A1", "TWLogAIAN Export Log "+d)
 	row := 3
 	col := 'A'
 	for _, h := range data.Header {
@@ -75,7 +76,7 @@ func (b *App) exportExcel(data *ExportData) error {
 		if err != nil {
 			return err
 		}
-		f.AddPictureFromBytes("Sheet1", fmt.Sprintf("%c2", imgCol), "", data.Type, ".png", img)
+		f.AddPictureFromBytes("Sheet1", fmt.Sprintf("%c2", imgCol), "", "TWLogAIANLog", ".png", img)
 	}
 	if err := f.SaveAs(file); err != nil {
 		return err
@@ -86,7 +87,7 @@ func (b *App) exportExcel(data *ExportData) error {
 func (b *App) exportCSV(data *ExportData) error {
 	d := time.Now().Format("20060102150405")
 	file, err := wails.SaveFileDialog(b.ctx, wails.SaveDialogOptions{
-		DefaultFilename:      "TWLogAIAN_Export_" + data.Type + "_" + d + ".csv",
+		DefaultFilename:      "TWLogAIAN_Export_Log_" + d + ".csv",
 		CanCreateDirectories: true,
 		Filters: []wails.FileFilter{{
 			DisplayName: "CSV ファイル",
@@ -96,13 +97,15 @@ func (b *App) exportCSV(data *ExportData) error {
 	if err != nil {
 		return err
 	}
+	if file == "" {
+		return nil
+	}
 	f, err := os.Create(file)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 	w := csv.NewWriter(f)
-	w.Write([]string{data.Title})
 	w.Write(data.Header)
 	for _, l := range data.Data {
 		data := []string{}

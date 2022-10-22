@@ -335,6 +335,9 @@ func (b *App) ExportLogTypes() string {
 			Pattern:     "*.yaml",
 		}},
 	})
+	if file == "" {
+		return ""
+	}
 	if err != nil {
 		OutLog("ExportLogTypes err=%v", err)
 		return fmt.Sprintf("エクスポートできません。 err=%v", err)

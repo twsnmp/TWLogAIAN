@@ -240,9 +240,8 @@
       return;
     }
     saveBusy = true;
+    const excludeColMap = {"copy": true, "memo": true, "extoractor": true};
     const exportData = {
-      Type: "ログ",
-      Title: "ログ分析",
       Header: [],
       Data: [],
       Image: "",
@@ -251,22 +250,28 @@
       exportData.Image = getLogChartImage();
     }
     columns.forEach((e) => {
-      exportData.Header.push(e.name);
+      if (!excludeColMap[e.id]) {
+        exportData.Header.push(e.name);
+      }
     });
     data.forEach((l) => {
       const row = [];
-      if (logView == "data") {
+      if (logView == "data" || logView == "ex_data") {
         columns.forEach((c) => {
-          const v = c.convert && c.formatter ? c.formatter(l[c.id]) : l[c.id];
-          row.push(v);
+          if (!excludeColMap[c.id]) {
+            const v = c.convert && c.formatter ? c.formatter(l[c.id]) : l[c.id] || "";
+            row.push(v);
+          }
         });
       } else {
         l.forEach((e, i) => {
-          const v =
-            columns[i] && columns[i].convert && columns[i].formatter
-              ? columns[i].formatter(e)
-              : e;
-          row.push(v);
+          if (!excludeColMap[columns[i].id]) {
+            const v =
+              columns[i] && columns[i].convert && columns[i].formatter
+                ? columns[i].formatter(e)
+                : e;
+            row.push(v);
+          }
         });
       }
       exportData.Data.push(row);
