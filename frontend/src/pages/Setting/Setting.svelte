@@ -154,7 +154,7 @@
         for (let k in extractorTypes) {
           extractorTypeList.push(extractorTypes[k]);
         }
-        extractorTypeList.sort((a, b) => a.Name < b.Name);
+        extractorTypeList.sort((a, b) => a.Name > b.Name);
       }
     });
   };

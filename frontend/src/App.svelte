@@ -14,7 +14,7 @@
 </script>
 
 <main>
-  <div id="page" data-wails-no-drag>
+  <div id="page" style="--wails-draggable:no-drag">
     {#if page == "wellcome" }
      <Wellcome on:done={handleDone}/>
     {:else if page == "feedback"}

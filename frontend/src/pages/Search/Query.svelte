@@ -325,7 +325,7 @@
   {/if}
 </div>
 <div class="container-lg clearfix mt-1">
-  <div class="col-2 float-left">追加のデータ抽出</div>
+  <div class="col-2 float-left">検索時データ抽出</div>
   <div class="col-3 float-left">
     <select class="form-select" bind:value={conf.extractor}>
       <option value="">しない</option>

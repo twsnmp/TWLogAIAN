@@ -236,6 +236,7 @@ type SearchResult struct {
 	MaxScore   float64
 	Logs       []*LogEnt
 	Fields     []string
+	ExFields   []string
 	ErrorMsg   string
 	View       string
 	AnomalyDur int64
@@ -250,8 +251,10 @@ func (b *App) SearchLog(q, anomaly, vector, extractor string, limit int) SearchR
 		view = et.View
 	}
 	ret := SearchResult{
-		Logs: []*LogEnt{},
-		View: view,
+		Logs:     []*LogEnt{},
+		View:     view,
+		Fields:   []string{},
+		ExFields: []string{},
 	}
 	if b.indexer.writer == nil {
 		return ret
@@ -484,6 +487,7 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 		OutLog("%#v err=%v", config, err)
 		return
 	}
+	exFieldMap := make(map[string]bool)
 	for _, l := range sr.Logs {
 		values, err := g.Parse("%{TWLOGAIAN}", l.All)
 		if err != nil {
@@ -494,6 +498,7 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 			if k == "TWLOGAIAN" {
 				continue
 			}
+			exFieldMap[k] = true
 			if fv, err := strconv.ParseFloat(v, 64); err == nil {
 				l.KeyValue[k] = fv
 			} else {
@@ -508,6 +513,10 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 						l.KeyValue[f+"_geo_country"] = e.Country
 						l.KeyValue[f+"_geo_city"] = e.City
 						l.KeyValue[f+"_geo_latlong"] = fmt.Sprintf("%0.3f,%0.3f", e.Lat, e.Long)
+						exFieldMap[f+"_geo"] = true
+						exFieldMap[f+"_geo_country"] = true
+						exFieldMap[f+"_geo_city"] = true
+						exFieldMap[f+"_geo_latlong"] = true
 					} else {
 						l.KeyValue[f+"_geo"] = &GeoEnt{}
 						l.KeyValue[f+"_geo_country"] = ""
@@ -522,6 +531,7 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 				if ip, ok := l.KeyValue[f]; ok {
 					if e := b.findHost(ip.(string)); e != "" {
 						l.KeyValue[f+"_host"] = e
+						exFieldMap[f+"_host"] = true
 					} else {
 						l.KeyValue[f+"_host"] = ""
 					}
@@ -533,12 +543,23 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 				if ip, ok := l.KeyValue[f]; ok {
 					if e := b.findVendor(ip.(string)); e != "" {
 						l.KeyValue[f+"_vendor"] = e
+						exFieldMap[f+"_vendor"] = true
 					} else {
 						l.KeyValue[f+"_vendor"] = ""
 					}
 				}
 			}
 		}
+	}
+	fieldMap := make(map[string]bool)
+	for _, f := range sr.Fields {
+		fieldMap[f] = true
+	}
+	for k := range exFieldMap {
+		if _, ok := fieldMap[k]; !ok {
+			sr.Fields = append(sr.Fields, k)
+		}
+		sr.ExFields = append(sr.ExFields, k)
 	}
 	OutLog("end grokParseLogs dur=%v", time.Since(st))
 }

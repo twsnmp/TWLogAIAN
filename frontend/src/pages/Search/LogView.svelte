@@ -85,6 +85,7 @@
     Duration: 0.0,
     ErrorMsg: "",
     Fields: [],
+    ExFields: [],
   };
   window.go.main.App.GetIndexInfo().then((r) => {
     if (r) {
@@ -99,7 +100,7 @@
     et: false,
   };
   const setLogTable = () => {
-    columns = getLogColums(logView, result.Fields);
+    columns = getLogColums(logView, logView == "ex_data" ? result.ExFields :  result.Fields);
     data = getLogData(result, logView, filter);
     gridSearch = getGridSearch(logView);
     if (data.length > 10) {
@@ -113,10 +114,13 @@
     }
   };
 
+  let lastExtractor = "";
+
   const search = () => {
     data.length = 0; // 空にする
     aecdata = [];
     anomalyTime = "";
+    showQuery= false; // 検索する時は詳細設定を表示しない
     filter.st = false; // 時間フィルターをリセットする
     filter.et = false;
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
@@ -132,6 +136,13 @@
       if (r) {
         result = r;
         if (logView == "") {
+          logView = r.View;
+        } 
+        if (lastExtractor != conf.extractor && r.ExFields.length > 0) {
+          logView = "ex_data";
+        }
+        lastExtractor = conf.extractor;
+        if (logView == "ex_data" && r.ExFields.length < 1 ) {
           logView = r.View;
         }
         if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "" ) {
@@ -178,7 +189,7 @@
         for (let k in extractorTypes) {
           extractorTypeList.push(extractorTypes[k]);
         }
-        extractorTypeList = extractorTypeList.sort((a, b) => a.Name < b.Name);
+        extractorTypeList.sort((a, b) => a.Name > b.Name);
       }
     });
   };
@@ -680,8 +691,11 @@
             {#if result.View == "windows"}
               <option value="windows">Windows</option>
             {/if}
-            {#if indexInfo.Fields.length > 0}
+            {#if result.Fields.length > 0}
               <option value="data">抽出データ</option>
+            {/if}
+            {#if result.ExFields.length > 0}
+              <option value="ex_data">検索時抽出データ</option>
             {/if}
             {#if conf.anomaly != ""}
               <option value="anomary">異常ログスコア</option>
@@ -698,13 +712,13 @@
             on:change={exportLogs}
           >
             <option value="">エクスポート</option>
-            {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
+            {#if result && result.Hit > 0 && result.Fields.length > 0}
               <option value="csv">CSV</option>
               <option value="excel">Excel</option>
             {/if}
           </select>
         {/if}
-        {#if result && result.Hit > 0 && indexInfo.Fields.length > 0}
+        {#if result && result.Hit > 0 && result.Fields.length > 0}
           <!-- svelte-ignore a11y-no-onchange -->
           <select
             class="form-select mr-1"

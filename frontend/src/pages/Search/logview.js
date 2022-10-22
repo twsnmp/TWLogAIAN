@@ -373,6 +373,7 @@ export const getLogColums = (view, fields) => {
     case "windows":
       return columnsWindowsLog;
     case "data":
+    case "ex_data":
       return makeDataColumns(fields);
   }
   return columnsTimeOnly;
@@ -454,8 +455,9 @@ const getSyslogData = (r, filter) => {
   return d;
 };
 
-const getExtractData = (r, filter) => {
+const getExtractData = (r, filter, fields) => {
   const d = [];
+  fields.sort((a,b) => a > b);
   r.Logs.forEach((l) => {
     if (filter && filter.st) {
       if (l.Time < filter.st || l.Time > filter.et) {
@@ -463,7 +465,7 @@ const getExtractData = (r, filter) => {
       }
     }
     const ent = { time: l.Time };
-    Object.keys(l.KeyValue).forEach((k) => {
+    fields.forEach((k) => {
       if (k == "time" || k.startsWith("_") || k.endsWith("_geo")) {
         return;
       }
@@ -507,7 +509,9 @@ export const getLogData = (r, view, filter) => {
     case "windows":
       return getWindowsLogData(r, filter);
     case "data":
-      return getExtractData(r, filter);
+      return getExtractData(r, filter,r.Fields);
+    case "ex_data":
+      return getExtractData(r, filter,r.ExFields);
     case "anomaly":
       return getTimeOnlyLogData(r, filter, "anomalyScore");
   }
