@@ -2,6 +2,8 @@
   import { getFieldName, getFieldType } from "../../js/define";
   import { Plus16, Trash16, File16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import * as echarts from "echarts";
+
   export let conf;
   export let fields = [];
   export let extractorTypeList = [];
@@ -39,7 +41,7 @@
     dispatch("update", { query: q, add: true });
   };
 
-  const addRange = () => {
+  const addStartEndRange = () => {
     let q = "";
     if (conf.range.start) {
       q += ` +time:>="` + conf.range.start + `:00+09:00"`;
@@ -52,6 +54,37 @@
     }
     dispatch("update", { query: q, add: true });
   };
+
+  const addTargetRange = () => {
+    const t = Date.parse(conf.range.target);
+    if ( t==  NaN) {
+      return;
+    }
+    let q = "";
+    switch(conf.range.range) {
+    case "+":
+      q = ` +time:>="` + echarts.time.format(new Date(t),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00") + `"`;
+      break;
+    case "-":
+      q = ` +time:<="` + echarts.time.format(new Date(t),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00") + `"`;
+      break;
+    default:
+        const d = conf.range.range * 1;
+        if ( d < 5 || d > 3600 ) {
+          return;
+        }
+        q = ` +time:>="` + echarts.time.format(new Date(t - (d * 1000)),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00") + `"`;
+        q += ` +time:<="` + echarts.time.format(new Date(t+ (d * 1000)),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00") + `"`;
+       break;
+    }
+    dispatch("update", { query: q, add: true });
+  };
+
+  const clearTimeRange = () => {
+    let q = conf.query.replace(/\+time:\S+"\S+"/g,"");
+    dispatch("update", { query: q, add: false });
+  }
+
   const addGeo = () => {
     if (!conf.geo.field || !conf.geo.lat || !conf.geo.long || !conf.geo.range) {
       return;
@@ -132,7 +165,40 @@
   </div>
 {/if}
 <div class="container-lg clearfix">
-  <div class="col-2 float-left">検索期間</div>
+  <div class="col-2 float-left">期間(対象)</div>
+  <div class="col-6 float-left">
+    <input
+      class="form-control input-sm"
+      type="text"
+      style="width: 98%;"
+      placeholder="対象の日時"
+      aria-label="対象の日時"
+      bind:value={conf.range.target}
+    />
+  </div>
+  <div class="col-2 float-left">
+    <select class="form-select" bind:value={conf.range.range}>
+    <option value="-">以前</option>
+    <option value="+">以後</option>
+    <option value="5">前後5秒</option>
+    <option value="10">前後10秒</option>
+    <option value="30">前後30秒</option>
+    <option value="60">前後1分</option>
+    <option value="1800">前後30分</option>
+    <option value="3600">前後1時間</option>
+  </select>
+  </div>
+  <div class="col-2 float-left">
+    <button class="btn" type="button" on:click={addTargetRange}>
+      <Plus16 />
+    </button>
+    <button class="btn btn-danger" type="button" on:click={clearTimeRange}>
+      <Trash16 />
+    </button>
+  </div>
+</div>
+<div class="container-lg clearfix">
+  <div class="col-2 float-left">期間(範囲)</div>
   <div class="col-8 float-left">
     <input
       class="form-control input-sm"
@@ -151,8 +217,11 @@
     />
   </div>
   <div class="col-2 float-left">
-    <button class="btn" type="button" on:click={addRange}>
+    <button class="btn" type="button" on:click={addStartEndRange}>
       <Plus16 />
+    </button>
+    <button class="btn btn-danger" type="button" on:click={clearTimeRange}>
+      <Trash16 />
     </button>
   </div>
 </div>
@@ -176,7 +245,7 @@
       <input
         class="form-control input-sm"
         type="text"
-        style="width: 100px;"
+        style="width: 150px;"
         placeholder="キーワード"
         aria-label="キーワード"
         bind:value={conf.keyword.key}

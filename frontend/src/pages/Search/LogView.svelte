@@ -57,8 +57,10 @@
       value: "0.0",
     },
     range: {
-      start: "",
-      end: "",
+      start: echarts.time.format(Date.now() - (3600 *1000),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"),
+      end: echarts.time.format(Date.now(),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"),
+      range: "+",
+      target: "",
     },
     geo: {
       lat: "",
