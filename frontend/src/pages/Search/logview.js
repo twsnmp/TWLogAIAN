@@ -30,7 +30,7 @@ const columnsTimeOnly = [
     formatter: (cell) => formatLevel(cell),
   },
   {
-    id: "timestamp",
+    id: "_timestamp",
     name: "日時",
     width: "15%",
     formatter: (cell) =>
@@ -106,7 +106,7 @@ const columnsSyslog = [
     formatter: (cell) => formatLevel(cell),
   },
   {
-    id: "timestamp",
+    id: "_timestamp",
     name: "日時",
     width: "15%",
     formatter: (cell) =>
@@ -168,7 +168,7 @@ const columnsAccessLog = [
     formatter: (cell) => formatCode(cell),
   },
   {
-    id: "timestamp",
+    id: "_timestamp",
     name: "日時",
     width: "15%",
     formatter: (cell) =>
@@ -251,7 +251,7 @@ const columnsWindowsLog = [
     formatter: (cell) => formatWinLevel(cell),
   },
   {
-    id: "timestamp",
+    id: "_timestamp",
     name: "日時",
     width: "15%",
     formatter: (cell) =>
@@ -318,7 +318,7 @@ const columnsWindowsLog = [
 const makeDataColumns = (fields) => {
   const colums = [];
   colums.push({
-    id: "time",
+    id: "_timestamp",
     name: "日時",
     formatter: (cell) =>
       echarts.time.format(

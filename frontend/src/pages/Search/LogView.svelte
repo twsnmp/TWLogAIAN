@@ -35,6 +35,7 @@
   import * as echarts from "echarts";
 
   const dispatch = createEventDispatcher();
+  const excludeColMap = {"copy": true, "memo": true, "extractor": true};
   let page = "";
   let showQuery = false;
   let busy = false;
@@ -240,7 +241,6 @@
       return;
     }
     saveBusy = true;
-    const excludeColMap = {"copy": true, "memo": true, "extoractor": true};
     const exportData = {
       Header: [],
       Data: [],
@@ -343,7 +343,7 @@
     const row = e.detail[3];
 
     if (col.id == "copy") {
-      copyLog(row._cells);
+      copyLog(row._cells,me.metaKey);
       return;
     } else if (col.id == "memo") {
       memoLog(row._cells);
@@ -392,19 +392,24 @@
     return "";
   };
 
-  const copyLog = (cells) => {
+  const copyLog = (cells,tm) => {
     const list = [];
-    const timeIndex = logView == "data" ? 0 : 1;
-    const d = logView == "timeonly" ? 3 : 2;
-    if (cells.length < d + 1) {
+    let timeStamp = "";
+    if (cells.length < columns.length) {
       return;
     }
-    for (let i = 0; i < cells.length - d ; i++) {
-      list.push(
-        i == timeIndex ? formatTime(cells[i].data, false) : cells[i].data
-      );
+    for (let i = 0; i < cells.length ; i++) {
+      if (!excludeColMap[columns[i].id]) {
+        const v = columns[i] && columns[i].convert && columns[i].formatter
+                ? columns[i].formatter(cells[i].data)
+                : cells[i].data;
+        list.push(v);
+        if (columns[i].id == "_timestamp") {
+          timeStamp = formatTime(cells[i].data * 1,true);
+        }
+      }
     }
-    copy(list.join("\t"));
+    copy(tm ? timeStamp : list.join("\t"));
   };
 
   const copy = (text) => {
@@ -426,21 +431,25 @@
 
   const memoLog = (cells) => {
     const list = [];
-    const timeIndex = logView == "data" ? 0 : 1;
-    const d = logView == "timeonly" ? 3 : 2;
-    if (cells.length < d + 1) {
+    let timeStamp = 0;
+    if (cells.length < columns.length) {
       return;
     }
-    for (let i = 0; i < cells.length - d; i++) {
-      if (i == timeIndex) {
-        continue;
+    for (let i = 0; i < cells.length ; i++) {
+      if (!excludeColMap[columns[i].id]) {
+        const v = columns[i] && columns[i].convert && columns[i].formatter
+                ? columns[i].formatter(cells[i].data)
+                : cells[i].data;
+        list.push(v);
+        if (columns[i].id == "_timestamp") {
+          timeStamp = cells[i].data * 1;
+        }
       }
-      list.push(cells[i].data);
     }
-    if (list.length < 1) {
+    if (list.length < 1 || timeStamp == 0 ) {
       return;
     }
-    memo(cells[timeIndex].data * 1, list.join("\t"));
+    memo(timeStamp, list.join("\t"));
   };
 
   const memo = (time, text) => {
