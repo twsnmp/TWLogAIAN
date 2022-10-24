@@ -196,7 +196,13 @@
   const deleteLogSource = (sno) => {
     const no = sno * 1;
     window.go.main.App.DeleteLogSource(no).then((e) => {
+      if (e == "No") {
+        return;
+      }
       errorMsg = e;
+      if (e == "") {
+        getLogSources();
+      }
     });
   };
 
@@ -296,10 +302,11 @@
 
   const clear = () => {
     // Indexをクリア
-    busy = true;
     window.go.main.App.ClearIndex().then((e) => {
-      busy = false;
       if (e && e != "") {
+        if (e == "No") {
+          return;
+        }
         errorMsg = e;
       } else {
         hasIndex = false;
@@ -327,8 +334,11 @@
   };
 
   const cancel = () => {
-    window.go.main.App.CloseWorkDir();
-    dispatch("done", { page: "wellcome" });
+    window.go.main.App.CloseWorkDir().then((r) => {
+      if (r == "") {
+        dispatch("done", { page: "wellcome" });
+      }
+    });
   };
 
   const clearMsg = () => {
@@ -363,7 +373,6 @@
   const showLogTypePage = () => {
     page = "logType";
   };
-
 </script>
 
 {#if page == "logSource"}

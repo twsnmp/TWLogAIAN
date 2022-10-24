@@ -35,7 +35,7 @@
   import * as echarts from "echarts";
 
   const dispatch = createEventDispatcher();
-  const excludeColMap = {"copy": true, "memo": true, "extractor": true};
+  const excludeColMap = { copy: true, memo: true, extractor: true };
   let page = "";
   let showQuery = false;
   let busy = false;
@@ -57,8 +57,11 @@
       value: "0.0",
     },
     range: {
-      start: echarts.time.format(Date.now() - (3600 *1000),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"),
-      end: echarts.time.format(Date.now(),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"),
+      start: echarts.time.format(
+        Date.now() - 3600 * 1000,
+        "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"
+      ),
+      end: echarts.time.format(Date.now(), "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"),
       range: "+",
       target: "",
     },
@@ -103,7 +106,10 @@
     et: false,
   };
   const setLogTable = () => {
-    columns = getLogColums(logView, logView == "ex_data" ? result.ExFields :  result.Fields);
+    columns = getLogColums(
+      logView,
+      logView == "ex_data" ? result.ExFields : result.Fields
+    );
     data = getLogData(result, logView, filter);
     gridSearch = getGridSearch(logView);
     if (data.length > 10) {
@@ -123,7 +129,7 @@
     data.length = 0; // 空にする
     aecdata = [];
     anomalyTime = "";
-    showQuery= false; // 検索する時は詳細設定を表示しない
+    showQuery = false; // 検索する時は詳細設定を表示しない
     filter.st = false; // 時間フィルターをリセットする
     filter.et = false;
     const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
@@ -140,15 +146,15 @@
         result = r;
         if (logView == "") {
           logView = r.View;
-        } 
+        }
         if (lastExtractor != conf.extractor && r.ExFields.length > 0) {
           logView = "ex_data";
         }
         lastExtractor = conf.extractor;
-        if (logView == "ex_data" && r.ExFields.length < 1 ) {
+        if (logView == "ex_data" && r.ExFields.length < 1) {
           logView = r.View;
         }
-        if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "" ) {
+        if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "") {
           conf.history = conf.history.filter((h) => h != conf.query);
           conf.history.push(conf.query);
         }
@@ -196,12 +202,14 @@
       }
     });
   };
- 
 
   const end = () => {
     window.go.main.App.SaveHistory(conf.history);
-    window.go.main.App.CloseWorkDir();
-    dispatch("done", { page: "wellcome" });
+    window.go.main.App.CloseWorkDir().then((r) => {
+      if (r == "") {
+        dispatch("done", { page: "wellcome" });
+      }
+    });
   };
 
   const back = () => {
@@ -261,7 +269,8 @@
       if (logView == "data" || logView == "ex_data") {
         columns.forEach((c) => {
           if (!excludeColMap[c.id]) {
-            const v = c.convert && c.formatter ? c.formatter(l[c.id]) : l[c.id] || "";
+            const v =
+              c.convert && c.formatter ? c.formatter(l[c.id]) : l[c.id] || "";
             row.push(v);
           }
         });
@@ -286,7 +295,7 @@
 
   const onResize = () => {
     resizeLogChart();
-    if(pagination) {
+    if (pagination) {
       pagination.limit = getTableLimit();
     }
   };
@@ -299,18 +308,18 @@
     dY += e.deltaY;
     if (dY > 120) {
       dY = 0;
-      if (data.length > (pagination.page + 1) * pagination.limit){
+      if (data.length > (pagination.page + 1) * pagination.limit) {
         pagination.page++;
       }
     }
-    if (dY < -120 ){
+    if (dY < -120) {
       dY = 0;
       if (pagination.page > 0) {
         pagination.page--;
       }
     }
     e.preventDefault();
-  }
+  };
 
   const handleUpdateQuery = (e) => {
     if (e && e.detail && e.detail.query) {
@@ -345,13 +354,13 @@
     const row = e.detail[3];
 
     if (col.id == "copy") {
-      copyLog(row._cells,me.metaKey);
+      copyLog(row._cells, me.metaKey);
       return;
     } else if (col.id == "memo") {
       memoLog(row._cells);
       return;
     } else if (col.id == "extractor") {
-      showEditExtractorType(cell.data,me.metaKey);
+      showEditExtractorType(cell.data, me.metaKey);
       return;
     }
     // それ以外はmetaキー(Command?)を押していたらフィルターに入力
@@ -362,7 +371,15 @@
     conf.query += getFilter(col.id, cell.data, me.altKey);
   };
 
-  const exFieldList = ["level","score","anomalyScore","copy","memo","extract","all"];
+  const exFieldList = [
+    "level",
+    "score",
+    "anomalyScore",
+    "copy",
+    "memo",
+    "extract",
+    "all",
+  ];
 
   const getFilter = (id, data, exclude) => {
     if (!data) {
@@ -394,20 +411,21 @@
     return "";
   };
 
-  const copyLog = (cells,tm) => {
+  const copyLog = (cells, tm) => {
     const list = [];
     let timeStamp = "";
     if (cells.length < columns.length) {
       return;
     }
-    for (let i = 0; i < cells.length ; i++) {
+    for (let i = 0; i < cells.length; i++) {
       if (!excludeColMap[columns[i].id]) {
-        const v = columns[i] && columns[i].convert && columns[i].formatter
-                ? columns[i].formatter(cells[i].data)
-                : cells[i].data;
+        const v =
+          columns[i] && columns[i].convert && columns[i].formatter
+            ? columns[i].formatter(cells[i].data)
+            : cells[i].data;
         list.push(v);
         if (columns[i].id == "_timestamp") {
-          timeStamp = formatTime(cells[i].data * 1,true);
+          timeStamp = formatTime(cells[i].data * 1, true);
         }
       }
     }
@@ -437,18 +455,19 @@
     if (cells.length < columns.length) {
       return;
     }
-    for (let i = 0; i < cells.length ; i++) {
+    for (let i = 0; i < cells.length; i++) {
       if (!excludeColMap[columns[i].id]) {
-        const v = columns[i] && columns[i].convert && columns[i].formatter
-                ? columns[i].formatter(cells[i].data)
-                : cells[i].data;
+        const v =
+          columns[i] && columns[i].convert && columns[i].formatter
+            ? columns[i].formatter(cells[i].data)
+            : cells[i].data;
         list.push(v);
         if (columns[i].id == "_timestamp") {
           timeStamp = cells[i].data * 1;
         }
       }
     }
-    if (list.length < 1 || timeStamp == 0 ) {
+    if (list.length < 1 || timeStamp == 0) {
       return;
     }
     memo(timeStamp, list.join("\t"));
@@ -482,17 +501,17 @@
     setLogTable();
     updateChart();
   };
-  
+
   let extractorType = {
     Key: "",
     Name: "",
     Grok: "",
     CanEdit: true,
-  }
+  };
 
   let testLog = "";
   const add = true;
-  const showEditExtractorType = (log,cmd) => {
+  const showEditExtractorType = (log, cmd) => {
     if (cmd) {
       if (testLog != "") {
         testLog += "\n";
@@ -507,9 +526,9 @@
       Name: "New",
       Grok: "",
       CanEdit: true,
-    }    
+    };
     page = "extractorType";
-  }
+  };
 
   const handleEditExtractorDone = (e) => {
     if (e && e.detail && e.detail.save) {
@@ -523,10 +542,9 @@
   const showLogTypePage = () => {
     page = "logType";
   };
-
 </script>
 
-<svelte:window on:resize={onResize}  on:wheel={onWheel} />
+<svelte:window on:resize={onResize} on:wheel={onWheel} />
 {#if page == "result"}
   <Result {indexInfo} {dark} {aecdata} on:done={handleDone} />
 {:else if page == "memo"}
@@ -552,7 +570,12 @@
 {:else if page == "heatmap"}
   <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "extractorType"}
-  <EditExtractorType {extractorType} {add} {testLog} on:done={handleEditExtractorDone} />
+  <EditExtractorType
+    {extractorType}
+    {add}
+    {testLog}
+    on:done={handleEditExtractorDone}
+  />
 {:else if page == "logType"}
   <LogType on:done={handleDone} />
 {:else}

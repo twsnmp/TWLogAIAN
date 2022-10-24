@@ -12,6 +12,8 @@ import (
 	"github.com/blugelabs/bluge"
 	querystr "github.com/blugelabs/query_string"
 	"github.com/vjeantet/grok"
+
+	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type LogIndexer struct {
@@ -84,6 +86,17 @@ func (b *App) CloseIndexor() error {
 
 // 作業ディレクトリのインデックスを削除
 func (b *App) ClearIndex() string {
+	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
+		Type:          wails.QuestionDialog,
+		Title:         "インデックスの削除",
+		Message:       "削除しますか?",
+		Buttons:       []string{"Yes", "No"},
+		DefaultButton: "No",
+		CancelButton:  "No",
+	})
+	if err != nil || result == "No" {
+		return "No"
+	}
 	b.CloseIndexor()
 	b.readFiles = make(map[string]bool)
 	if b.config.InMemory {

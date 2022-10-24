@@ -339,6 +339,17 @@ func (b *App) saveResultToDB() error {
 
 // CloseWorkDir : 作業フォルダを閉じる
 func (b *App) CloseWorkDir() string {
+	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
+		Type:          wails.QuestionDialog,
+		Title:         "分析の終了",
+		Message:       "終了しますか?",
+		Buttons:       []string{"Yes", "No"},
+		DefaultButton: "No",
+		CancelButton:  "No",
+	})
+	if err != nil || result == "No" {
+		return "No"
+	}
 	b.CloseIndexor()
 	b.saveSettingsToDB()
 	b.saveResultToDB()
@@ -429,6 +440,17 @@ func (b *App) DeleteLogSource(no int) string {
 	OutLog("DeleteLogSource no=%d", no)
 	if no <= 0 || no > len(b.logSources) {
 		return "送信元がありません"
+	}
+	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
+		Type:          wails.QuestionDialog,
+		Title:         "ログソースの削除",
+		Message:       "削除しますか?",
+		Buttons:       []string{"Yes", "No"},
+		DefaultButton: "No",
+		CancelButton:  "No",
+	})
+	if err != nil || result == "No" {
+		return "No"
 	}
 	ls := b.logSources
 	b.logSources = []*LogSource{}
