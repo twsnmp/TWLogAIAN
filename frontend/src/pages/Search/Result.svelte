@@ -66,42 +66,17 @@
         </tbody>
       </table>
     </div>
-    {#if indexInfo.Fields.length > 0}
-      <div class="Box-row markdown-body log">
-        <h5>抽出した項目</h5>
-        <table class="fields">
-          <thead>
-            <tr>
-              <th>変数名</th>
-              <th>名前</th>
-              <th>種別</th>
-              <th>単位</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each indexInfo.Fields as f}
-              <tr>
-                <td>{f}</td>
-                <td class:color-fg-danger={!isFieldValid(f)}>{getFieldName(f)}</td>
-                <td>{getFieldType(f)}</td>
-                <td>{getFieldUnit(f)}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
     <div class="Box-row markdown-body log">
       <h5>読み込んだファイル</h5>
-      <table>
+      <table width="100%">
         <thead>
           <tr>
-            <th>有効率</th>
-            <th>完了</th>
-            <th>対象</th>
-            <th>処理時間</th>
-            <th>サイズ</th>
-            <th>パス</th>
+            <th width="8%">有効率</th>
+            <th width="8%">完了</th>
+            <th width="8%">対象</th>
+            <th width="8%">処理時間</th>
+            <th width="8%">サイズ</th>
+            <th width="60%">パス</th>
           </tr>
         </thead>
         <tbody>
@@ -118,6 +93,31 @@
         </tbody>
       </table>
     </div>
+    {#if indexInfo.Fields.length > 0}
+      <div class="Box-row markdown-body log">
+        <h5>抽出した項目</h5>
+        <table width="90%">
+          <thead>
+            <tr>
+              <th width="30%">変数名</th>
+              <th width="40%">名前</th>
+              <th width="20%">種別</th>
+              <th width="10%">単位</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each indexInfo.Fields as f}
+              <tr>
+                <td>{f}</td>
+                <td class:color-fg-danger={!isFieldValid(f)}>{getFieldName(f)}</td>
+                <td>{getFieldType(f)}</td>
+                <td>{getFieldUnit(f)}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
     {#if aecdata.length > 0}
       <div class="Box-row">
         <h5>Auto Encoderの学習状況</h5>

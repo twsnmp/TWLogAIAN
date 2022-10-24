@@ -268,14 +268,14 @@
     {#if fields.length > 0}
       <div class="Box-row markdown-body log">
         <h5>抽出した項目</h5>
-        <table class="fields">
+        <table class="fields" width="100%">
           <thead>
             <tr>
-              <th>変数名</th>
-              <th>名前</th>
-              <th>種別</th>
-              <th>単位</th>
-              <th>追加</th>
+              <th width="20%">変数名</th>
+              <th width="40%">名前</th>
+              <th width="20%">種別</th>
+              <th width="10%">単位</th>
+              <th width="10%">追加</th>
             </tr>
           </thead>
           <tbody>

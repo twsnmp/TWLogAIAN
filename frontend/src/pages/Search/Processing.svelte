@@ -56,15 +56,15 @@
       </div>
     {/if}
     <div class="Box-body markdown-body">
-      <table>
+      <table width="100%">
         <thead>
           <tr>
-            <th>有効率</th>
-            <th>完了</th>
-            <th>対象</th>
-            <th>処理時間</th>
-            <th>サイズ</th>
-            <th>パス</th>
+            <th width="8%">有効率</th>
+            <th width="8%">完了</th>
+            <th width="8%">対象</th>
+            <th width="8%">処理時間</th>
+            <th width="8%">サイズ</th>
+            <th width="60%">パス</th>
           </tr>
         </thead>
         <tbody>
