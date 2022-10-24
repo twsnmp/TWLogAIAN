@@ -363,271 +363,274 @@
   const showLogTypePage = () => {
     page = "logType";
   };
+
 </script>
 
-<div class="Box mx-auto Box--condensed" style="max-width: 99%;">
-  {#if busy}
-    <div class="Box-header">
-      <h3 class="Box-title">ログ分析起動</h3>
-    </div>
-    <div class="flash mt-2">
-      ログの読み込みを準備しています。お待ち下さい<span
-        class="AnimatedEllipsis"
-      />
-    </div>
-  {:else if page == "logSource"}
-    <LogSource {logSource} on:done={handleDone} />
-  {:else if page == "logType"}
-    <LogType on:done={handleDone} />
-  {:else}
-    <div class="Box-header">
-      <h3 class="Box-title">ログ分析の設定</h3>
-    </div>
-    {#if errorMsg != ""}
-      <div class="flash flash-error">
-        {errorMsg}
-        <button
-          class="flash-close js-flash-close"
-          type="button"
-          aria-label="Close"
-          on:click={clearMsg}
-        >
-          <X16 />
-        </button>
+{#if page == "logSource"}
+  <LogSource {logSource} on:done={handleDone} />
+{:else if page == "logType"}
+  <LogType on:done={handleDone} />
+{:else}
+  <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+    {#if busy}
+      <div class="Box-header">
+        <h3 class="Box-title">ログ分析起動</h3>
       </div>
-    {/if}
-    {#if infoMsg != ""}
-      <div class="flash">
-        {infoMsg}
-        <button
-          class="flash-close js-flash-close"
-          type="button"
-          aria-label="Close"
-          on:click={clearMsg}
-        >
-          <X16 />
-        </button>
+      <div class="flash mt-2">
+        ログの読み込みを準備しています。お待ち下さい<span
+          class="AnimatedEllipsis"
+        />
       </div>
-    {/if}
-    <div class="Box-body">
-      <div class="form-group">
-        <div class="form-group-header">
-          <h5 class="pb-1">
-            ログを読み込む場所
-            <button
-              class="btn btn-sm float-right"
-              type="button"
-              on:click={() => editLogSource("")}
-            >
-              <Plus16 />
-            </button>
-          </h5>
-        </div>
-        <div class="form-group-body markdown-body mt-3">
-          <Grid {data} {pagination} {columns} language={jaJP} />
-          <label class="p-1">
-            <input type="checkbox" bind:checked={config.Recursive} />
-            tar.gzの再帰読み込み
-          </label>
-          <label class="p-1">
-            <input type="checkbox" bind:checked={config.ForceUTC} />
-            タイムゾーン不明はUTC
-          </label>
-        </div>
+    {:else}
+      <div class="Box-header">
+        <h3 class="Box-title">ログ分析の設定</h3>
       </div>
-      <div class="form-group">
-        <div class="form-group-header">
-          <h5 class="pb-1">フィルター</h5>
-        </div>
-        <div class="form-group-body">
-          <input
-            class="form-control input-block"
-            type="text"
-            style="width: 100%;"
-            placeholder="フィルター"
-            aria-label="フィルター"
-            bind:value={config.Filter}
-          />
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="form-group-header">
-          <h5 class="pb-1">ログの種類</h5>
-        </div>
-        <div class="form-group-body">
-          <!-- svelte-ignore a11y-no-onchange -->
-          <select
-            class="form-select"
-            aria-label="抽出パターン"
-            bind:value={config.Extractor}
-            on:change={changeExtractor}
+      {#if errorMsg != ""}
+        <div class="flash flash-error">
+          {errorMsg}
+          <button
+            class="flash-close js-flash-close"
+            type="button"
+            aria-label="Close"
+            on:click={clearMsg}
           >
-            <option value="timeonly">タイムスタンプのみ</option>
-            {#each extractorTypeList as { Key, Name }}
-              <option value={Key}>{Name}</option>
-            {/each}
-            <option value="custom">カスタム</option>
-          </select>
+            <X16 />
+          </button>
         </div>
-      </div>
-      <div class="form-group">
-        <div class="form-group-header">
-          <h5 class="pb-1">アドレス情報</h5>
+      {/if}
+      {#if infoMsg != ""}
+        <div class="flash">
+          {infoMsg}
+          <button
+            class="flash-close js-flash-close"
+            type="button"
+            aria-label="Close"
+            on:click={clearMsg}
+          >
+            <X16 />
+          </button>
         </div>
-        <div class="form-group-body">
-          <label class="p-1">
-            <input type="checkbox" bind:checked={config.HostName} />
-            ホスト名を調べる
-          </label>
-          <label class="p-1">
-            <input class="ml-2" type="checkbox" bind:checked={config.GeoIP} />
-            位置情報を調べる
-          </label>
-          <label class="p-1">
-            <input
-              class="ml-2"
-              type="checkbox"
-              bind:checked={config.VendorName}
-            />
-            ベンダー名を調べる
-          </label>
-        </div>
-      </div>
-      {#if config.Extractor == "custom" || config.Extractor.startsWith("EXT")}
+      {/if}
+      <div class="Box-body">
         <div class="form-group">
           <div class="form-group-header">
-            <h5 class="pb-1">抽出パターン</h5>
+            <h5 class="pb-1">
+              ログを読み込む場所
+              <button
+                class="btn btn-sm float-right"
+                type="button"
+                on:click={() => editLogSource("")}
+              >
+                <Plus16 />
+              </button>
+            </h5>
+          </div>
+          <div class="form-group-body markdown-body mt-3">
+            <Grid {data} {pagination} {columns} language={jaJP} />
+            <label class="p-1">
+              <input type="checkbox" bind:checked={config.Recursive} />
+              tar.gzの再帰読み込み
+            </label>
+            <label class="p-1">
+              <input type="checkbox" bind:checked={config.ForceUTC} />
+              タイムゾーン不明はUTC
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5 class="pb-1">フィルター</h5>
           </div>
           <div class="form-group-body">
             <input
               class="form-control input-block"
               type="text"
-              placeholder="GROKパターン"
-              aria-label="GROKパターン"
               style="width: 100%;"
-              bind:value={config.Grok}
+              placeholder="フィルター"
+              aria-label="フィルター"
+              bind:value={config.Filter}
             />
           </div>
         </div>
         <div class="form-group">
           <div class="form-group-header">
-            <h5 class="pb-1">取得情報</h5>
+            <h5 class="pb-1">ログの種類</h5>
           </div>
           <div class="form-group-body">
-            <input
-              class="form-control"
-              type="text"
-              style="width: 15%;"
-              placeholder="タイムスタンプ項目"
-              bind:value={config.TimeField}
-            />
-            {#if config.HostName}
-              <input
-                class="form-control"
-                type="text"
-                style="width: 25%;"
-                placeholder="ホスト名解決項目"
-                bind:value={config.HostFields}
-              />
-            {/if}
-            {#if config.GeoIP}
-              <input
-                class="form-control"
-                type="text"
-                placeholder="IP位置情報項目"
-                style="width: 25%;"
-                bind:value={config.GeoFields}
-              />
-            {/if}
-            {#if config.VendorName}
-              <input
-                class="form-control"
-                type="text"
-                placeholder="MACアドレス項目"
-                style="width: 20%;"
-                bind:value={config.MACFields}
-              />
-            {/if}
+            <!-- svelte-ignore a11y-no-onchange -->
+            <select
+              class="form-select"
+              aria-label="抽出パターン"
+              bind:value={config.Extractor}
+              on:change={changeExtractor}
+            >
+              <option value="timeonly">タイムスタンプのみ</option>
+              {#each extractorTypeList as { Key, Name }}
+                <option value={Key}>{Name}</option>
+              {/each}
+              <option value="custom">カスタム</option>
+            </select>
           </div>
         </div>
-      {/if}
-      <div class="form-group">
-        <div class="form-group-header">
-          <h5 class="pb-1">インデクサー設定</h5>
-        </div>
-        <div class="form-group-body">
-          <div class="form-checkbox">
-            <label>
-              <input
-                type="checkbox"
-                disabled={hasIndex}
-                bind:checked={config.InMemory}
-                aria-describedby="help-text-for-inmemory"
-              />
-              インデックスをメモリ上に作成
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5 class="pb-1">アドレス情報</h5>
+          </div>
+          <div class="form-group-body">
+            <label class="p-1">
+              <input type="checkbox" bind:checked={config.HostName} />
+              ホスト名を調べる
             </label>
-            <p class="note" id="help-text-for-inmemory">
-              メモリに余裕があればオンにすると多少高速化できます。
-            </p>
+            <label class="p-1">
+              <input class="ml-2" type="checkbox" bind:checked={config.GeoIP} />
+              位置情報を調べる
+            </label>
+            <label class="p-1">
+              <input
+                class="ml-2"
+                type="checkbox"
+                bind:checked={config.VendorName}
+              />
+              ベンダー名を調べる
+            </label>
           </div>
         </div>
-      </div>
-      {#if config.GeoIP}
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5 class="pb-1">IP位置情報データベース</h5>
+        {#if config.Extractor == "custom" || config.Extractor.startsWith("EXT")}
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5 class="pb-1">抽出パターン</h5>
+            </div>
+            <div class="form-group-body">
+              <input
+                class="form-control input-block"
+                type="text"
+                placeholder="GROKパターン"
+                aria-label="GROKパターン"
+                style="width: 100%;"
+                bind:value={config.Grok}
+              />
+            </div>
           </div>
-          <div class="form-group-body">
-            <div class="input-group">
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5 class="pb-1">取得情報</h5>
+            </div>
+            <div class="form-group-body">
               <input
                 class="form-control"
                 type="text"
-                placeholder="Geo IPデータベース"
-                aria-label="Geo IPデータベース"
-                bind:value={config.GeoIPDB}
+                style="width: 15%;"
+                placeholder="タイムスタンプ項目"
+                bind:value={config.TimeField}
               />
-              <span class="input-group-button">
-                <button class="btn" type="button" on:click={selectGeoIPDB}>
-                  <File16 />
-                </button>
-              </span>
+              {#if config.HostName}
+                <input
+                  class="form-control"
+                  type="text"
+                  style="width: 25%;"
+                  placeholder="ホスト名解決項目"
+                  bind:value={config.HostFields}
+                />
+              {/if}
+              {#if config.GeoIP}
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="IP位置情報項目"
+                  style="width: 25%;"
+                  bind:value={config.GeoFields}
+                />
+              {/if}
+              {#if config.VendorName}
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="MACアドレス項目"
+                  style="width: 20%;"
+                  bind:value={config.MACFields}
+                />
+              {/if}
+            </div>
+          </div>
+        {/if}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5 class="pb-1">インデクサー設定</h5>
+          </div>
+          <div class="form-group-body">
+            <div class="form-checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  disabled={hasIndex}
+                  bind:checked={config.InMemory}
+                  aria-describedby="help-text-for-inmemory"
+                />
+                インデックスをメモリ上に作成
+              </label>
+              <p class="note" id="help-text-for-inmemory">
+                メモリに余裕があればオンにすると多少高速化できます。
+              </p>
             </div>
           </div>
         </div>
-      {/if}
-    </div>
-    <div class="Box-footer text-right">
-      <button
-        class="btn btn-outline mr-1"
-        type="button"
-        on:click={showLogTypePage}
-      >
-        <Checklist16 />
-        ログ定義
-      </button>
-      <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
-        <X16 />
-        キャンセル
-      </button>
-      {#if hasIndex}
-        <button class="btn btn-danger mr-1" type="button" on:click={clear}>
-          <Trash16 />
-          インデックス削除
+        {#if config.GeoIP}
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5 class="pb-1">IP位置情報データベース</h5>
+            </div>
+            <div class="form-group-body">
+              <div class="input-group">
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="Geo IPデータベース"
+                  aria-label="Geo IPデータベース"
+                  bind:value={config.GeoIPDB}
+                />
+                <span class="input-group-button">
+                  <button class="btn" type="button" on:click={selectGeoIPDB}>
+                    <File16 />
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        {/if}
+      </div>
+      <div class="Box-footer text-right">
+        <button
+          class="btn btn-outline mr-1"
+          type="button"
+          on:click={showLogTypePage}
+        >
+          <Checklist16 />
+          ログ定義
         </button>
-        <button class="btn btn-danger mr-1" type="button" on:click={start}>
-          <Check16 />
-          追加読み込み
+        <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
+          <X16 />
+          終了
         </button>
-        <button class="btn btn-primary mr-1" type="button" on:click={search}>
-          <Search16 />
-          検索画面へ
-        </button>
-      {:else}
-        <button class="btn btn-primary" type="button" on:click={start}>
-          <Check16 />
-          インデクス作成を開始
-        </button>
-      {/if}
-    </div>
-  {/if}
-</div>
+        {#if hasIndex}
+          <button class="btn btn-danger mr-1" type="button" on:click={clear}>
+            <Trash16 />
+            インデックス削除
+          </button>
+          <button class="btn btn-danger mr-1" type="button" on:click={start}>
+            <Check16 />
+            追加読み込み
+          </button>
+          <button class="btn btn-primary mr-1" type="button" on:click={search}>
+            <Search16 />
+            検索画面へ
+          </button>
+        {:else}
+          <button class="btn btn-primary" type="button" on:click={start}>
+            <Check16 />
+            インデクス作成
+          </button>
+        {/if}
+      </div>
+    {/if}
+  </div>
+{/if}

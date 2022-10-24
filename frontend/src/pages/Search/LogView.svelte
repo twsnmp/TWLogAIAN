@@ -7,8 +7,7 @@
     Check16,
     Trash16,
     Reply16,
-    Copy16,
-    Pencil16,
+    Checklist16,
   } from "svelte-octicons";
   import Query from "./Query.svelte";
   import Result from "./Result.svelte";
@@ -28,6 +27,7 @@
   import Globe from "../Report/Globe.svelte";
   import Heatmap from "../Report/Heatmap.svelte";
   import Memo from "../Report/Memo.svelte";
+  import LogType from "../Setting/LogType.svelte";
   import EditExtractorType from "../Setting/EditExtractorType.svelte";
   import { getTableLimit, loadFieldTypes, getFieldType } from "../../js/define";
   import numeral from "numeral";
@@ -520,6 +520,9 @@
     updateChart();
   };
 
+  const showLogTypePage = () => {
+    page = "logType";
+  };
 
 </script>
 
@@ -550,6 +553,8 @@
   <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "extractorType"}
   <EditExtractorType {extractorType} {add} {testLog} on:done={handleEditExtractorDone} />
+{:else if page == "logType"}
+  <LogType on:done={handleDone} />
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header d-flex flex-items-center">
@@ -755,6 +760,14 @@
             <option value="heatmap">ヒートマップ</option>
           </select>
         {/if}
+        <button
+          class="btn btn-outline mr-1"
+          type="button"
+          on:click={showLogTypePage}
+        >
+          <Checklist16 />
+          ログ定義
+        </button>
         <button
           class="btn  btn-outline mr-1"
           type="button"
