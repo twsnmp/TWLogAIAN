@@ -32,6 +32,7 @@ type Config struct {
 	InMemory   bool
 	SampleLog  string
 	ForceUTC   bool
+	Strict     bool
 }
 
 type LogSource struct {

@@ -36,6 +36,7 @@
     InMemory: false,
     SampleLog: "",
     ForceUTC: false,
+    Strict: false,
   };
   let logSource = {
     No: 0,
@@ -479,6 +480,10 @@
               {/each}
               <option value="custom">カスタム</option>
             </select>
+            <label class="p-1">
+              <input type="checkbox" bind:checked={config.Strict} />
+                パータンに一致しないログを除外（厳しい読み込みかた）
+              </label>
           </div>
         </div>
         <div class="form-group">

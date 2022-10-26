@@ -109,6 +109,31 @@
     <div class="Box-row">
       <div id="chart" />
     </div>
+    {#if indexInfo.Fields.length > 0}
+      <div class="Box-row markdown-body log">
+        <h5>抽出した項目</h5>
+        <table width="90%">
+          <thead>
+            <tr>
+              <th width="30%">変数名</th>
+              <th width="40%">名前</th>
+              <th width="20%">種別</th>
+              <th width="10%">単位</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each indexInfo.Fields as f}
+              <tr>
+                <td>{f}</td>
+                <td class:color-fg-danger={!isFieldValid(f)}>{getFieldName(f)}</td>
+                <td>{getFieldType(f)}</td>
+                <td>{getFieldUnit(f)}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
     <div class="Box-row markdown-body log">
       <h5>読み込んだファイル</h5>
       <table width="100%">
@@ -136,31 +161,6 @@
         </tbody>
       </table>
     </div>
-    {#if indexInfo.Fields.length > 0}
-      <div class="Box-row markdown-body log">
-        <h5>抽出した項目</h5>
-        <table width="90%">
-          <thead>
-            <tr>
-              <th width="30%">変数名</th>
-              <th width="40%">名前</th>
-              <th width="20%">種別</th>
-              <th width="10%">単位</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each indexInfo.Fields as f}
-              <tr>
-                <td>{f}</td>
-                <td class:color-fg-danger={!isFieldValid(f)}>{getFieldName(f)}</td>
-                <td>{getFieldType(f)}</td>
-                <td>{getFieldUnit(f)}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
     {#if aecdata.length > 0}
       <div class="Box-row">
         <h5>Auto Encoderの学習状況</h5>
@@ -178,7 +178,7 @@
 <style>
   #chart {
     width: 100%;
-    height: 200px;
+    height: 250px;
     margin: 5px auto;
   }
 </style>

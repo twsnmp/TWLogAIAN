@@ -52,7 +52,6 @@ export const showLogHeatmap = (div, timeLine, dark) => {
         dataZoom: {},
       },
     },
-    dataZoom: [{}],
     tooltip: {
       trigger: "item",
       formatter(params) {
@@ -61,7 +60,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
           " " +
           params.data[1] +
           "時 : " +
-          params.data[2].toFixed(1)
+          params.data[2]
         );
       },
       axisPointer: {
@@ -140,7 +139,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
       count: timeLine[t],
     });
   }
-  data.sort((a,b) => a.time < b.time);
+  data.sort((a,b) => a.time > b.time);
   let nD = 0;
   let x = -1;
   let day;

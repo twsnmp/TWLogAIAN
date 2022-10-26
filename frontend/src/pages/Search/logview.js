@@ -27,17 +27,18 @@ const columnsTimeOnly = [
     id: "level",
     name: "レベル",
     width: "6%",
-    formatter: (cell) => formatLevel(cell),
+    formatter: (cell) => cell ? formatLevel(cell) : "",
   },
   {
     id: "_timestamp",
     name: "日時",
     width: "15%",
     formatter: (cell) =>
+    cell ?
       echarts.time.format(
         new Date(cell / (1000 * 1000)),
         "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}"
-      ),
+      ) : "",
     convert: true,
   },
   {
@@ -103,17 +104,17 @@ const columnsSyslog = [
     id: "level",
     name: "レベル",
     width: "6%",
-    formatter: (cell) => formatLevel(cell),
+    formatter: (cell) => cell ? formatLevel(cell) : "",
   },
   {
     id: "_timestamp",
     name: "日時",
     width: "15%",
-    formatter: (cell) =>
+    formatter: (cell) => cell ?
       echarts.time.format(
         new Date(cell / (1000 * 1000)),
         "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}"
-      ),
+      ) : "",
     convert: true,
   },
   {
@@ -165,17 +166,18 @@ const columnsAccessLog = [
     id: "response",
     name: "応答",
     width: "6%",
-    formatter: (cell) => formatCode(cell),
+    formatter: (cell) => cell ? formatCode(cell) : "",
   },
   {
     id: "_timestamp",
     name: "日時",
     width: "15%",
-    formatter: (cell) =>
+    formatter: (cell) => 
+    cell ?
       echarts.time.format(
         new Date(cell / (1000 * 1000)),
         "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}"
-      ),
+      ) : "",
     convert: true,
   },
   {
@@ -248,17 +250,18 @@ const columnsWindowsLog = [
     id: "level",
     name: "レベル",
     width: "8%",
-    formatter: (cell) => formatWinLevel(cell),
+    formatter: (cell) => cell ? formatWinLevel(cell) : "",
   },
   {
     id: "_timestamp",
     name: "日時",
     width: "15%",
     formatter: (cell) =>
+    cell ?
       echarts.time.format(
         new Date(cell / (1000 * 1000)),
         "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}"
-      ),
+      ) : "",
     convert: true,
   },
   {
@@ -321,10 +324,11 @@ const makeDataColumns = (fields) => {
     id: "_timestamp",
     name: "日時",
     formatter: (cell) =>
+    cell ? 
       echarts.time.format(
         new Date(cell / (1000 * 1000)),
         "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}"
-      ),
+      ) : "",
     convert: true,
   });
   fields.forEach((f) => {

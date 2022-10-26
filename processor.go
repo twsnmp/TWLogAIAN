@@ -581,6 +581,10 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				b.processStat.SkipLines++
 				continue
 			}
+			if b.config.Strict && len(values) < 1 {
+				b.processStat.SkipLines++
+				continue
+			}
 			for k, v := range values {
 				if k == "TWLOGAIAN" {
 					continue
@@ -594,16 +598,22 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			}
 			var ts time.Time
 			if b.processConf.TimeField != "" {
+				tf := ""
 				tfi, ok := log.KeyValue[b.processConf.TimeField]
 				if !ok {
-					OutLog("no time field '%s' %s", b.processConf.TimeField, l)
-					b.processStat.SkipLines++
-					continue
-				}
-				tf, ok := tfi.(string)
-				if !ok {
-					b.processStat.SkipLines++
-					continue
+					if b.config.Strict {
+						OutLog("no time field '%s' %s", b.processConf.TimeField, l)
+						b.processStat.SkipLines++
+						continue
+					}
+					// 全体から日時を取得する
+					tf = l
+				} else {
+					tf, ok = tfi.(string)
+					if !ok {
+						b.processStat.SkipLines++
+						continue
+					}
 				}
 				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(tf))
 				if err != nil || !ok {

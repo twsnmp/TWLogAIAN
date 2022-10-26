@@ -127,6 +127,10 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 				b.processStat.SkipLines++
 				continue
 			}
+			if b.config.Strict && len(values) < 1 {
+				b.processStat.SkipLines++
+				continue
+			}
 			for k, v := range values {
 				if k == "TWLOGAIAN" {
 					continue
