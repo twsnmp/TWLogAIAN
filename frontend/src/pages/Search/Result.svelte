@@ -1,6 +1,7 @@
 <script>
   import { X16 } from "svelte-octicons";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher,tick } from "svelte";
+  import { showLogHeatmap, resizeLogHeatmap} from "./logheatmap";
   import AutoEncoder from "./AutoEncoder.svelte";
   import { onMount } from 'svelte';
   import numeral from 'numeral';
@@ -10,10 +11,15 @@
     getFieldUnit,
     isFieldValid,
   } from "../../js/define";
+  import * as echarts from "echarts";
 
   export let indexInfo;
   export let aecdata;
   export let dark = false;
+  let readLines = 0;
+  let skipLines = 0;
+  let startTime = "";
+  let endTime = "";
 
   const dispatch = createEventDispatcher();
   let errorMsg = "";
@@ -28,9 +34,21 @@
         if (r.ErrorMsg) {
           errorMsg = r.ErrorMsg;
         }
+        readLines = r.ReadLines;
+        skipLines = r.SkipLines;
+        startTime = echarts.time.format(new Date(r.StartTime / (1000 * 1000)),"{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}");
+        endTime = echarts.time.format(new Date(r.EndTime / (1000 * 1000)),"{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}");
+        window.go.main.App.GetDark().then((dark) => {
+          showChart(r.TimeLine,dark);
+        });
       }
     });
   };
+
+  const showChart =  async (timeLine,dark)  => {
+    await tick();
+    showLogHeatmap("chart",timeLine,dark);
+  } 
 
   onMount(() => {
     getProcessInfo();
@@ -40,7 +58,13 @@
     dispatch("done", {});
   }
 
+  const onResize = () => {
+    resizeLogHeatmap();
+  };
+
 </script>
+
+<svelte:window on:resize={onResize} />
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
@@ -56,15 +80,34 @@
       <table>
         <tbody>
           <tr>
-            <th>総数</th>
+            <th>インデックス上の総数</th>
             <td>{numeral(indexInfo.Total).format('0,0')}</td>
           </tr>
           <tr>
-            <th>処理時間</th>
+            <th>インデックス作成時間</th>
             <td>{indexInfo.Duration}</td>
+          </tr>
+          <tr>
+            <th>処理したライン数</th>
+            <td>{numeral(readLines).format('0,0')}</td>
+          </tr>
+          <tr>
+            <th>スキップしたライン数</th>
+            <td>{numeral(skipLines).format('0,0')}</td>
+          </tr>
+          <tr>
+            <th>最初のログの日時</th>
+            <td>{startTime}</td>
+          </tr>
+          <tr>
+            <th>最後のログの日時</th>
+            <td>{endTime}</td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="Box-row">
+      <div id="chart" />
     </div>
     <div class="Box-row markdown-body log">
       <h5>読み込んだファイル</h5>
@@ -131,3 +174,11 @@
       </button>
     </div>
 </div>
+
+<style>
+  #chart {
+    width: 100%;
+    height: 200px;
+    margin: 5px auto;
+  }
+</style>

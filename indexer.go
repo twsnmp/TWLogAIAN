@@ -77,7 +77,7 @@ func (b *App) CloseIndexor() error {
 		err := b.indexer.writer.Close()
 		b.indexer.writer = nil
 		if b.config.InMemory {
-			b.readFiles = make(map[string]bool)
+			b.clearProcessStat()
 		}
 		return err
 	}
@@ -98,7 +98,7 @@ func (b *App) ClearIndex() string {
 		return "No"
 	}
 	b.CloseIndexor()
-	b.readFiles = make(map[string]bool)
+	b.clearProcessStat()
 	if b.config.InMemory {
 		return ""
 	}

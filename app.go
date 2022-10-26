@@ -44,16 +44,14 @@ type App struct {
 	hostMap     map[string]string
 	geoMap      map[string]*GeoEnt
 	memos       []Memo
-	readFiles   map[string]bool
 	history     []string
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{
-		hostMap:   make(map[string]string),
-		geoMap:    make(map[string]*GeoEnt),
-		readFiles: make(map[string]bool),
+		hostMap: make(map[string]string),
+		geoMap:  make(map[string]*GeoEnt),
 	}
 }
 

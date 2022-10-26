@@ -30,8 +30,14 @@ import (
 type ProcessStat struct {
 	Done        bool
 	ErrorMsg    string
+	ReadLines   int
+	SkipLines   int
+	StartTime   int64
+	EndTime     int64
+	TimeLine    map[int64]int
 	LogFiles    []*LogFile
 	IntLogFiles []*LogFile
+	ReadFiles   map[string]bool
 }
 
 type ProcessConf struct {
@@ -70,7 +76,7 @@ func (b *App) Start(c Config, noRead bool) string {
 			return "処理するファイルがありません"
 		}
 	}
-	if e := b.setupProcess(); e != "" {
+	if e := b.setupProcess(noRead); e != "" {
 		OutLog("make log file list err=%s", e)
 		return e
 	}
@@ -112,9 +118,20 @@ func (b *App) TestSampleLog(c Config) *ExtractorType {
 	return ret
 }
 
-func (b *App) setupProcess() string {
-	b.processStat.ErrorMsg = ""
-	b.processStat.Done = false
+func (b *App) clearProcessStat() {
+	b.processStat.ReadLines = 0
+	b.processStat.SkipLines = 0
+	b.processStat.TimeLine = make(map[int64]int)
+	b.processStat.ReadFiles = make(map[string]bool)
+	b.processStat.StartTime = time.Now().Add(time.Hour * 24 * 365 * 10).UnixNano()
+	b.processStat.EndTime = 0
+}
+
+func (b *App) setupProcess(noRead bool) string {
+	if !noRead {
+		b.processStat.ErrorMsg = ""
+		b.processStat.Done = false
+	}
 	if err := b.setTimeGrinder(); err != nil {
 		OutLog("failed to create new timegrinder err=%v", err)
 		return err.Error()
@@ -355,10 +372,10 @@ func (b *App) logReader() {
 			b.readLogFromWinEventLog(lf)
 			continue
 		}
-		if _, ok := b.readFiles[lf.Path]; ok {
+		if _, ok := b.processStat.ReadFiles[lf.Path]; ok {
 			continue
 		}
-		b.readFiles[lf.Path] = true
+		b.processStat.ReadFiles[lf.Path] = true
 		ext := strings.ToLower(filepath.Ext(lf.Path))
 		if ext == ".zip" {
 			if err := b.readLogFromZIP(lf); err != nil {
@@ -538,7 +555,6 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 	OutLog("start readOneLogFile path=%s", lf.Path)
 	scanner := bufio.NewScanner(reader)
 	ln := 0
-	skipF := 0
 	var lastTime int64
 	for scanner.Scan() {
 		if b.stopProcess {
@@ -547,8 +563,9 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		l := scanner.Text()
 		lf.Read += int64(len(l))
 		ln++
+		b.processStat.ReadLines++
 		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
-			skipF++
+			b.processStat.SkipLines++
 			continue
 		}
 		log := LogEnt{
@@ -561,6 +578,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
 				OutLog("grok err=%v:%s", err, l)
+				b.processStat.SkipLines++
 				continue
 			}
 			for k, v := range values {
@@ -579,15 +597,18 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				tfi, ok := log.KeyValue[b.processConf.TimeField]
 				if !ok {
 					OutLog("no time field '%s' %s", b.processConf.TimeField, l)
+					b.processStat.SkipLines++
 					continue
 				}
 				tf, ok := tfi.(string)
 				if !ok {
+					b.processStat.SkipLines++
 					continue
 				}
 				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(tf))
 				if err != nil || !ok {
 					OutLog("time parse err=%v:%s", err, l)
+					b.processStat.SkipLines++
 					continue
 				}
 			} else {
@@ -595,6 +616,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				var ok bool
 				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(l))
 				if err != nil || !ok {
+					b.processStat.SkipLines++
 					continue
 				}
 			}
@@ -635,6 +657,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				// 複数行は同じタイムスタンプにする
 				if lastTime < 1 {
 					OutLog("failed to get time stamp err=%v:%s", err, l)
+					b.processStat.SkipLines++
 					continue
 				}
 			} else if ok {
@@ -644,11 +667,22 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				lastTime = ts.UnixNano()
 			} else {
 				OutLog("no time stamp: %s", l)
+				b.processStat.SkipLines++
 				continue
 			}
 		}
 		log.Time = lastTime
 		log.KeyValue["delta"] = float64(delta) / (1000.0 * 1000.0 * 1000.0)
+		timeH := log.Time / (1000 * 1000 * 1000 * 3600)
+		if _, ok := b.processStat.TimeLine[timeH]; !ok {
+			b.processStat.TimeLine[timeH] = 0
+		}
+		b.processStat.TimeLine[timeH]++
+		if log.Time < b.processStat.StartTime {
+			b.processStat.StartTime = log.Time
+		} else if log.Time > b.processStat.EndTime {
+			b.processStat.EndTime = log.Time
+		}
 		b.logCh <- &log
 		lf.Send += int64(len(l))
 	}
@@ -656,7 +690,7 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		b.processStat.ErrorMsg = err.Error()
 	}
 	lf.Duration = time.Since(st).String()
-	OutLog("end readOneLogFile ln=%d skip=%d", ln, skipF)
+	OutLog("end readOneLogFile ln=%d", ln)
 }
 
 func (b *App) setTimeGrinder() error {

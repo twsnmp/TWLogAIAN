@@ -56,11 +56,13 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 			return nil
 		}
 		if e == nil {
+			b.processStat.SkipLines++
 			continue
 		}
 		l := string(evtx.ToJSON(e))
 		leng := int64(len(l))
 		lf.Read += leng
+		b.processStat.ReadLines++
 		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
 			continue
 		}
@@ -69,17 +71,20 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 			eid, err = e.GetInt(&evtx.EventIDPath2)
 			if err != nil {
 				OutLog("no eventID err1=%v,err2=%v", err1, err)
+				b.processStat.SkipLines++
 				continue
 			}
 		}
 		erid, err := e.GetInt(&evtx.EventRecordIDPath)
 		if err != nil {
 			OutLog("evtx get recordid err=%v", err)
+			b.processStat.SkipLines++
 			continue
 		}
 		t, err := e.GetTime(&evtx.SystemTimePath)
 		if err != nil {
 			OutLog("evtx gettime err=%v", err)
+			b.processStat.SkipLines++
 			continue
 		}
 		ch, err := e.GetString(&evtx.ChannelPath)
@@ -119,6 +124,7 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
 			if err != nil {
 				OutLog("evtx grok err=%v:%s", err, l)
+				b.processStat.SkipLines++
 				continue
 			}
 			for k, v := range values {
@@ -159,6 +165,17 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 					}
 				}
 			}
+		}
+		b.processStat.ReadLines++
+		timeH := log.Time / (1000 * 1000 * 1000 * 3600)
+		if _, ok := b.processStat.TimeLine[timeH]; !ok {
+			b.processStat.TimeLine[timeH] = 0
+		}
+		b.processStat.TimeLine[timeH]++
+		if log.Time < b.processStat.StartTime {
+			b.processStat.StartTime = log.Time
+		} else if log.Time > b.processStat.EndTime {
+			b.processStat.EndTime = log.Time
 		}
 		b.logCh <- &log
 		lf.Send += leng
@@ -222,13 +239,16 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 		if b.stopProcess {
 			return nil
 		}
+		b.processStat.ReadLines++
 		l := strings.TrimSpace(l)
 		leng := int64(len(l))
 		lf.Read += leng
 		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
+			b.processStat.SkipLines++
 			continue
 		}
 		if leng < 10 {
+			b.processStat.SkipLines++
 			continue
 		}
 		lsys := reSystem.FindString(l)
@@ -252,7 +272,18 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 		log.KeyValue["winComputer"] = s.Computer
 		log.KeyValue["winUserID"] = s.Security.UserID
 		if err := b.setKeyValuesToLogEnt(l, &log); err != nil {
+			b.processStat.SkipLines++
 			continue
+		}
+		timeH := log.Time / (1000 * 1000 * 1000 * 3600)
+		if _, ok := b.processStat.TimeLine[timeH]; !ok {
+			b.processStat.TimeLine[timeH] = 0
+		}
+		b.processStat.TimeLine[timeH]++
+		if log.Time < b.processStat.StartTime {
+			b.processStat.StartTime = log.Time
+		} else if log.Time > b.processStat.EndTime {
+			b.processStat.EndTime = log.Time
 		}
 		b.logCh <- &log
 		lf.Send += leng

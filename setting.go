@@ -122,6 +122,7 @@ func (b *App) SetWorkDir(wd string) string {
 	b.logSources = []*LogSource{}
 	b.config = Config{}
 	makeDefalutLogTypes()
+	b.clearProcessStat()
 	err = b.openDB(wd)
 	if err != nil {
 		return fmt.Sprintf("データベースを開けません err=%v", err)
@@ -222,33 +223,23 @@ func (b *App) loadSettingsFromDB() error {
 
 func (b *App) loadResult(tx *bbolt.Tx) error {
 	bkt := tx.Bucket([]byte("result"))
-	v := bkt.Get([]byte("logFiles"))
+	v := bkt.Get([]byte("processStat"))
 	if v != nil {
-		lfs := []LogFile{}
-		if err := json.Unmarshal(v, &lfs); err == nil {
-			for _, lf := range lfs {
-				b.processStat.LogFiles = append(b.processStat.LogFiles, &lf)
-			}
+		if err := json.Unmarshal(v, &b.processStat); err != nil {
+			OutLog("load processStat err=%v", err)
 		}
 	}
 	v = bkt.Get([]byte("memos"))
 	if v != nil {
 		if err := json.Unmarshal(v, &b.memos); err != nil {
-			return err
-		}
-	}
-	v = bkt.Get([]byte("readFiles"))
-	b.readFiles = make(map[string]bool)
-	if v != nil {
-		if err := json.Unmarshal(v, &b.readFiles); err != nil {
-			return err
+			OutLog("load memos err=%v", err)
 		}
 	}
 	v = bkt.Get([]byte("history"))
 	b.history = []string{}
 	if v != nil {
 		if err := json.Unmarshal(v, &b.history); err != nil {
-			return err
+			OutLog("load history err=%v", err)
 		}
 	}
 	return nil
@@ -303,19 +294,11 @@ func (b *App) saveSettingsToDB() error {
 }
 
 func (b *App) saveResultToDB() error {
-	lfs := []LogFile{}
-	for _, lf := range b.processStat.LogFiles {
-		lfs = append(lfs, *lf)
-	}
-	jlfs, err := json.Marshal(lfs)
+	jps, err := json.Marshal(b.processStat)
 	if err != nil {
 		return err
 	}
 	jmemos, err := json.Marshal(b.memos)
-	if err != nil {
-		return err
-	}
-	jrf, err := json.Marshal(b.readFiles)
 	if err != nil {
 		return err
 	}
@@ -328,10 +311,9 @@ func (b *App) saveResultToDB() error {
 		if bkt == nil {
 			return fmt.Errorf("bucket settings is nil")
 		}
-		if err := bkt.Put([]byte("logFiles"), jlfs); err != nil {
+		if err := bkt.Put([]byte("processStat"), jps); err != nil {
 			return err
 		}
-		bkt.Put([]byte("readFiles"), jrf)
 		bkt.Put([]byte("history"), jh)
 		return bkt.Put([]byte("memos"), jmemos)
 	})
