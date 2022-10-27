@@ -48,6 +48,7 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 			return err
 		}
 	}
+	lf.ETName = "Windows"
 	comPath := evtx.Path("/Event/System/Computer")
 	levelPath := evtx.Path("/Event/System/Level")
 	providerPath := evtx.Path("/Event/System/Provider/Name")
@@ -219,6 +220,7 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 			end = t
 		}
 	}
+	lf.ETName = "Windows"
 	filter := fmt.Sprintf(`/q:*[System[TimeCreated[@SystemTime>='%s' and @SystemTime<='%s']]]`, start.UTC().Format("2006-01-02T15:04:05"), end.UTC().Format("2006-01-02T15:04:05"))
 	params := []string{"qe", lf.LogSrc.Channel, filter}
 	if lf.LogSrc.Server != "" {
