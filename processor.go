@@ -59,6 +59,7 @@ type LogFile struct {
 	Read     int64
 	Send     int64
 	Duration string
+	ETName   string
 	LogSrc   *LogSource
 }
 
@@ -95,27 +96,6 @@ func (b *App) Start(c Config, noRead bool) string {
 	b.wg.Add(1)
 	go b.logReader()
 	return ""
-}
-
-// TestSampleLog : サンプルのログをテストしてログの種類を判別する
-func (b *App) TestSampleLog(c Config) *ExtractorType {
-	max := 0
-	var ret *ExtractorType
-	for _, e := range extractorTypes {
-		s := b.testGrok(c.SampleLog, e.Grok)
-		if s > max {
-			ret = &e
-			max = s
-		}
-	}
-	if c.Grok != "" && b.testGrok(c.SampleLog, c.Grok) > max {
-		return &ExtractorType{
-			Key:  "custom",
-			Name: "カスタム設定",
-			Grok: c.Grok,
-		}
-	}
-	return ret
 }
 
 func (b *App) clearProcessStat() {
@@ -554,6 +534,12 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 	st := time.Now()
 	OutLog("start readOneLogFile path=%s", lf.Path)
 	scanner := bufio.NewScanner(reader)
+	autoSetExtractor := b.config.Extractor == "auto"
+	if !autoSetExtractor {
+		if et, ok := extractorTypes[b.config.Extractor]; ok {
+			lf.ETName = et.Name
+		}
+	}
 	ln := 0
 	var lastTime int64
 	for scanner.Scan() {
@@ -572,6 +558,12 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			ID:       fmt.Sprintf("%s:%06d", lf.Path, ln),
 			KeyValue: make(map[string]interface{}),
 			All:      l,
+		}
+		if autoSetExtractor {
+			// 初回だけ自動判定で抽出パターンをセットする
+			lf.ETName = b.autoSetExtractor(l)
+			autoSetExtractor = false
+
 		}
 		delta := int64(0)
 		if b.processConf.Extractor != nil {
@@ -724,6 +716,40 @@ func (b *App) setFilter() error {
 	return err
 }
 
+// autoSetExtractor : サンプルのログをテストしてログの種類を判別する
+func (b *App) autoSetExtractor(l string) string {
+	b.processConf.Extractor = nil
+	max := 0
+	key := ""
+	for _, e := range extractorTypes {
+		s := b.testGrok(l, e.Grok)
+		if s > max {
+			key = e.Key
+			max = s
+		}
+	}
+	if key == "" {
+		return ""
+	}
+	et := extractorTypes[key]
+	b.config.GeoFields = et.IPFields
+	b.config.HostFields = et.IPFields
+	b.config.MACFields = et.MACFields
+	b.processConf.TimeField = et.TimeField
+	config := grok.Config{
+		Patterns:          make(map[string]string),
+		NamedCapturesOnly: true,
+	}
+	config.Patterns["TWLOGAIAN"] = et.Grok
+	g, err := grok.NewWithConfig(&config)
+	if err != nil {
+		OutLog("%#v err=%v", config, err)
+		return ""
+	}
+	b.processConf.Extractor = g
+	return et.Name
+}
+
 func (b *App) testGrok(l, p string) int {
 	config := grok.Config{
 		Patterns:          make(map[string]string),
@@ -741,22 +767,15 @@ func (b *App) testGrok(l, p string) int {
 	return len(values)
 }
 
-func (b *App) findExtractorType(extractor string) *ExtractorType {
-	if e, ok := extractorTypes[extractor]; ok {
-		return &e
-	}
-	return nil
-}
-
 func (b *App) setExtractor() error {
-	if b.config.Extractor == "timeonly" || b.config.Extractor == "" {
+	if b.config.Extractor == "timeonly" || b.config.Extractor == "auto" || b.config.Extractor == "" {
 		b.processConf.Extractor = nil
 		return nil
 	}
 	grstr := b.config.Grok
 	if b.config.Extractor != "custom" {
-		et := b.findExtractorType(b.config.Extractor)
-		if et == nil {
+		et, ok := extractorTypes[b.config.Extractor]
+		if !ok {
 			return fmt.Errorf("invalid extractor type %s", b.processConf.Extractor)
 		}
 		b.config.GeoFields = et.IPFields

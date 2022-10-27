@@ -64,7 +64,8 @@
             <th width="8%">対象</th>
             <th width="8%">処理時間</th>
             <th width="8%">サイズ</th>
-            <th width="60%">パス</th>
+            <th width="15%">抽出パターン名</th>
+            <th width="45%">パス</th>
           </tr>
         </thead>
         <tbody>
@@ -75,6 +76,7 @@
             <td>{numeral(f.Send).format('0.00b')}</td>
             <td>{f.Duration}</td>
             <td>{numeral(f.Size).format('0.00b')}</td>
+            <td>{f.ETName}</td>
             <td>{(f.LogSrc.Type == "scp" || f.LogSrc.Type == "ssh") ? f.LogSrc.Server + ":" + f.Path : f.Path}</td>
           </tr>
         {/each}

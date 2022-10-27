@@ -475,6 +475,7 @@
               on:change={changeExtractor}
             >
               <option value="timeonly">タイムスタンプのみ</option>
+              <option value="auto">自動判定</option>
               {#each extractorTypeList as { Key, Name }}
                 <option value={Key}>{Name}</option>
               {/each}

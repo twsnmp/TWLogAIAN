@@ -260,7 +260,9 @@ var regGeo = regexp.MustCompile(`\s*geo:(\S+)`)
 func (b *App) SearchLog(q, anomaly, vector, extractor string, limit int) SearchResult {
 	OutLog("SearchLog q=%#v", q)
 	view := "timeonly"
-	if et := b.findExtractorType(b.config.Extractor); et != nil {
+	if b.config.Extractor == "auto" {
+		view = "auto"
+	} else if et, ok := extractorTypes[b.config.Extractor]; ok {
 		view = et.View
 	}
 	ret := SearchResult{
@@ -485,8 +487,8 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 		return
 	}
 	st := time.Now()
-	et := b.findExtractorType(extractor)
-	if et == nil {
+	et, ok := extractorTypes[extractor]
+	if !ok {
 		OutLog("grokParseLogs %s not found", extractor)
 		return
 	}

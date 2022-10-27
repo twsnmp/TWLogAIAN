@@ -30,7 +30,6 @@ type Config struct {
 	VendorName bool
 	MACFields  string
 	InMemory   bool
-	SampleLog  string
 	ForceUTC   bool
 	Strict     bool
 }

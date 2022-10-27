@@ -726,13 +726,13 @@
             on:change={chnageLogView}
           >
             <option value="timeonly">タイムオンリー</option>
-            {#if result.View == "syslog"}
+            {#if result.View == "syslog" || result.View == "auto"}
               <option value="syslog">syslog</option>
             {/if}
-            {#if result.View == "access"}
+            {#if result.View == "access" || result.View == "auto"}
               <option value="access">アクセスログ</option>
             {/if}
-            {#if result.View == "windows"}
+            {#if result.View == "windows" || result.View == "auto"}
               <option value="windows">Windows</option>
             {/if}
             {#if result.Fields.length > 0}
