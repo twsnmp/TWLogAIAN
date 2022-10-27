@@ -251,6 +251,34 @@
           />
         </div>
       </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5 class="pb-1">取得情報</h5>
+        </div>
+        <div class="form-group-body">
+          <input
+            class="form-control"
+            type="text"
+            style="width: 15%;"
+            placeholder="タイムスタンプ項目"
+            bind:value={extractorType.TimeField}
+          />
+          <input
+            class="form-control"
+            type="text"
+            style="width: 25%;"
+            placeholder="IPアドレス項目"
+            bind:value={extractorType.IPFields}
+          />
+          <input
+            class="form-control"
+            type="text"
+            placeholder="MACアドレス項目"
+            style="width: 20%;"
+            bind:value={extractorType.MACFields}
+          />
+        </div>
+      </div>
       <div class="mt-1">
         {#each grokChunks as chunk}
           <span class={getGrokClass(chunk)}>{chunk.text}</span>

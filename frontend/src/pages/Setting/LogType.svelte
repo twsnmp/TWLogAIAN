@@ -122,8 +122,10 @@
         add = true;
     } else {
       add = extractorType.Key === "";
-      const now = new Date();
-      extractorType.Key = "e" + now.getTime();
+      if (add) {
+        const now = new Date();
+        extractorType.Key = "e" + now.getTime();
+      }
     }
     page = "extractorType";
   }
