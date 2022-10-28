@@ -174,6 +174,7 @@
   const handleEditFieldTypeDone = (e) => {
     if (e && e.detail && e.detail.save) {
       loadFieldTypes();
+      test();
     }
     page = "";
   };

@@ -76,6 +76,23 @@
     <div class="form-group">
       <div class="form-group-header">
         <h5>
+          データの型
+        </h5>
+      </div>
+      <div class="form-group-body">
+        <select
+        class="form-select"
+        aria-label="データの型"
+        bind:value={fieldType.Type}
+      >
+        <option value="string">文字列</option>
+        <option value="number">数値</option>
+      </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-group-header">
+        <h5>
           単位
         </h5>
       </div>
