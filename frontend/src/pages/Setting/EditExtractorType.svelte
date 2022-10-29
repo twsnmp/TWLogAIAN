@@ -1,6 +1,6 @@
 <script>
   import highlightWords from "highlight-words";
-  import { X16, Check16, StarFill16, Reply16, Plus16 } from "svelte-octicons";
+  import { X16, Check16, StarFill16, Reply16, Plus16,EyeClosed16,Eye16,TriangleDown16,TriangleUp16 } from "svelte-octicons";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { createEventDispatcher } from "svelte";
@@ -23,9 +23,25 @@
   let columns = [];
   const dispatch = createEventDispatcher();
   let errorMsg = "";
+  let selected = '';
+  let showInput = false;
+  let showReplace = false;
 
   onMount(() => {
     loadFieldTypes();
+    document.addEventListener(`selectionchange`, () => {
+      const s = document.getSelection().toString();
+      if (s == "") {
+        showReplace = false;
+        return;
+      }
+      const si = extractorType.Grok.indexOf(s);
+      const li = extractorType.Grok.lastIndexOf(s);
+      showReplace = si > 0 && (si == li);
+      if (showReplace) {
+        selected = s;
+      }
+    });
   });
 
   const back = () => {
@@ -73,24 +89,22 @@
     window.go.main.App.AutoGrok(testLog).then((r) => {
       errorMsg = r.ErrorMsg;
       if (r.Grok) {
-        oldGrok.push(extractorType.Grok);
+        if (extractorType.Grok) {
+          oldGrok.push(extractorType.Grok);
+          oldGrok = oldGrok;
+        }
         extractorType.Grok = r.Grok;
       }
     });
   };
 
-  const oldGrok = [];
+  let oldGrok = [];
   const resetGrok = () => {
     if (oldGrok.length > 0) {
       extractorType.Grok = oldGrok.pop();
-    } else {
-      extractorType.Grok = "";
+      oldGrok = oldGrok;
     }
   };
-
-  const hasOldGrok = () => {
-    return  oldGrok.length > 0;
-  }
 
   const getGrokPat = (s) => {
     if (s.match(/^\d{1,3}(\.\d{1,3}){3}$/)) {
@@ -122,24 +136,18 @@
     return "%{GREEDYDATA:data}";
   };
 
-  const replaceGrok = (e) => {
-    if (e.key != "Tab" && e.key != "Escape") {
+  const replaceGrok = (w) => {
+    if (selected == "") {
       return;
     }
-    if (!e.target || !e.target.selectionStart) {
-      return;
+    const r = w ? getGrokPat(selected) : '.+';
+    if (extractorType.Grok) {
+      oldGrok.push(extractorType.Grok);
+      oldGrok = oldGrok;
     }
-    e.preventDefault();
-    const { selectionStart, selectionEnd, value } = e.target;
-    const sel = value.slice(selectionStart, selectionEnd);
-    if (sel == "") {
-      return;
-    }
-    const newPat = e.key == "Tab" ? getGrokPat(sel) : ".+";
-    oldGrok.push(extractorType.Grok);
-    extractorType.Grok =
-      value.slice(0, selectionStart) + newPat + value.slice(selectionEnd);
+    extractorType.Grok = extractorType.Grok.replace(selected,r);
   };
+
   $: grokChunks = highlightWords({
     text: extractorType.Grok,
     query: /(%\{.+?\}|\.\+|\\s\+)/,
@@ -232,24 +240,38 @@
         <div class="form-group-header">
           <h5>
             抽出パターン
-            {#if hasOldGrok()}
-              <button type="button" class="btn btn-sm ml-2" on:click={resetGrok}
-                ><Reply16 /></button
-              >
+          {#if showInput}
+            <button type="button" class="btn btn-sm ml-2" on:click={()=> showInput = false}>
+              <TriangleUp16 />
+            </button>
+          {:else}
+            <button type="button" class="btn btn-sm ml-2" on:click={()=> showInput = true}>
+              <TriangleDown16 />
+            </button>
+          {/if}
+            {#if showReplace }
+              <button type="button" class="btn btn-sm btn-danger ml-2" on:click={() => replaceGrok(true)}><Eye16 /></button>
+              <button type="button" class="btn btn-sm btn-danger ml-2" on:click={() => replaceGrok(false)}><EyeClosed16 /></button>
+            {/if}
+            {#if oldGrok.length > 0 }
+              <button type="button" class="btn btn-sm ml-2" on:click={resetGrok}><Reply16 /></button>
             {/if}
           </h5>
         </div>
+      {#if showInput}
         <div class="form-group-body">
-          <p class="f6 color-fg-accent">
-            選択後にTabキーで変数に変換、ESCキーで無視する部分に変換
-          </p>
           <input
             class="form-control grok"
             type="text"
             placeholder="抽出パターン"
             bind:value={extractorType.Grok}
-            on:keydown={replaceGrok}
           />
+        </div>
+      {/if}
+        <div class="form-group-body mt-1">
+          {#each grokChunks as chunk}
+            <span class={getGrokClass(chunk)}>{chunk.text}</span>
+          {/each}
         </div>
       </div>
       <div class="form-group">
@@ -279,11 +301,6 @@
             bind:value={extractorType.MACFields}
           />
         </div>
-      </div>
-      <div class="mt-1">
-        {#each grokChunks as chunk}
-          <span class={getGrokClass(chunk)}>{chunk.text}</span>
-        {/each}
       </div>
       <div class="form-group">
         <div class="form-group-header">
