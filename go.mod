@@ -13,7 +13,7 @@ require (
 	github.com/twsnmp/golof v1.0.0
 	github.com/viant/afs v1.16.0
 	github.com/vjeantet/grok v1.0.1
-	github.com/wailsapp/wails/v2 v2.0.0
+	github.com/wailsapp/wails/v2 v2.3.1
 	github.com/xuri/excelize/v2 v2.5.0
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
@@ -49,7 +49,6 @@ require (
 	github.com/gravwell/gcfg v1.2.9-0.20210818172109-3d05a45a2665 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/labstack/echo/v4 v4.9.0 // indirect
 	github.com/labstack/gommon v0.3.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.6.0 // indirect
@@ -66,11 +65,13 @@ require (
 	github.com/richardlehane/msoleps v1.0.1 // indirect
 	github.com/rivo/uniseg v0.4.2 // indirect
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
+	github.com/samber/lo v1.27.1 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xuri/efp v0.0.0-20210322160811-ab561f5b45e3 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/net v0.0.0-20220930213112-107f3e3c3b0b // indirect
 	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec // indirect
 	golang.org/x/text v0.3.7 // indirect

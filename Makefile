@@ -22,5 +22,5 @@ mac:
 	wails build  -platform darwin -ldflags $(LDFLAGS)
 
 dev:
-	wails dev -e svelte,go
+	wails dev -extensions svelte,go,js
 
