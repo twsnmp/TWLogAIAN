@@ -2,15 +2,12 @@
   import { getFieldName, getFieldType } from "../../js/define";
   import { Plus16, Trash16, File16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
-  import * as echarts from "echarts";
 
   export let conf;
   export let fields = [];
-  export let extractorTypeList = [];
 
   let hasStringField = false;
   let hasNumberField = false;
-  const geoFields = [];
 
   let history = "";
   const dispatch = createEventDispatcher();
@@ -41,72 +38,8 @@
     dispatch("update", { query: q, add: true });
   };
 
-  const addStartEndRange = () => {
-    let q = "";
-    if (conf.range.start) {
-      q += ` +time:>="` + conf.range.start + `:00+09:00"`;
-    }
-    if (conf.range.end) {
-      q += ` +time:<="` + conf.range.end + `:00+09:00"`;
-    }
-    if (!q) {
-      return;
-    }
-    dispatch("update", { query: q, add: true });
-  };
-
-  const addTargetRange = () => {
-    const t = Date.parse(conf.range.target);
-    if ( t==  NaN) {
-      return;
-    }
-    let q = "";
-    switch(conf.range.range) {
-    case "+":
-      q = ` +time:>="` + echarts.time.format(new Date(t),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00") + `"`;
-      break;
-    case "-":
-      q = ` +time:<="` + echarts.time.format(new Date(t),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00") + `"`;
-      break;
-    default:
-        const d = conf.range.range * 1;
-        if ( d < 5 || d > 3600 ) {
-          return;
-        }
-        q = ` +time:>="` + echarts.time.format(new Date(t - (d * 1000)),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00") + `"`;
-        q += ` +time:<="` + echarts.time.format(new Date(t+ (d * 1000)),"{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}+09:00") + `"`;
-       break;
-    }
-    dispatch("update", { query: q, add: true });
-  };
-
-  const clearTimeRange = () => {
-    let q = conf.query.replace(/\+time:\S+"\S+"/g,"");
-    dispatch("update", { query: q, add: false });
-  }
-
-  const addGeo = () => {
-    if (!conf.geo.field || !conf.geo.lat || !conf.geo.long || !conf.geo.range) {
-      return;
-    }
-    const q =
-      " geo:" +
-      conf.geo.field +
-      "," +
-      conf.geo.lat +
-      "," +
-      conf.geo.long +
-      "," +
-      conf.geo.range +
-      "km";
-    dispatch("update", { query: q, add: true });
-  };
 
   fields.forEach((f) => {
-    if (f.includes("_geo_latlong")) {
-      geoFields.push(f);
-      return;
-    }
     if (f.startsWith("_")) {
       return;
     }
@@ -164,67 +97,7 @@
     </button>
   </div>
 {/if}
-<div class="container-lg clearfix">
-  <div class="col-2 float-left">期間(対象)</div>
-  <div class="col-6 float-left">
-    <input
-      class="form-control input-sm"
-      type="text"
-      style="width: 98%;"
-      placeholder="対象の日時"
-      aria-label="対象の日時"
-      bind:value={conf.range.target}
-    />
-  </div>
-  <div class="col-2 float-left">
-    <select class="form-select" bind:value={conf.range.range}>
-    <option value="-">以前</option>
-    <option value="+">以後</option>
-    <option value="5">前後5秒</option>
-    <option value="10">前後10秒</option>
-    <option value="30">前後30秒</option>
-    <option value="60">前後1分</option>
-    <option value="1800">前後30分</option>
-    <option value="3600">前後1時間</option>
-  </select>
-  </div>
-  <div class="col-2 float-left">
-    <button class="btn" type="button" on:click={addTargetRange}>
-      <Plus16 />
-    </button>
-    <button class="btn btn-danger" type="button" on:click={clearTimeRange}>
-      <Trash16 />
-    </button>
-  </div>
-</div>
-<div class="container-lg clearfix">
-  <div class="col-2 float-left">期間(範囲)</div>
-  <div class="col-8 float-left">
-    <input
-      class="form-control input-sm"
-      type="datetime-local"
-      placeholder="開始"
-      aria-label="開始"
-      bind:value={conf.range.start}
-    />
-    -
-    <input
-      class="form-control input-sm"
-      type="datetime-local"
-      placeholder="終了"
-      aria-label="終了"
-      bind:value={conf.range.end}
-    />
-  </div>
-  <div class="col-2 float-left">
-    <button class="btn" type="button" on:click={addStartEndRange}>
-      <Plus16 />
-    </button>
-    <button class="btn btn-danger" type="button" on:click={clearTimeRange}>
-      <Trash16 />
-    </button>
-  </div>
-</div>
+
 {#if hasStringField}
   <div class="container-lg clearfix mt-1">
     <div class="col-2 float-left">キーワード</div>
@@ -304,106 +177,6 @@
     </div>
   </div>
 {/if}
-{#if geoFields.length > 0}
-  <div class="container-lg clearfix mt-1">
-    <div class="col-2 float-left">IP位置情報</div>
-    <div class="col-8 float-left">
-      <select class="form-select" aria-label="項目" bind:value={conf.geo.field}>
-        {#each geoFields as f}
-          <option value={f}>{getFieldName(f)}</option>
-        {/each}
-      </select>
-      が
-      <input
-        class="form-control input-sm"
-        type="number"
-        step="0.01"
-        style="width: 80px;"
-        placeholder="緯度"
-        aria-label="緯度"
-        bind:value={conf.geo.lat}
-      />
-      ,
-      <input
-        class="form-control input-sm"
-        type="number"
-        step="0.01"
-        style="width: 80px;"
-        placeholder="経度"
-        aria-label="経度"
-        bind:value={conf.geo.long}
-      />
-      から
-      <input
-        class="form-control input-sm"
-        type="number"
-        step="5"
-        style="width: 80px;"
-        placeholder="範囲"
-        aria-label="範囲"
-        bind:value={conf.geo.range}
-      />
-      Kmの範囲
-    </div>
-    <div class="col-2 float-left">
-      <button class="btn" type="button" on:click={addGeo}>
-        <Plus16 />
-      </button>
-    </div>
-  </div>
-{/if}
-<div class="container-lg clearfix mt-1">
-  <div class="col-2 float-left">最大件数</div>
-  <div class="col-10 float-left">
-    <select class="form-select" bind:value={conf.limit}>
-      <option value="1000">1000</option>
-      <option value="2000">2000</option>
-      <option value="5000">5000</option>
-      <option value="10000">10000</option>
-      <option value="20000">20000</option>
-      <option value="50000">50000</option>
-      <option value="100000">100000</option>
-      <option value="200000">200000</option>
-    </select>
-  </div>
-</div>
-<div class="container-lg clearfix mt-1">
-  <div class="col-2 float-left">異常ログ検知方法</div>
-  <div class="col-3 float-left">
-    <select class="form-select" bind:value={conf.anomaly}>
-      <option value="">検知しない</option>
-      <option value="iforest">Isolation Forest</option>
-      <option value="lof">Local Outlier Factor</option>
-      <option value="autoencoder">Auto Encoder</option>
-    </select>
-  </div>
-  {#if conf.anomaly}
-    <div class="col-2 float-left">特徴量の計算方法</div>
-    <div class="col-3 float-left">
-      <select class="form-select" bind:value={conf.vector}>
-        <option value="">数値データ</option>
-        <option value="time">数値データ+曜日と時間帯</option>
-        <option value="all">文字列と数値データ</option>
-        <option value="alltime">文字列と数値データ+曜日と時間帯</option>
-        <option value="sql">SQLインジェクション</option>
-        <option value="oscmd">OSコマンドインジェクション</option>
-        <option value="dirt">ディレクトリトラバーサル</option>
-        <option value="walu">アクセスログ(Waluの方法)</option>
-      </select>
-    </div>
-  {/if}
-</div>
-<div class="container-lg clearfix mt-1">
-  <div class="col-2 float-left">検索時データ抽出</div>
-  <div class="col-3 float-left">
-    <select class="form-select" bind:value={conf.extractor}>
-      <option value="">しない</option>
-      {#each extractorTypeList as { Key, Name }}
-        <option value={Key}>{Name}</option>
-      {/each}
-    </select>
-  </div>
-</div>
 
 <style>
   select {

@@ -1,4 +1,16 @@
 <script>
+  import { 
+    GetIndexInfo,
+    SearchLog,
+    GetDark,
+    GetHistory,
+    GetExtractorTypes,
+    SaveHistory,
+    CloseWorkDir,
+    Export,
+    AddMemo,
+  } from "../../../wailsjs/go/main/App.js";
+  import { BrowserOpenURL } from "../../../wailsjs/runtime/runtime.js";
   import {
     X16,
     Search16,
@@ -8,8 +20,11 @@
     Trash16,
     Reply16,
     Checklist16,
+    Pencil16,
+    Question16,
   } from "svelte-octicons";
   import Query from "./Query.svelte";
+  import SerachConf from "./SearchConf.svelte";
   import Result from "./Result.svelte";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showLogChart, resizeLogChart, getLogChartImage } from "./logchart";
@@ -38,6 +53,7 @@
   const excludeColMap = { copy: true, memo: true, extractor: true };
   let page = "";
   let showQuery = false;
+  let showConf = false;
   let busy = false;
   let dark = false;
   const conf = {
@@ -62,13 +78,15 @@
         "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"
       ),
       end: echarts.time.format(Date.now(), "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"),
-      range: "+",
+      range: "-60",
       target: "",
+      mode: "",
     },
     geo: {
-      lat: "",
-      long: "",
-      range: "",
+      mode: "",
+      lat: "35.689487",
+      long: "139.691711",
+      range: "100",
     },
     extractor: "",
   };
@@ -83,6 +101,8 @@
     Total: 0,
     Fields: [],
     Duration: "",
+    StartTime: 0,
+    EndTime: 0,
   };
   let result = {
     Logs: [],
@@ -92,8 +112,9 @@
     ErrorMsg: "",
     Fields: [],
     ExFields: [],
+    LastTime: 0,
   };
-  window.go.main.App.GetIndexInfo().then((r) => {
+  GetIndexInfo().then((r) => {
     if (r) {
       indexInfo = r;
     }
@@ -125,22 +146,91 @@
 
   let lastExtractor = "";
 
+  const getTZStr = () => {
+    const o = -(new Date().getTimezoneOffset());
+    const ao = Math.abs(o);
+    return (o < 0 ? '-' : '+') + ( '00' +   Math.trunc(ao/60) ).slice(-2) + ":" +   ('00' + ao % 60).slice(-2);
+  };
+
+  const getTargetRange = () => {
+    let t = Date.parse(conf.range.target);
+    const d = conf.range.range * 1;
+    if (!t || t == NaN) {
+      const nt = d < 0 ? indexInfo.EndTime : indexInfo.StartTime;
+      t = new Date(nt / (1000 * 1000)).getTime();
+    }
+    const sd = d < 0 ? -d : 0;
+    const ed = d < 0 ?  0 : d;
+    const tz = getTZStr();
+    return ` +time:>="` +
+          echarts.time.format(
+            new Date(t - (sd * 1000)),
+            "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}" +tz
+          ) +
+          `"` +
+          ` +time:<="` +
+          echarts.time.format(
+            new Date(t + (ed * 1000)),
+            "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"+ tz
+          ) +
+          `"`;
+  };
+
+  const getTimeFilter = () => {
+    let ret = "";
+    const tz = getTZStr();
+    switch(conf.range.mode) {
+    case "target":
+      return getTargetRange();
+      break;
+    case "range":
+      if (conf.range.start) {
+        ret += ` +time:>="` + conf.range.start + `${tz}"`;
+      }
+      if (conf.range.end) {
+        ret += ` +time:<="` + conf.range.end + `${tz}"`;
+      }
+      break;
+    }
+    return ret;
+  }
+
+  const getGeoFilter = () => {
+    if (conf.geo.mode == "" || !conf.geo.field) {
+      return "";
+    }
+    const lat = conf.geo.lat || 0;
+    const long = conf.geo.long || 0;
+    const range = conf.geo.range || 100;
+    return conf.geo.field +
+      "," +
+      lat +
+      "," +
+      long +
+      "," +
+      range +
+      "km";
+  };
+
   const search = () => {
     data.length = 0; // 空にする
     aecdata = [];
     anomalyTime = "";
-    showQuery = false; // 検索する時は詳細設定を表示しない
+    showQuery = false; // 検索する時は検索文編集を表示しない
+    showConf = false; // 検索する時は詳細設定を表示しない
     filter.st = false; // 時間フィルターをリセットする
     filter.et = false;
-    const limit = conf.limit * 1 > 100 ? conf.limit * 1 : 1000;
+    const request = {
+      Query: conf.query,
+      TimeFilter: getTimeFilter(),
+      GeoFilter: getGeoFilter(),
+      Anomaly: conf.anomaly,
+      Vector: conf.vector,
+      Extractor: conf.extractor,
+      Limit: conf.limit * 1 > 100 ? conf.limit * 1 : 1000,
+    }
     busy = true;
-    window.go.main.App.SearchLog(
-      conf.query,
-      conf.anomaly,
-      conf.vector,
-      conf.extractor,
-      limit
-    ).then((r) => {
+    SearchLog(request).then((r) => {
       busy = false;
       if (r) {
         result = r;
@@ -179,11 +269,11 @@
   onMount(() => {
     loadFieldTypes();
     getExtractorTypes();
-    window.go.main.App.GetDark().then((v) => {
+    GetDark().then((v) => {
       dark = v;
       updateChart();
     });
-    window.go.main.App.GetHistory().then((r) => {
+    GetHistory().then((r) => {
       if (r) {
         conf.history = r;
       }
@@ -191,7 +281,7 @@
   });
 
   const getExtractorTypes = () => {
-    window.go.main.App.GetExtractorTypes().then((r) => {
+    GetExtractorTypes().then((r) => {
       if (r) {
         extractorTypes = r;
         extractorTypeList = [];
@@ -204,8 +294,8 @@
   };
 
   const end = () => {
-    window.go.main.App.SaveHistory(conf.history);
-    window.go.main.App.CloseWorkDir().then((r) => {
+    SaveHistory(conf.history);
+    CloseWorkDir().then((r) => {
       if (r == "") {
         dispatch("done", { page: "wellcome" });
       }
@@ -213,7 +303,7 @@
   };
 
   const back = () => {
-    window.go.main.App.SaveHistory(conf.history);
+    SaveHistory(conf.history);
     dispatch("done", { page: "setting" });
   };
 
@@ -287,7 +377,7 @@
       }
       exportData.Data.push(row);
     });
-    window.go.main.App.Export(exportType, exportData).then(() => {
+    Export(exportType, exportData).then(() => {
       saveBusy = false;
       exportType = "";
     });
@@ -475,7 +565,7 @@
 
   const memo = (time, text) => {
     infoMsg = "メモしました。";
-    window.go.main.App.AddMemo({
+    AddMemo({
       Time: time,
       Log: text,
     });
@@ -542,6 +632,8 @@
   const showLogTypePage = () => {
     page = "logType";
   };
+
+
 </script>
 
 <svelte:window on:resize={onResize} on:wheel={onWheel} />
@@ -642,12 +734,30 @@
               <Trash16 />
             </button>
           {/if}
-          {#if !showQuery}
+          <button
+            class="btn  btn-secondary"
+            type="button"
+            on:click={() => {
+              BrowserOpenURL("https://note.com/twsnmp/n/n1e8665af0ce2");
+            }}
+          >
+            <Question16 />
+          </button>
+          <button
+            class="btn  btn-secondary"
+            type="button"
+            on:click={() => {
+              showQuery = !showQuery;
+            }}
+          >
+            <Pencil16 />
+          </button>
+          {#if !showConf}
             <button
               class="btn  btn-secondary"
               type="button"
               on:click={() => {
-                showQuery = true;
+                showConf = true;
               }}
             >
               <TriangleDown16 />
@@ -657,7 +767,7 @@
               class="btn  btn-secondary"
               type="button"
               on:click={() => {
-                showQuery = false;
+                showConf = false;
               }}
             >
               <TriangleUp16 />
@@ -681,6 +791,15 @@
         </div>
       </div>
     </div>
+    {#if showConf}
+      <div class="Box-row">
+        <SerachConf
+          {conf}
+          fields={indexInfo.Fields}
+          {extractorTypeList}
+        />
+      </div>
+    {/if}
     {#if showQuery}
       <div class="Box-row">
         <Query

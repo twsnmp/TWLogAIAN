@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -207,9 +206,11 @@ func (b *App) addLogToIndex() {
 }
 
 type IndexInfo struct {
-	Total    uint64
-	Fields   []string
-	Duration string
+	Total     uint64
+	Fields    []string
+	Duration  string
+	StartTime int64
+	EndTime   int64
 }
 
 func (b *App) GetIndexInfo() (IndexInfo, error) {
@@ -240,7 +241,19 @@ func (b *App) GetIndexInfo() (IndexInfo, error) {
 	ret.Duration = b.indexer.duration.String()
 	ret.Total = t
 	ret.Fields = f
+	ret.StartTime = b.processStat.StartTime
+	ret.EndTime = b.processStat.EndTime
 	return ret, nil
+}
+
+type SearchRequest struct {
+	Query      string
+	TimeFilter string
+	GeoFilter  string
+	Anomaly    string
+	Vector     string
+	Extractor  string
+	Limit      int
 }
 
 type SearchResult struct {
@@ -255,10 +268,8 @@ type SearchResult struct {
 	AnomalyDur int64
 }
 
-var regGeo = regexp.MustCompile(`\s*geo:(\S+)`)
-
-func (b *App) SearchLog(q, anomaly, vector, extractor string, limit int) SearchResult {
-	OutLog("SearchLog q=%#v", q)
+func (b *App) SearchLog(r SearchRequest) SearchResult {
+	OutLog("SearchLog q=%#v", r)
 	view := "timeonly"
 	if b.config.Extractor == "auto" {
 		view = "auto"
@@ -292,20 +303,14 @@ func (b *App) SearchLog(q, anomaly, vector, extractor string, limit int) SearchR
 	defer func() {
 		reader.Close()
 	}()
-	geo := ""
-	if gl := regGeo.FindAllStringSubmatch(q, -1); len(gl) > 0 {
-		if len(gl) != 1 && len(gl[0]) != 2 {
-			ret.ErrorMsg = fmt.Sprintf("位置検索条件が正しくありません len=%d", len(gl))
-			return ret
-		}
-		q = strings.ReplaceAll(q, gl[0][0], "")
-		geo = gl[0][1]
-		OutLog("geo=%s", geo)
-	}
+	q := r.Query
 	q = strings.TrimSpace(q)
 	if q == "" {
 		// 空欄は全件検索にする
 		q = "*"
+	}
+	if r.TimeFilter != "" {
+		q += " " + r.TimeFilter
 	}
 	qo := querystr.DefaultOptions()
 	query, err := querystr.ParseQueryString(q, qo)
@@ -314,6 +319,8 @@ func (b *App) SearchLog(q, anomaly, vector, extractor string, limit int) SearchR
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
+	geo := r.GeoFilter
+	geo = strings.TrimSpace(geo)
 	if geo != "" {
 		a := strings.Split(geo, ",")
 		if len(a) < 4 {
@@ -334,12 +341,12 @@ func (b *App) SearchLog(q, anomaly, vector, extractor string, limit int) SearchR
 			return ret
 		}
 		gq := bluge.NewGeoDistanceQuery(long, lat, a[3]).SetField(a[0])
-		OutLog("GeoDistanceQuery err=%#v", gq)
+		OutLog("GeoDistanceQuery gq=%#v", gq)
 		query = bluge.NewBooleanQuery().AddMust(gq, query)
 	}
 
 	OutLog("query=%#+v", query)
-	req := bluge.NewTopNSearch(limit, query).WithStandardAggregations().SortBy([]string{"time"})
+	req := bluge.NewTopNSearch(r.Limit, query).WithStandardAggregations().SortBy([]string{"time"})
 	dmi, err := reader.Search(b.ctx, req)
 	if err != nil {
 		OutLog("SearchLog err=%v", err)
@@ -395,12 +402,12 @@ func (b *App) SearchLog(q, anomaly, vector, extractor string, limit int) SearchR
 			}
 		} else {
 			ret.Fields, _ = reader.Fields()
-			if anomaly != "" {
-				b.setAnomalyScore(anomaly, vector, &ret)
+			if r.Anomaly != "" {
+				b.setAnomalyScore(r.Anomaly, r.Vector, &ret)
 				ret.Fields = append(ret.Fields, "anomalyScore")
 			}
-			if extractor != "" {
-				b.grokParseLogs(extractor, &ret)
+			if r.Extractor != "" {
+				b.grokParseLogs(r.Extractor, &ret)
 			}
 			setFields(&ret)
 			return ret
