@@ -531,6 +531,7 @@ func (b *App) openLogFile(lf *LogFile) (io.ReadCloser, error) {
 }
 
 func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
+	b.setTimeGrinder()
 	st := time.Now()
 	OutLog("start readOneLogFile path=%s", lf.Path)
 	scanner := bufio.NewScanner(reader)
@@ -563,7 +564,6 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			// 初回だけ自動判定で抽出パターンをセットする
 			lf.ETName = b.autoSetExtractor(l)
 			autoSetExtractor = false
-
 		}
 		delta := int64(0)
 		if b.processConf.Extractor != nil {
@@ -700,8 +700,18 @@ func (b *App) setTimeGrinder() error {
 	b.processConf.TimeGrinder, err = timegrinder.New(timegrinder.Config{
 		EnableLeftMostSeed: true,
 	})
-	if err == nil && b.processConf.TimeGrinder != nil && !b.config.ForceUTC {
-		b.processConf.TimeGrinder.SetLocalTime()
+	if err == nil && b.processConf.TimeGrinder != nil {
+		if !b.config.ForceUTC {
+			b.processConf.TimeGrinder.SetLocalTime()
+		}
+		// [Sun Oct 09 00:36:03 2022]
+		if p, err := timegrinder.NewUserProcessor("twWebError", `[JFMASOND][anebriyunlgpctov]+\s+\d+\s+\d\d:\d\d:\d\d\s+\d\d\d\d`, "Jan _2 15:04:05 2006"); err == nil && p != nil {
+			if _, err := b.processConf.TimeGrinder.AddProcessor(p); err != nil {
+				OutLog("AddProcessor err=%v", err)
+			}
+		} else {
+			OutLog("timegrinder.NewUserProcessor err=%v", err)
+		}
 	}
 	return err
 }
