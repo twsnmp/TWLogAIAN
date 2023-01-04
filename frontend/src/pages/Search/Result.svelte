@@ -75,42 +75,43 @@
         {errorMsg}
       </div>
     {/if}
-    <div class="Box-row markdown-body log">
-      <h5>概要</h5>
-      <table>
-        <tbody>
-          <tr>
-            <th>インデックス上の総数</th>
-            <td>{numeral(indexInfo.Total).format('0,0')}</td>
-          </tr>
-          <tr>
-            <th>インデックス作成時間</th>
-            <td>{indexInfo.Duration}</td>
-          </tr>
-          <tr>
-            <th>処理したライン数</th>
-            <td>{numeral(readLines).format('0,0')}</td>
-          </tr>
-          <tr>
-            <th>スキップしたライン数</th>
-            <td>{numeral(skipLines).format('0,0')}</td>
-          </tr>
-          <tr>
-            <th>最初のログの日時</th>
-            <td>{startTime}</td>
-          </tr>
-          <tr>
-            <th>最後のログの日時</th>
-            <td>{endTime}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
     <div class="Box-row">
       <div id="chart" />
     </div>
+    <div class="Box-row" style="display: flex;">
+      <div class="markdown-body log" style="flex: 1;">
+        <h5>概要</h5>
+        <table>
+          <tbody>
+            <tr>
+              <th>インデックス上の総数</th>
+              <td>{numeral(indexInfo.Total).format('0,0')}</td>
+            </tr>
+            <tr>
+              <th>インデックス作成時間</th>
+              <td>{indexInfo.Duration}</td>
+            </tr>
+            <tr>
+              <th>処理したライン数</th>
+              <td>{numeral(readLines).format('0,0')}</td>
+            </tr>
+            <tr>
+              <th>スキップしたライン数</th>
+              <td>{numeral(skipLines).format('0,0')}</td>
+            </tr>
+            <tr>
+              <th>最初のログの日時</th>
+              <td>{startTime}</td>
+            </tr>
+            <tr>
+              <th>最後のログの日時</th>
+              <td>{endTime}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     {#if indexInfo.Fields.length > 0}
-      <div class="Box-row markdown-body log">
+      <div class="markdown-body log" style="flex: 1;">
         <h5>抽出した項目</h5>
         <table width="90%">
           <thead>
@@ -134,6 +135,7 @@
         </table>
       </div>
     {/if}
+    </div>
     <div class="Box-row markdown-body log">
       <h5>読み込んだファイル</h5>
       <table width="100%">
