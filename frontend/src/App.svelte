@@ -5,7 +5,10 @@
   import Setting from "./pages/Setting/Setting.svelte";
   import Processing from "./pages/Search/Processing.svelte";
   import LogView from "./pages/Search/LogView.svelte";
+  import { initI18n,setLocale } from './js/i18n';
+
   let page = "wellcome";
+  initI18n();
   const handleDone = (e) => {
     if (e && e.detail  && e.detail.page) {
       page = e.detail.page;

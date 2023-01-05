@@ -1,9 +1,10 @@
 <script>
-  import { MortarBoard16, PaperAirplane16, Sun16, Moon16 } from "svelte-octicons";
+  import { MortarBoard16, PaperAirplane16, Sun16, Moon16,ThreeBars16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import { _,setLocale,getLocale } from '../js/i18n';
+
   const dispatch = createEventDispatcher();
   let version = "1.0.0(xxxxx)";
-
   window.go.main.App.GetVersion().then((v) => {
     version = v;
   });
@@ -32,11 +33,16 @@
       e.dataset.darkTheme = dark ? "dark" : "light";
     }
   };
+  let locale = getLocale();
+  const _setLocale = (l) => {
+    locale = l;
+    setLocale(l);
+  }
 </script>
 
 <div class="Box mx-auto" style="max-width: 800px;">
   <div class="Box-header">
-    <h3 class="Box-title">ようこそ TWLogAIANへ
+    <h3 class="Box-title">{$_('Wellcome.Title')}
       <button class="btn float-right" type="button" on:click={toggleDark}>
         {#if dark}
           <Sun16 />
@@ -44,7 +50,20 @@
           <Moon16 />
        {/if}
       </button>
-    </h3>
+      <details class="details-reset details-overlay float-right">
+        <summary class="btn" aria-haspopup="true">
+          <ThreeBars16/>
+        </summary>
+        <div class="SelectMenu">
+          <div class="SelectMenu-modal">
+            <div class="SelectMenu-list">
+              <button class="SelectMenu-item" role="menuitem" on:click={()=>_setLocale('en')} disabled={locale =='en'}>en</button>
+              <button class="SelectMenu-item" role="menuitem" on:click={()=>_setLocale('ja')} disabled={locale =='ja'}>ja</button>
+            </div>
+          </div>
+        </div>
+      </details>
+      </h3>
   </div>
   <div class="Box-body">
     <div class="mx-auto" style="max-width: 200px;">
@@ -52,15 +71,15 @@
     </div>
     <hr />
     <p>
-      TWLogAIANはAIアシスト付きログ分析ツールです。<br />
-      活用法は
+      {$_('Wellcome.Line1')}<br />
+      {$_('Wellcome.Line2')}<br />
       <a
         href="##"
         on:click={() => {
           openURL("https://note.com/twsnmp/m/m9c88e79743b6");
-        }}>Noteのマガジン</a
-      >に書いています。<br />
-      ソースコードは
+        }}
+      >Note</a><br />
+      {$_('Wellcome.Line3')}<br />
       <a
         href="##"
         on:click={() => {
@@ -68,19 +87,19 @@
         }}
       >
         GitHUB
-      </a>にあります。<br />
-      バグや要望は「フィードバック」か
+      </a><br />
+      {$_('Wellcome.Line4')}<br />
       <a
         href="##"
         on:click={() => {
           openURL("https://github.com/twsnmp/TWLogAIAN/issues");
         }}
       >
-        GitHubのissue
-      </a>からお知らせください。
+        GitHub Issues
+      </a>
     </p>
     <hr />
-    <p>TWLogAIANを利用いただきありがとうございます。</p>
+    <p>{$_('Wellcome.Thanks')}</p>
     <div class="f6">
       <em><small>TWLogAIAN {version}© 2022 Masayuki Yamai</small></em>
     </div>
@@ -88,11 +107,11 @@
   <div class="Box-footer text-right">
     <button class="btn btn-danger mr-1" type="button" on:click={feedback}>
       <PaperAirplane16 />
-      フィードバック
+      {$_('Wellcome.Feedback')}
     </button>
     <button class="btn btn-primary" type="button" on:click={workdir}>
       <MortarBoard16 />
-      分析をはじめる
+      {$_('Wellcome.Start')}
     </button>
   </div>
 </div>

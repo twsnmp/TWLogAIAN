@@ -1,6 +1,6 @@
 {
   "name": "twlogaian",
-  "version": "1.0.0",
+  "version": "1.7.0",
   "private": true,
   "scripts": {
     "build": "rollup -c",
@@ -36,6 +36,7 @@
     "numeral": "^2.0.6",
     "p5-svelte": "^2.2.2",
     "sirv-cli": "^1.0.0",
+    "svelte-i18n": "^3.6.0",
     "svelte-octicons": "^17.1.0",
     "world-map-geojson": "^1.0.2"
   },

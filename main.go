@@ -39,7 +39,7 @@ func main() {
 	mainMenu.Append(menu.EditMenu())
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:             "AIアシストログ分析ツール(TWLogAIAN)",
+		Title:             "TWLogAIAN",
 		Width:             1024,
 		Height:            900,
 		MinWidth:          720,
