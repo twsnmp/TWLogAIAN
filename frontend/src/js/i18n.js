@@ -20,6 +20,15 @@ const initI18n = () => {
         "Feedback": "Feedback",
         "Start": "Start",
       },
+      "Feedback": {
+        "Title": "Feedback",
+        "SendMsg": "Sending ...",
+        "SentMsg": "Feedback sent!",
+        "SendError": "Failed to send feedback.",
+        "Message": "Message",
+        "CancelBtn": "Cancel",
+        "SendBtn": "Send",
+      },
     },
     ja: {
       "Wellcome": {
@@ -31,7 +40,16 @@ const initI18n = () => {
         "Thanks": "TWLogAIANを利用いただきありがとうございます。",
         "Feedback": "フィードバック",
         "Start": "分析をはじめる",
-      }
+      },
+      "Feedback": {
+        "Title": "フィードバック",
+        "SendMsg": "フィードバックを送信中",
+        "SentMsg": "フィードバックを送信しました",
+        "SendError": "フィードバックの送信に失敗しました",
+        "Message": "メッセージ",
+        "CancelBtn": "キャンセル",
+        "SendBtn": "送信",
+      },
     },
   });
   currentLocale = getLocaleFromNavigator() || 'en';

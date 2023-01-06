@@ -1,6 +1,8 @@
 <script>
   import { X16, PaperAirplane16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import { _ } from '../js/i18n';
+
   const dispatch = createEventDispatcher();
   let feedbackSent = false;
   let feedbackErr = false;
@@ -30,15 +32,15 @@
 
 <div class="Box mx-auto" style="max-width: 800px;">
   <div class="Box-header">
-    <h3 class="Box-title">フィードバック</h3>
+    <h3 class="Box-title">{$_('Feedback.Title')}</h3>
   </div>
   {#if feedbackWait}
     <div class="flash">
-      フィードバックを送信中<span class="AnimatedEllipsis" />
+      {$_('Feedback.SendMgs')}<span class="AnimatedEllipsis" />
     </div>
   {:else if feedbackErr}
     <div class="flash flash-error">
-      フィードバックの送信に失敗しました
+      {$_('Feedback.SendError')}
       <button
         class="flash-close js-flash-close"
         type="button"
@@ -50,7 +52,7 @@
     </div>
   {:else if feedbackSent}
     <div class="flash">
-      フィードバックを送信しました
+      {$_('Feedback.SentMsg')}
       <button
         class="flash-close js-flash-close"
         type="button"
@@ -64,7 +66,7 @@
   <div class="Box-body">
     <div class="form-group" class:errored={feedbackErr}>
       <div class="form-group-header">
-        <label for="feedbackMsg">メッセージ</label>
+        <label for="feedbackMsg">{$_('Feedback.Message')}</label>
       </div>
       <div class="form-group-body">
         <textarea
@@ -79,12 +81,12 @@
     {#if !feedbackWait}
       <button class="btn btn-secondary mr-1" type="button" on:click={close}>
         <X16 />
-        キャンセル
+        {$_('Feedback.CancelBtn')}
       </button>
       {#if feedbackMsg != ""}
         <button class="btn btn-primary" type="button" on:click={sendFeedBack}>
           <PaperAirplane16 />
-          送信
+          {$_('Feedback.SendBtn')}
         </button>
       {/if}
     {/if}
