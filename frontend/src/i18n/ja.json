@@ -179,5 +179,24 @@
     "CancelBtn": "キャンセル",
     "SelectBtn": "選択",
     "WorkDir": "作業フォルダー"
+  },
+  "Time3D": {
+    "ItemX": "項目(X軸)",
+    "DateTime": "日時",
+    "ItemZ": "値(Z軸）",
+    "ColorValue": "値(カラー）",
+    "ExportType": "時系列3D分析",
+    "ExportTitle": "時系列3D分析",
+    "Title": "3D時系列分析",
+    "X": "X軸",
+    "SelectXMsg": "X軸の項目を選択して下さい",
+    "NoItem": "項目なし",
+    "Z": "Z軸",
+    "SelectZMsg": "Z軸の項目を選択して下さい",
+    "Color": "カラー",
+    "SelectColorMsg": "色分けの項目を選択して下さい",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
   }
 }

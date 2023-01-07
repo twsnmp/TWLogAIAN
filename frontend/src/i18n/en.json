@@ -179,5 +179,24 @@
     "CancelBtn": "Cancel",
     "SelectBtn": "Select",
     "WorkDir": "Work folder"
+  },
+  "Time3D": {
+    "ItemX": "Value(X-axis)",
+    "DateTime": "Date and Time",
+    "ItemZ": "Value(Z-axis)",
+    "ColorValue": "Value(color)",
+    "ExportType": "Time series 3D analysis",
+    "ExportTitle": "Time series 3D analysis",
+    "Title": "3D time series analysis",
+    "X": "X-axis",
+    "SelectXMsg": "Please select an item for the X-axis",
+    "NoItem": "No item",
+    "Z": "Z-axis",
+    "SelectZMsg": "Please select an item for the Z axis",
+    "Color": "Color",
+    "SelectColorMsg": "Please select a color item",
+    "Saving": "Saving",
+    "ExportBtn": "Export",
+    "BackBtn": "Back"
   }
 }
