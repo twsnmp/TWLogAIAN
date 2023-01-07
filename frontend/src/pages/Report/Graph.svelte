@@ -5,6 +5,10 @@
   import { showGraph, resizeGraph,getGraphImage } from "./graph";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
+  import { _,getLocale } from '../../i18n/i18n';
+
+  let locale = getLocale();
+  let gridLang = locale == "ja" ? jaJP : undefined;
 
   export let logs = [];
   export let fields = [];
@@ -20,19 +24,19 @@
   let data = [];
   let columns = [
     {
-      name: "始点項目",
+      name: $_('Graph.StartItem'),
       width: "40%",
     },
     {
-      name: "終点項目",
+      name: $_('Graph.EndItem'),
       width: "40%",
     },
     {
-      name: "件数",
+      name: $_('Graph.Count'),
       width: "10%",
     },
     {
-      name: "値",
+      name: $_('Graph.Value'),
       width: "10%",
     },
   ];
@@ -81,8 +85,8 @@
     }
     saveBusy = true;
     const exportData = {
-      Type: "グラフ分析",
-      Title: "グラフ分析",
+      Type: $_('Graph.ExportType'),
+      Title: $_('Graph.ExportTitle'),
       Header: [],
       Data: [],
       Image: "",
@@ -120,15 +124,15 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">グラフ(フロー)分析</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">$_('Graph.Title')</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="始点項目"
+      aria-label="$_('Graph.StartItem')"
       bind:value={srcField}
       on:change="{updateGraph}"
     >
-      <option value="">始点項目を選択して下さい</option>
+      <option value="">$_('Graph.SelectStartItemMsg')</option>
       {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -136,11 +140,11 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="終点項目"
+      aria-label="$_('Graph.EndItem')"
       bind:value={dstField}
       on:change="{updateGraph}"
     >
-    <option value="">終点項目を選択して下さい</option>
+    <option value="">$_('Graph.SelectEndItemMsg')</option>
     {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -148,11 +152,11 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="数値項目"
+      aria-label="$_('Graph.NumberItem')"
       bind:value={numField}
       on:change="{updateGraph}"
     >
-    <option value="">数値項目を選択して下さい</option>
+    <option value="">$_('Graph.SelectNumberItem')</option>
     {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -160,13 +164,13 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="表示形式"
+      aria-label="$_('Graph.DisplayMode')"
       bind:value={graphType}
       on:change="{updateGraph}"
     >
     <option value="gl">3D</option>
-    <option value="force">力学モデル</option>
-    <option value="circular">円形</option>
+    <option value="force">$_('Graph.ForceModel')</option>
+    <option value="circular">$_('Graph.Circle')</option>
     </select>
   </div>
   <div class="Box-row">
@@ -179,10 +183,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>保存中</span><span class="AnimatedEllipsis"></span>
+        <span>$_('Graph.Saving')</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">エクスポート</option>
+          <option value="">$_('Graph.ExportBtn')</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -190,7 +194,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      戻る
+      $_('Graph.BackBtn')
     </button>
   </div>
 </div>

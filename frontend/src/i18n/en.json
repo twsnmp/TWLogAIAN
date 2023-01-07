@@ -67,5 +67,24 @@
     "BackBtn": "Back",
     "SelectStartItemMsg": "Please select a starting point",
     "Tokyo": "Tokyo"
+  },
+  "Graph": {
+    "StartItem": "Start",
+    "EndItem": "End",
+    "Count": "Count",
+    "Value": "Value",
+    "ExportType": "Graph analysis",
+    "ExportTitle": "Graph analysis",
+    "Title": "Graph(Flow) analysis",
+    "SelectStartItemMsg": "Please select a starting point",
+    "SelectEndItemMsg": "Please select an end item",
+    "NumberItem": "Numeric field",
+    "SelectNumberItem": "Please select a numeric item",
+    "DisplayMode": "Display format",
+    "ForceModel": "Force model",
+    "Circle": "Circular",
+    "Saving": "Saving",
+    "ExportBtn": "Export",
+    "BackBtn": "Back"
   }
 }

@@ -67,5 +67,24 @@
     "BackBtn": "戻る",
     "SelectStartItemMsg": "始点項目を選択して下さい",
     "Tokyo": "東京"
+  },
+  "Graph": {
+    "StartItem": "始点項目",
+    "EndItem": "終点項目",
+    "Count": "件数",
+    "Value": "値",
+    "ExportType": "グラフ分析",
+    "ExportTitle": "グラフ分析",
+    "Title": "グラフ(フロー)分析",
+    "SelectStartItemMsg": "始点項目を選択して下さい",
+    "SelectEndItemMsg": "終点項目を選択して下さい",
+    "NumberItem": "数値項目",
+    "SelectNumberItem": "数値項目を選択して下さい",
+    "DisplayMode": "表示形式",
+    "ForceModel": "力学モデル",
+    "Circle": "円形",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
   }
 }
