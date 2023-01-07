@@ -119,5 +119,21 @@
     "ExportBtn": "Export",
     "Saving": "Saving",
     "BackBtn": "Back"
+  },
+  "Memo": {
+    "CantCopy": "Cannot copy.",
+    "Copied": "Copied.",
+    "CopyError": "Copy error.",
+    "TypeNameInfo": "Info:",
+    "TypeNameWarn": "Warnning:",
+    "TypeNameError": "error:",
+    "Title": "memo",
+    "Deffault": "Default",
+    "Info": "Info",
+    "Warn": "Warnning",
+    "Error": "Error",
+    "Memo": "Memo",
+    "CopyBtn": "copy",
+    "BackBtn": "return"
   }
 }

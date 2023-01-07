@@ -2,6 +2,7 @@
   import { X16, Copy16,Pencil16,Trash16,XCircle16,Stop16,Info16,Circle16,Check16 } from "svelte-octicons";
   import { createEventDispatcher, onMount } from "svelte";
   import * as echarts from "echarts";
+  import { _ } from '../../i18n/i18n';
 
   let memos = [];
   let editMode = false;
@@ -57,16 +58,16 @@
          + " " + e.Diff + "\n" + e.Log + "\n\n";
     });
     if (!navigator.clipboard || !navigator.clipboard) {
-      errorMsg = "コピーできません。";
+      errorMsg = $_('Memo.CantCopy');
       return;
     } 
     navigator.clipboard.writeText(copyText).then(() => {
-      infoMsg = "コピーしました。"
+      infoMsg = $_('Memo.Copied')
       setTimeout(() => {
         infoMsg = "";
       }, 2000);
     }, () => {
-      errorMsg = "コピーエラーです。";
+      errorMsg = $_('Memo.CopyError');
     });
   };
 
@@ -82,11 +83,11 @@
   const getTypeName = (t) => {
     switch(t) {
     case "info":
-      return "情報:";
+      return $_('Memo.TypeNameInfo');
     case "warn":
-      return "注意:";
+      return $_('Memo.TypeNameWarn');
     case "error":
-      return "エラー:";
+      return $_('Memo.TypeNameError');
     }
     return "";
   }
@@ -95,7 +96,7 @@
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">メモ</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">$_('Memo.Title')</h3>
   </div>
   {#if errorMsg != ""}
   <div class="flash flash-error">
@@ -129,15 +130,15 @@
         class="form-select"
         bind:value={memo.Type}
       >
-        <option value="">デフォルト</option>
-        <option value="info">情報</option>
-        <option value="warn">注意</option>
-        <option value="error">エラー</option>
+        <option value="">$_('Memo.Deffault')</option>
+        <option value="info">$_('Memo.Info')</option>
+        <option value="warn">$_('Memo.Warn')</option>
+        <option value="error">$_('Memo.Error')</option>
       </select>
       <input
         class="form-control"
         type="text"
-        placeholder="メモ"
+        placeholder="$_('Memo.Memo')"
         bind:value={memo.Memo}
       />
       <button class="btn btn-secondary" type="button" on:click={() => {editMode = false}}>
@@ -191,12 +192,12 @@
     {#if memos.length > 0}
       <button class="btn btn-secondary" type="button" on:click={copy}>
         <Copy16 />
-        コピー
+        $_('Memo.CopyBtn')
       </button>
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      戻る
+      $_('Memo.BackBtn')
     </button>
   </div>
 </div>

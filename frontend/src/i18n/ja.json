@@ -119,5 +119,21 @@
     "Saving": "保存中",
     "ExportBtn": "エクスポート",
     "BackBtn": "戻る"
+  },
+  "Memo": {
+    "CantCopy": "コピーできません。",
+    "Copied": "コピーしました。",
+    "CopyError": "コピーエラーです。",
+    "TypeNameInfo": "情報:",
+    "TypeNameWarn": "注意:",
+    "TypeNameError": "エラー:",
+    "Title": "メモ",
+    "Deffault": "デフォルト",
+    "Info": "情報",
+    "Warn": "注意",
+    "Error": "エラー",
+    "Memo": "メモ",
+    "CopyBtn": "コピー",
+    "BackBtn": "戻る"
   }
 }
