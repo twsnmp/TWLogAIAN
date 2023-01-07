@@ -1,0 +1,55 @@
+{
+  "Wellcome": {
+    "Title": "ようこそ TWLogAIANへ",
+    "Line1": "TWLogAIANはAIアシスト付きログ分析ツールです。",
+    "Line2": "マニュアルはnoteに書いています。",
+    "Line3": "ソースコードはGitHUBにあります。",
+    "Line4": "バグや要望は「フィードバック」か以下のリンクからお知らせください。",
+    "Thanks": "TWLogAIANを利用いただきありがとうございます。",
+    "Feedback": "フィードバック",
+    "Start": "分析をはじめる"
+  },
+  "Feedback": {
+    "Title": "フィードバック",
+    "SendMsg": "フィードバックを送信中",
+    "SentMsg": "フィードバックを送信しました",
+    "SendError": "フィードバックの送信に失敗しました",
+    "Message": "メッセージ",
+    "CancelBtn": "キャンセル",
+    "SendBtn": "送信"
+  },
+  "Cluster": {
+    "DateTime": "日時",
+    "Item1": "項目1",
+    "Item2": "項目2",
+    "Title": "クラスター分析",
+    "ExportType": "クラスター分析",
+    "ExportTitle": "クラスター分析",
+    "XIterm": "X軸の項目",
+    "SelectXItemMsg": "X軸の項目を選択して下さい",
+    "YItem": "Y軸の項目",
+    "SelectYItemMsg": "Y軸の項目を選択して下さい",
+    "NumberOfCluster": "クラスター数",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
+  },
+  "FFT": {
+    "DateTime": "日時",
+    "Item1": "項目1",
+    "ExportType": "FFT分析",
+    "ExportTitle": "FFT分析",
+    "Title": "FFT分析",
+    "SumItem": "集計項目",
+    "SelectSumItem": "集計項目を選択して下さい",
+    "NoItem": "項目なし",
+    "DisplayItem": "表示項目",
+    "3DChart": "3Dチャート",
+    "CharMode": "グラフの表示モード",
+    "Freq": "周波数",
+    "Cycle": "周期",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
+  }
+}

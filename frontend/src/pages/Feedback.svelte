@@ -1,7 +1,7 @@
 <script>
   import { X16, PaperAirplane16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
-  import { _ } from '../js/i18n';
+  import { _ } from '../i18n/i18n';
 
   const dispatch = createEventDispatcher();
   let feedbackSent = false;
@@ -36,7 +36,7 @@
   </div>
   {#if feedbackWait}
     <div class="flash">
-      {$_('Feedback.SendMgs')}<span class="AnimatedEllipsis" />
+      {$_('Feedback.SendMsg')}<span class="AnimatedEllipsis" />
     </div>
   {:else if feedbackErr}
     <div class="flash flash-error">

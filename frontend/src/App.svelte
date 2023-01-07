@@ -5,7 +5,7 @@
   import Setting from "./pages/Setting/Setting.svelte";
   import Processing from "./pages/Search/Processing.svelte";
   import LogView from "./pages/Search/LogView.svelte";
-  import { initI18n } from './js/i18n';
+  import { initI18n } from './i18n/i18n';
 
   let page = "wellcome";
   initI18n();

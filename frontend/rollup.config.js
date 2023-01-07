@@ -6,6 +6,7 @@ import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import postcss from 'rollup-plugin-postcss'
 import replace from '@rollup/plugin-replace';
+import json from 'rollup-plugin-json';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -36,7 +37,8 @@ export default {
 		sourcemap: true,
 		format: 'iife',
 		name: 'app',
-		file: 'dist/bundle.js'
+		file: 'dist/bundle.js',
+		inlineDynamicImports: true, //Add this
 	},
 	plugins: [
 		svelte({
@@ -79,6 +81,24 @@ export default {
 		production && terser(),
     replace({
       'process.env.NODE_ENV': JSON.stringify( 'development' )
+    }),
+		json({
+      include: 'src/i18n/**',
+      // exclude: [ 'node_modules/foo/**', 'node_modules/bar/**' ],
+
+      // for tree-shaking, properties will be declared as
+      // variables, using either `var` or `const`
+      preferConst: true, // Default: false
+
+      // specify indentation for the generated default export —
+      // defaults to '\t'
+      indent: '  ',
+
+      // ignores indent and generates the smallest code
+      compact: true, // Default: false
+
+      // generate a named export for every property of the JSON object
+      namedExports: true // Default: true
     }),
 	],
 	watch: {

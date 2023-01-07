@@ -1,7 +1,7 @@
 <script>
   import { MortarBoard16, PaperAirplane16, Sun16, Moon16,ThreeBars16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
-  import { _,setLocale,getLocale } from '../js/i18n';
+  import { _,setLocale,getLocale } from '../i18n/i18n';
 
   const dispatch = createEventDispatcher();
   let version = "1.0.0(xxxxx)";

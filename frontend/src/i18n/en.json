@@ -1,0 +1,55 @@
+{
+  "Wellcome": {
+    "Title": "Wellcom to TWLogAIAN",
+    "Line1": "TWLogAIAN is an AI-assisted log analysis tool.",
+    "Line2": "The manual is written in the following link",
+    "Line3": "The source code is available on GitHUB.",
+    "Line4": "Please let us know of any bugs or requests through ’Feedback’ or the link below.",
+    "Thanks": "Thank you for using TWLogAIAN.",
+    "Feedback": "Feedback",
+    "Start": "Start"
+  },
+  "Feedback": {
+    "Title": "Feedback",
+    "SendMsg": "Sending ...",
+    "SentMsg": "Feedback sent!",
+    "SendError": "Failed to send feedback.",
+    "Message": "Message",
+    "CancelBtn": "Cancel",
+    "SendBtn": "Send"
+  },
+  "Cluster": {
+    "DateTime": "Date and Time",
+    "Item1": "Item 1",
+    "Item2": "Item 2",
+    "Title": "Cluster analysis",
+    "XIterm": "Items on the X-axis",
+    "SelectXItemMsg": "Please select an item for the X-axis",
+    "YItem": "Y-axis item",
+    "SelectYItemMsg": "Please select an item for the Y-axis",
+    "NumberOfCluster": "Number of clusters",
+    "Saving": "Saving",
+    "ExportBtn": "Export",
+    "BackBtn": "return",
+    "ExportType": "Cluster analysis",
+    "ExportTitle": "Cluster analysis"
+  },
+  "FFT": {
+    "DateTime": "Date and Time",
+    "Item1": "Item 1",
+    "ExportType": "FFT analysis",
+    "ExportTitle": "FFT analysis",
+    "Title": "FFT analysis",
+    "SumItem": "Summary item",
+    "SelectSumItem": "Please select a summary item",
+    "NoItem": "No item",
+    "DisplayItem": "Display item",
+    "3DChart": "3D chart",
+    "CharMode": "Graph display mode",
+    "Freq": "Frequency",
+    "Cycle": "Cycle",
+    "Saving": "Saving",
+    "ExportBtn": "export",
+    "BackBtn": "return"
+  }
+}
