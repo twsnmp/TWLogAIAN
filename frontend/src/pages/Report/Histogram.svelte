@@ -6,6 +6,10 @@
   import { showHistogramChart, resizeHistogramChart,getHistogramChartImage } from "./histogram";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
+  import { _,getLocale } from '../../i18n/i18n';
+
+  let locale = getLocale();
+  let gridLang = locale == "ja" ? jaJP : undefined;
 
   export let logs = [];
   export let fields = [];
@@ -17,12 +21,12 @@
   let data = [];
   let columns = [
     {
-      name: "日時",
+      name: $_('Histogram.DateTime'),
       width: "80%",
       formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
     },
     {
-      name: "項目1",
+      name: $_('Histogram.Item1'),
       width: "20%",
     },
   ];
@@ -77,8 +81,8 @@
     }
     saveBusy = true;
     const exportData = {
-      Type: "ヒストグラム分析",
-      Title: "ヒストグラム分析",
+      Type: $_('Histogram.ExportType'),
+      Title: $_('Histogram.ExportTitle'),
       Header: [],
       Data: [],
       Image: "",
@@ -116,15 +120,15 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">ヒストグラム分析</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">$_('Histogram.Title')</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="項目"
+      aria-label="$_('Histogram.Item')"
       bind:value={selected}
       on:change={updateHistogram}
     >
-    <option value="">集計する項目を選択してください</option>
+    <option value="">$_('Histogram.SelectItemMsg')</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -134,16 +138,16 @@
     <div id="chart" />
   </div>
   <div class="Box-row markdown-body log">
-    <Grid {data} sort search {pagination} {columns} language={jaJP} />
+    <Grid {data} sort search {pagination} {columns} language={gridLang} />
   </div>
   <div class="Box-footer text-right">
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>保存中</span><span class="AnimatedEllipsis"></span>
+        <span>$_('Histogram.Saving')</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">エクスポート</option>
+          <option value="">$_('Histogram.ExportBtn')</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -151,7 +155,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      戻る
+      $_('Histogram.BackBtn')
     </button>
   </div>
 </div>

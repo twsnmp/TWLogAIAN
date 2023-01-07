@@ -107,5 +107,17 @@
     "Saving": "保存中",
     "ExportBtn": "エクスポート",
     "BackBtn": "戻る"
+  },
+  "Histogram": {
+    "DateTime": "日時",
+    "Item1": "項目1",
+    "ExportType": "ヒストグラム分析",
+    "ExportTitle": "ヒストグラム分析",
+    "Title": "ヒストグラム分析",
+    "Item": "項目",
+    "SelectItemMsg": "集計する項目を選択してください",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
   }
 }

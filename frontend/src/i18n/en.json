@@ -107,5 +107,17 @@
     "Saving": "Saving",
     "ExportBtn": "Export",
     "BackBtn": "Back"
+  },
+  "Histogram": {
+    "DateTime": "Date and time",
+    "Item1": "Item 1",
+    "ExportType": "Histogram analysis",
+    "ExportTitle": "Histogram analysis",
+    "Title": "Histogram analysis",
+    "Item": "Item",
+    "SelectItemMsg": "Please select an item to aggregate",
+    "ExportBtn": "Export",
+    "Saving": "Saving",
+    "BackBtn": "Back"
   }
 }
