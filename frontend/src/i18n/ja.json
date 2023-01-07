@@ -226,5 +226,17 @@
     "GrokPat": "抽出パターン名",
     "Path": "パス",
     "StopBtn": "停止"
+  },
+  "LogType": {
+    "Name": "名前",
+    "Edit": "編集",
+    "Delete": "削除",
+    "Type": "種類",
+    "Unit": "単位",
+    "Title": "抽出パターン定義",
+    "FieldDef": "フィールド定義",
+    "ExportBtn": "エクスポート",
+    "ImportBtn": "インポート",
+    "CloseBtn": "閉じる"
   }
 }

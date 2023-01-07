@@ -12,6 +12,10 @@
   import EditFieldType from "./EditFieldType.svelte";
   import { onMount } from "svelte";
   import jaJP from "../../js/gridjsJaJP";
+  import { _,getLocale } from '../../i18n/i18n';
+
+  let locale = getLocale();
+  let gridLang = locale == "ja" ? jaJP : undefined;
 
   const dispatch = createEventDispatcher();
   let page = "";
@@ -174,17 +178,17 @@
       width: "20%",
     },
     {
-      name: "名前",
+      name: $_('LogType.Name'),
       width: "70%",
     },
     {
-      name: "編集",
+      name: $_('LogType.Edit'),
       sort: false,
       width: "5%",
       formatter: editExtractorTypeButton,
     },
     {
-      name: "削除",
+      name: $_('LogType.Delete'),
       sort: false,
       width: "5%",
       formatter: deleteExtractorTypeButton,
@@ -255,25 +259,25 @@
       width: "20%",
     },
     {
-      name: "名前",
+      name: $_('LogType.Name'),
       width: "50%",
     },
     {
-      name: "種類",
+      name: $_('LogType.Type'),
       width: "10%",
     },
     {
-      name: "単位",
+      name: $_('LogType.Unit'),
       width: "10%",
     },
     {
-      name: "編集",
+      name: $_('LogType.Edit'),
       sort: false,
       width: "5%",
       formatter: editFieldTypeButton,
     },
     {
-      name: "削除",
+      name: $_('LogType.Delete'),
       sort: false,
       width: "5%",
       formatter: deleteFieldTypeButton,
@@ -313,7 +317,7 @@
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
       <h3 class="Box-title pb-2">
-        抽出パターン定義
+        $_('LogType.Title')
         <button
         class="btn btn-sm float-right"
         type="button"
@@ -351,7 +355,7 @@
     </div>
     <div class="Box-header">
       <h3 class="Box-title pb-2">
-        フィールド定義
+        $_('LogType.FieldDef')
         <button
           class="btn btn-sm float-right"
           type="button"
@@ -393,7 +397,7 @@
       on:click={exportLogTypes}
     >
       <Download16 />
-      エクスポート
+      $_('LogType.ExportBtn')
       </button>
       <button
       class="btn btn-outline mr-1"
@@ -401,11 +405,11 @@
       on:click={importLogTypes}
     >
       <Upload16 />
-      インポート
+      $_('LogType.ImportBtn')
     </button>
     <button class="btn btn-secondary mr-1" type="button" on:click={close}>
         <X16 />
-        閉じる
+        $_('LogType.CloseBtn')
       </button>
     </div>
   </div>

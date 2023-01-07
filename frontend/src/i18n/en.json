@@ -226,5 +226,17 @@
     "GrokPat": "Grok pattern name",
     "Path": "Path",
     "StopBtn": "Stop"
+  },
+  "LogType": {
+    "Name": "Name",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "Type": "Type",
+    "Unit": "Unit",
+    "Title": "Extraction pattern definition",
+    "FieldDef": "Field definition",
+    "ExportBtn": "Export",
+    "ImportBtn": "Import",
+    "CloseBtn": "Close"
   }
 }
