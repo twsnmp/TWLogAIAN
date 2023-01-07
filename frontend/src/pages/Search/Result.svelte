@@ -12,6 +12,7 @@
     isFieldValid,
   } from "../../js/define";
   import * as echarts from "echarts";
+  import { _ } from '../../i18n/i18n';
 
   export let indexInfo;
   export let aecdata;
@@ -68,7 +69,7 @@
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
-      <h3 class="Box-title">ログ読み込み結果</h3>
+      <h3 class="Box-title">{$_('Result.Title')}</h3>
     </div>
     {#if errorMsg != ""}
       <div class="flash flash-error">
@@ -80,31 +81,31 @@
     </div>
     <div class="Box-row" style="display: flex;">
       <div class="markdown-body log" style="flex: 1;">
-        <h5>概要</h5>
+        <h5>{$_('Result.OverView')}</h5>
         <table>
           <tbody>
             <tr>
-              <th>インデックス上の総数</th>
+              <th>{$_('Result.TotalOnIndex')}</th>
               <td>{numeral(indexInfo.Total).format('0,0')}</td>
             </tr>
             <tr>
-              <th>インデックス作成時間</th>
+              <th>{$_('Result.IndexTime')}</th>
               <td>{indexInfo.Duration}</td>
             </tr>
             <tr>
-              <th>処理したライン数</th>
+              <th>{$_('Result.ReadLines')}</th>
               <td>{numeral(readLines).format('0,0')}</td>
             </tr>
             <tr>
-              <th>スキップしたライン数</th>
+              <th>{$_('Result.SkipLines')}</th>
               <td>{numeral(skipLines).format('0,0')}</td>
             </tr>
             <tr>
-              <th>最初のログの日時</th>
+              <th>{$_('Result.LogStart')}</th>
               <td>{startTime}</td>
             </tr>
             <tr>
-              <th>最後のログの日時</th>
+              <th>{$_('Result.LogEnd')}</th>
               <td>{endTime}</td>
             </tr>
           </tbody>
@@ -112,14 +113,14 @@
       </div>
     {#if indexInfo.Fields.length > 0}
       <div class="markdown-body log" style="flex: 1;">
-        <h5>抽出した項目</h5>
+        <h5>{$_('Result.ExtractItems')}</h5>
         <table width="90%">
           <thead>
             <tr>
-              <th width="30%">変数名</th>
-              <th width="40%">名前</th>
-              <th width="20%">種別</th>
-              <th width="10%">単位</th>
+              <th width="30%">{$_('Result.ValueName')}</th>
+              <th width="40%">{$_('Result.Name')}</th>
+              <th width="20%">{$_('Result.Type')}</th>
+              <th width="10%">{$_('Result.Unit')}</th>
             </tr>
           </thead>
           <tbody>
@@ -137,17 +138,17 @@
     {/if}
     </div>
     <div class="Box-row markdown-body log">
-      <h5>読み込んだファイル</h5>
+      <h5>{$_('Result.ReadFiles')}</h5>
       <table width="100%">
         <thead>
           <tr>
-            <th width="8%">有効率</th>
-            <th width="8%">完了</th>
-            <th width="8%">対象</th>
-            <th width="8%">処理時間</th>
-            <th width="8%">サイズ</th>
-            <th width="15%">抽出パターン名</th>
-            <th width="45%">パス</th>
+            <th width="8%">{$_('Result.Rate')}</th>
+            <th width="8%">{$_('Result.Done')}</th>
+            <th width="8%">{$_('Result.Target')}</th>
+            <th width="8%">{$_('Result.Time')}</th>
+            <th width="8%">{$_('Result.Size')}</th>
+            <th width="15%">{$_('Result.GrokPat')}</th>
+            <th width="45%">{$_('Result.Path')}</th>
           </tr>
         </thead>
         <tbody>
@@ -167,14 +168,14 @@
     </div>
     {#if aecdata.length > 0}
       <div class="Box-row">
-        <h5>Auto Encoderの学習状況</h5>
+        <h5>{$_('Result.AutoEncoderStat')}</h5>
         <AutoEncoder {dark} chartData={aecdata} />
       </div>
     {/if}
     <div class="Box-footer text-right">
       <button class="btn" type="button" on:click={back}>
         <X16 />
-        戻る
+        {$_('Result.BackBtn')}
       </button>
     </div>
 </div>

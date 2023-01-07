@@ -273,16 +273,41 @@
     "Searching": "Searching"
   },
   "Query": {
-    "History": "Search history",
+    "History": "History",
     "SelectHistoryMsg": "Please select history",
-    "Keyword": "keyword",
-    "Item": "item",
-    "All": "whole",
+    "Keyword": "Keyword",
+    "Item": "Item",
+    "All": "All",
     "Include": "includes",
     "Is": "is ",
     "Must": "Must",
     "Exclude": "Exclude",
-    "NumberCond": "Numerical judgment",
-    "Number": "numerical value"
+    "NumberCond": "Numerical Cond",
+    "Number": "Numerical value"
+  },
+  "Result": {
+    "Title": "Log reading result",
+    "OverView": "Overview",
+    "TotalOnIndex": "Total",
+    "IndexTime": "Indexing time",
+    "ReadLines": "Processed lines",
+    "SkipLines": "Skipped lines",
+    "LogStart": "Date and time of the first log",
+    "LogEnd": "Date and time of last log",
+    "ExtractItems": "Extracted items",
+    "ValueName": "Variable name",
+    "Name": "Name",
+    "Type": "Kinds",
+    "Unit": "Unit",
+    "ReadFiles": "Loaded file",
+    "Rate": "Effective rate",
+    "Done": "Done",
+    "Target": "Target",
+    "Time": "Processing time",
+    "Size": "Size",
+    "GrokPat": "Grok pattern name",
+    "Path": "Path",
+    "AutoEncoderStat": "Auto Encoder learning status",
+    "BackBtn": "Back"
   }
 }

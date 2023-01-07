@@ -284,5 +284,30 @@
     "Exclude": "除外",
     "NumberCond": "数値判定",
     "Number": "数値"
+  },
+  "Result": {
+    "Title": "ログ読み込み結果",
+    "OverView": "概要",
+    "TotalOnIndex": "インデックス上の総数",
+    "IndexTime": "インデックス作成時間",
+    "ReadLines": "処理したライン数",
+    "SkipLines": "スキップしたライン数",
+    "LogStart": "最初のログの日時",
+    "LogEnd": "最後のログの日時",
+    "ExtractItems": "抽出した項目",
+    "ValueName": "変数名",
+    "Name": "名前",
+    "Type": "種別",
+    "Unit": "単位",
+    "ReadFiles": "読み込んだファイル",
+    "Rate": "有効率",
+    "Done": "完了",
+    "Target": "対象",
+    "Time": "処理時間",
+    "Size": "サイズ",
+    "GrokPat": "抽出パターン名",
+    "Path": "パス",
+    "AutoEncoderStat": "Auto Encoderの学習状況",
+    "BackBtn": "戻る"
   }
 }
