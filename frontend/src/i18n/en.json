@@ -135,5 +135,17 @@
     "Memo": "Memo",
     "CopyBtn": "copy",
     "BackBtn": "return"
+  },
+  "Ranking": {
+    "Rank": "Rank",
+    "Item": "Item",
+    "Count": "Count",
+    "ExportType": "Ranking",
+    "ExportTitle": "Ranking analysis",
+    "Title": "Ranking analysis",
+    "SelectSumItemMsg": "Please select an item to aggregate",
+    "Saving": "Saving",
+    "ExportBtn": "Export",
+    "BackBtn": "Back"
   }
 }

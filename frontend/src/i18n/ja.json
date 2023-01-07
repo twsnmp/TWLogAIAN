@@ -135,5 +135,17 @@
     "Memo": "メモ",
     "CopyBtn": "コピー",
     "BackBtn": "戻る"
+  },
+  "Ranking": {
+    "Rank": "順位",
+    "Item": "項目",
+    "Count": "件数",
+    "ExportType": "ランキング",
+    "ExportTitle": "ランキング分析",
+    "Title": "ランキング分析",
+    "SelectSumItemMsg": "集計する項目を選択してください",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
   }
 }
