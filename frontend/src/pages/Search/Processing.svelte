@@ -3,6 +3,8 @@
   import { createEventDispatcher } from "svelte";
   import { onMount } from 'svelte';
   import numeral from 'numeral';
+  import { _ } from '../../i18n/i18n';
+
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   let logFiles = [];
@@ -33,7 +35,6 @@
   });
 
   const stop = () => {
-    // Index作成を停止
     window.go.main.App.Stop().then((r) => {
       if (r === "") {
         clearTimeout(timer);
@@ -48,7 +49,7 @@
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
-      <h3 class="Box-title">ログを読み込み中<span class="AnimatedEllipsis"></span></h3>
+      <h3 class="Box-title">$_('Processing.Title')<span class="AnimatedEllipsis"></span></h3>
     </div>
     {#if errorMsg != ""}
       <div class="flash flash-error">
@@ -59,13 +60,13 @@
       <table width="100%">
         <thead>
           <tr>
-            <th width="8%">有効率</th>
-            <th width="8%">完了</th>
-            <th width="8%">対象</th>
-            <th width="8%">処理時間</th>
-            <th width="8%">サイズ</th>
-            <th width="15%">抽出パターン名</th>
-            <th width="45%">パス</th>
+            <th width="8%">$_('Processing.Rate')</th>
+            <th width="8%">$_('Processing.Done')</th>
+            <th width="8%">$_('Processing.Target')</th>
+            <th width="8%">$_('Processing.Time')</th>
+            <th width="8%">$_('Processing.Size')</th>
+            <th width="15%">$_('Processing.GrokPat')</th>
+            <th width="45%">$_('Processing.Path')</th>
           </tr>
         </thead>
         <tbody>
@@ -86,7 +87,7 @@
     <div class="Box-footer text-right">
       <button class="btn btn-danger" type="button" on:click={stop}>
         <X16 />
-        停止
+        $_('Processing.StopBtn')
       </button>
     </div>
 </div>

@@ -215,5 +215,16 @@
     "Saving": "Saving",
     "ExportBtn": "Export",
     "BackBtn": "Back"
+  },
+  "Processing": {
+    "Title": "Processing Log",
+    "Rate": "Effective rate",
+    "Done": "Completion",
+    "Target": "Target",
+    "Time": "Processing time",
+    "Size": "Size",
+    "GrokPat": "Grok pattern name",
+    "Path": "Path",
+    "StopBtn": "Stop"
   }
 }

@@ -215,5 +215,16 @@
     "Saving": "保存中",
     "ExportBtn": "エクスポート",
     "BackBtn": "戻る"
+  },
+  "Processing": {
+    "Title": "ログを読み込み中",
+    "Rate": "有効率",
+    "Done": "完了",
+    "Target": "対象",
+    "Time": "処理時間",
+    "Size": "サイズ",
+    "GrokPat": "抽出パターン名",
+    "Path": "パス",
+    "StopBtn": "停止"
   }
 }
