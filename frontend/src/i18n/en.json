@@ -86,5 +86,26 @@
     "Saving": "Saving",
     "ExportBtn": "Export",
     "BackBtn": "Back"
+  },
+  "Heatmap": {
+    "WeekDay": "Day of week",
+    "TimeRange": "Time",
+    "Value": "Value",
+    "Date": "Date",
+    "Count": "Count",
+    "ExportType": "Hourly heat map",
+    "ExportTitle": "Hourly heat map",
+    "Title": "Hourly heat map",
+    "SumItem": "Summary item",
+    "CountItem": "Count",
+    "Weekly": "Weekly",
+    "Daily": "Daily",
+    "Sum": "Total",
+    "Mean": "Mean",
+    "Median": "Median",
+    "Variance": "Variance",
+    "Saving": "Saving",
+    "ExportBtn": "Export",
+    "BackBtn": "Back"
   }
 }

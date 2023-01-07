@@ -86,5 +86,26 @@
     "Saving": "保存中",
     "ExportBtn": "エクスポート",
     "BackBtn": "戻る"
+  },
+  "Heatmap": {
+    "WeekDay": "曜日",
+    "TimeRange": "時間帯",
+    "Value": "値",
+    "Date": "日付",
+    "Count": "件数",
+    "ExportType": "時間帯別ヒートマップ",
+    "ExportTitle": "時間帯別ヒートマップ",
+    "Title": "時間帯別ヒートマップ",
+    "SumItem": "集計項目",
+    "CountItem": "回数",
+    "Weekly": "曜日単位",
+    "Daily": "日単位",
+    "Sum": "合計",
+    "Mean": "平均",
+    "Median": "中央値",
+    "Variance": "分散",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
   }
 }
