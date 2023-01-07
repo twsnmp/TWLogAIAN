@@ -170,5 +170,14 @@
     "Saving": "保存中",
     "ExportBtn": "エクスポート",
     "BackBtn": "戻る"
+  },
+  "WorkDir": {
+    "SelectWorkDirMsg": "作業ディレクトリを選択してください",
+    "Title": "作業フォルダーの選択",
+    "History": "最近使ったフォルダー",
+    "SelectMsg": "選択してください。",
+    "CancelBtn": "キャンセル",
+    "SelectBtn": "選択",
+    "WorkDir": "作業フォルダー"
   }
 }

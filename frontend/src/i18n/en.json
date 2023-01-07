@@ -170,5 +170,14 @@
     "Saving": "Saving",
     "ExportBtn": "Export",
     "BackBtn": "Back"
+  },
+  "WorkDir": {
+    "SelectWorkDirMsg": "Please select a working directory",
+    "Title": "Select working folder",
+    "History": "Recent folders",
+    "SelectMsg": "Please select.",
+    "CancelBtn": "Cancel",
+    "SelectBtn": "Select",
+    "WorkDir": "Work folder"
   }
 }

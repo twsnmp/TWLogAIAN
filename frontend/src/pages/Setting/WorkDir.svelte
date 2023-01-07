@@ -1,6 +1,8 @@
 <script>
   import { X16, FileDirectory16, Check16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import { _ } from '../../i18n/i18n';
+
   const dispatch = createEventDispatcher();
   let workdir = "";
   let ErrorMsg = "";
@@ -10,13 +12,12 @@
   window.go.main.App.GetLastWorkDirs().then((wds) => {
     lastWorkDirs = wds;
     if (lastWorkDirs.length > 0 && workdir == "") {
-      // 最後に利用したディレクトリが初期値
       workdir = lastWorkDirs[0];
     }
   });
   const setWorkDir = () => {
     if (!workdir) {
-      ErrorMsg = "作業ディレクトリを選択してください";
+      ErrorMsg = $_('WorkDir.SelectWorkDirMsg');
       return;
     }
     window.go.main.App.SetWorkDir(workdir).then((r) => {
@@ -47,7 +48,7 @@
 
 <div class="Box mx-auto" style="max-width: 800px;">
   <div class="Box-header">
-    <h3 class="Box-title">作業フォルダーの選択</h3>
+    <h3 class="Box-title">$_('WorkDir.Title')</h3>
   </div>
   {#if ErrorMsg != ""}
     <div class="flash flash-error">
@@ -67,8 +68,8 @@
       <input
         class="form-control"
         type="text"
-        placeholder="作業フォルダー"
-        aria-label="作業フォルダー"
+        placeholder="$_('WorkDir.WorkDir')"
+        aria-label="$_('WorkDir.WorkDir')"
         bind:value={workdir}
       />
       <span class="input-group-button">
@@ -78,15 +79,15 @@
       </span>
     </div>
     {#if lastWorkDirs.length > 0}
-      <p>最近使ったフォルダー</p>
+      <p>$_('WorkDir.History')</p>
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         class="form-select"
-        aria-label="最近使ったフォルダー"
+        aria-label="$_('WorkDir.History')"
         bind:value={selLast}
         on:change={checkSelectWorkDir}
       >
-        <option value="">選択してください。</option>
+        <option value="">$_('WorkDir.SelectMsg')</option>
         {#each lastWorkDirs as d}
           <option value={d}>{d}</option>
         {/each}
@@ -96,11 +97,11 @@
   <div class="Box-footer text-right">
     <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
       <X16 />
-      キャンセル
+      $_('WorkDir.CancelBtn')
     </button>
     <button class="btn btn-primary" type="button" on:click={setWorkDir}>
       <Check16 />
-      選択
+      $_('WorkDir.SelectBtn')
     </button>
   </div>
 </div>

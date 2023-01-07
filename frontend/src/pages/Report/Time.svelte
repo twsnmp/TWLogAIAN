@@ -163,7 +163,7 @@
     <div id="chart" />
   </div>
   <div class="Box-row markdown-body log">
-    <Grid {data} sort search {pagination} {columns} language={jaJP} />
+    <Grid {data} sort search {pagination} {columns} language={gridLang} />
   </div>
   <div class="Box-footer text-right">
     {#if data.length > 0}
