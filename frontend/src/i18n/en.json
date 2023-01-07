@@ -30,7 +30,7 @@
     "NumberOfCluster": "Number of clusters",
     "Saving": "Saving",
     "ExportBtn": "Export",
-    "BackBtn": "return",
+    "BackBtn": "Back",
     "ExportType": "Cluster analysis",
     "ExportTitle": "Cluster analysis"
   },
@@ -49,7 +49,23 @@
     "Freq": "Frequency",
     "Cycle": "Cycle",
     "Saving": "Saving",
-    "ExportBtn": "export",
-    "BackBtn": "return"
+    "ExportBtn": "Export",
+    "BackBtn": "Back"
+  },
+  "Globe": {
+    "StartItem": "Start",
+    "EndItem": "End",
+    "Count": "Count",
+    "Value": "Value",
+    "ExportType": "Flow analysis (globe)",
+    "ExportTitle": "Flow analysis (globe)",
+    "Title": "Flow analysis (globe)",
+    "NumberItem": "Numeric field",
+    "SelectNumberItemMsg": "Please select a numeric item",
+    "Saving": "Saving",
+    "ExportBtn": "Export",
+    "BackBtn": "Back",
+    "SelectStartItemMsg": "Please select a starting point",
+    "Tokyo": "Tokyo"
   }
 }

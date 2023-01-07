@@ -51,5 +51,21 @@
     "Saving": "保存中",
     "ExportBtn": "エクスポート",
     "BackBtn": "戻る"
+  },
+  "Globe": {
+    "StartItem": "始点項目",
+    "EndItem": "終点項目",
+    "Count": "件数",
+    "Value": "値",
+    "ExportType": "フロー分析（地球儀）",
+    "ExportTitle": "フロー分析（地球儀）",
+    "Title": "フロー分析（地球儀）",
+    "NumberItem": "数値項目",
+    "SelectNumberItemMsg": "数値項目を選択して下さい",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る",
+    "SelectStartItemMsg": "始点項目を選択して下さい",
+    "Tokyo": "東京"
   }
 }
