@@ -147,5 +147,28 @@
     "Saving": "Saving",
     "ExportBtn": "Export",
     "BackBtn": "Back"
+  },
+  "Time": {
+    "DateAndTime": "Date and Time",
+    "MeanValue": "Average",
+    "MaxValue": "Max",
+    "MinValue": "Min",
+    "MedianValue": "Median",
+    "VariantValue": "Variant",
+    "Regression ": "Regression analysis({chartType})",
+    "ExportType": "Time series analysis",
+    "ExportTitle": "Time series analysis",
+    "Title": "Time series analysis",
+    "SelectItemMsg": "Please select an item",
+    "RealData": "Real data",
+    "Sum1Min": "Aggregate by minute",
+    "Sum1H": "Hourly aggregation",
+    "RegressionLinear": "Regression analysis (linear)",
+    "RegressionExponential": "Regression analysis (exponential)",
+    "RegrfessionLogarithmic": "regression analysis",
+    "RegressionPlynomial": "regression analysis (polynomial)",
+    "Saving": "Saving",
+    "ExportBtn": "Export",
+    "BackBtn": "Back"
   }
 }

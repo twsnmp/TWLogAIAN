@@ -6,6 +6,10 @@
   import { showTimeChart, resizeTimeChart,getTimeChartImage } from "./time";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
+  import { _,getLocale } from '../../i18n/i18n';
+
+  let locale = getLocale();
+  let gridLang = locale == "ja" ? jaJP : undefined;
 
   export let logs = [];
   export let fields = [];
@@ -28,33 +32,33 @@
     if(chartType == "1h" || chartType == "1m" ){
       columns = [
         {
-          name: "日時",
+          name: $_('Time.DateAndTime'),
           formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
         },{
-          name: "平均値",
+          name: $_('Time.MeanValue'),
         },{
-          name: "最大値",
+          name: $_('Time.MaxValue'),
         },{
-          name: "最小値",
+          name: $_('Time.MinValue'),
         },{
-          name: "中央値",
+          name: $_('Time.MedianValue'),
         },{
-          name: "分散",
+          name: $_('Time.VariantValue'),
         }
       ];
     } else if (chartType != ""){
       columns = [
         {
-          name: "日時",
+          name: $_('Time.DateAndTime'),
           formatter: (cell) => echarts.time.format(new Date(cell), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
         },{
-          name: "回帰分析(" + chartType + ")",
+          name: $_('Time.Regression ',{values:{chartType:chartType}}),
         }
       ];
     } else {
       columns = [
         {
-          name: "日時",
+          name: $_('Time.DateAndTime'),
           formatter: (cell) => echarts.time.format(new Date(cell/(1000*1000)), '{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}'),
         },{
           name: getFieldName(field),
@@ -90,8 +94,8 @@
     }
     saveBusy = true;
     const exportData = {
-      Type: "時系列分析",
-      Title: "時系列分析",
+      Type: $_('Time.ExportType'),
+      Title: $_('Time.ExportTitle'),
       Header: [],
       Data: [],
       Image: "",
@@ -130,13 +134,13 @@
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <!-- svelte-ignore a11y-no-onchange -->
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">時系列分析</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">$_('Time.Title')</h3>
     <select
       class="form-select"
       bind:value={field}
       on:change="{updateTime}"
     >
-      <option value="">項目を選択して下さい</option>
+      <option value="">$_('Time.SelectItemMsg')</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -146,13 +150,13 @@
       bind:value={chartType}
       on:change="{updateTime}"
     >
-      <option value="">実データ</option>
-      <option value="1m">分単位の集計</option>
-      <option value="1h">時間単位の集計</option>
-      <option value="linear">回帰分析(linear)</option>
-      <option value="exponential">回帰分析(exponential)</option>
-      <option value="logarithmic">回帰分析(logarithmic)</option>
-      <option value="polynomial">回帰分析(polynomial)</option>
+      <option value="">$_('Time.RealData')</option>
+      <option value="1m">$_('Time.Sum1Min')</option>
+      <option value="1h">$_('Time.Sum1H')</option>
+      <option value="linear">$_('Time.RegressionLinear')</option>
+      <option value="exponential">$_('Time.RegressionExponential')</option>
+      <option value="logarithmic">$_('Time.RegrfessionLogarithmic')</option>
+      <option value="polynomial">$_('Time.RegressionPlynomial')</option>
     </select>
   </div>
   <div class="Box-row">
@@ -165,10 +169,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>保存中</span><span class="AnimatedEllipsis"></span>
+        <span>$_('Time.Saving')</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">エクスポート</option>
+          <option value="">$_('Time.ExportBtn')</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -176,7 +180,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      戻る
+      $_('Time.BackBtn')
     </button>
   </div>
 </div>

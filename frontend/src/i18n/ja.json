@@ -147,5 +147,28 @@
     "Saving": "保存中",
     "ExportBtn": "エクスポート",
     "BackBtn": "戻る"
+  },
+  "Time": {
+    "DateAndTime": "日時",
+    "MeanValue": "平均値",
+    "MaxValue": "最大値",
+    "MinValue": "最小値",
+    "MedianValue": "中央値",
+    "VariantValue": "分散",
+    "Regression ": "回帰分析({chartType})",
+    "ExportType": "時系列分析",
+    "ExportTitle": "時系列分析",
+    "Title": "時系列分析",
+    "SelectItemMsg": "項目を選択して下さい",
+    "RealData": "実データ",
+    "Sum1Min": "分単位の集計",
+    "Sum1H": "時間単位の集計",
+    "RegressionLinear": "回帰分析(linear)",
+    "RegressionExponential": "回帰分析(exponential)",
+    "RegrfessionLogarithmic": "回帰分析(logarithmic)",
+    "RegressionPlynomial": "回帰分析(polynomial)",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
   }
 }
