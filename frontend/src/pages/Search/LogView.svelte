@@ -48,6 +48,10 @@
   import numeral from "numeral";
   import AutoEncoder from "./AutoEncoder.svelte";
   import * as echarts from "echarts";
+  import { _,getLocale } from '../../i18n/i18n';
+
+  let locale = getLocale();
+  let gridLang = locale == "ja" ? jaJP : undefined;
 
   const dispatch = createEventDispatcher();
   const excludeColMap = { copy: true, memo: true, extractor: true };
@@ -213,12 +217,12 @@
   };
 
   const search = () => {
-    data.length = 0; // 空にする
+    data.length = 0;
     aecdata = [];
     anomalyTime = "";
-    showQuery = false; // 検索する時は検索文編集を表示しない
-    showConf = false; // 検索する時は詳細設定を表示しない
-    filter.st = false; // 時間フィルターをリセットする
+    showQuery = false;
+    showConf = false;
+    filter.st = false;
     filter.et = false;
     const request = {
       Query: conf.query,
@@ -453,11 +457,11 @@
       showEditExtractorType(cell.data, me.metaKey);
       return;
     }
-    // それ以外はmetaキー(Command?)を押していたらフィルターに入力
+    // Command + Click  to Filter
     if (!me.metaKey || !cell || !cell.data) {
       return;
     }
-    // altキーを押した場合は、除外
+    // Exclude Alt Key
     conf.query += getFilter(col.id, cell.data, me.altKey);
   };
 
@@ -524,17 +528,17 @@
 
   const copy = (text) => {
     if (!navigator.clipboard || !navigator.clipboard) {
-      errorMsg = "コピーできません。";
+      errorMsg = $_('LogView.CantCopy');
     }
     navigator.clipboard.writeText(text).then(
       () => {
-        infoMsg = "コピーしました。";
+        infoMsg = $_('LogView.Copied');
         setTimeout(() => {
           infoMsg = "";
         }, 2000);
       },
       () => {
-        errorMsg = "コピーエラーです。";
+        errorMsg = $_('LogView.CopyError');
       }
     );
   };
@@ -564,7 +568,7 @@
   };
 
   const memo = (time, text) => {
-    infoMsg = "メモしました。";
+    infoMsg = $_('LogView.MemoMsg');
     AddMemo({
       Time: time,
       Log: text,
@@ -673,20 +677,20 @@
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header d-flex flex-items-center">
-      <h3 class="Box-title overflow-hidden flex-auto">ログ分析</h3>
+      <h3 class="Box-title overflow-hidden flex-auto">{$_('LogView.Title')}</h3>
       <span class="f6">
-        ログ総数:{numeral(indexInfo.Total).format("0,0")}
-        /処理時間:{indexInfo.Duration}
+        total:{numeral(indexInfo.Total).format("0,0")}
+        /time:{indexInfo.Duration}
         {#if result.Hit < 1}
-          /項目数:{indexInfo.Fields.length}
+          /field:{indexInfo.Fields.length}
         {/if}
         {#if result.Hit > 0}
-          /項目数:{result.Fields.length}
-          /ヒット数:{numeral(result.Hit).format(
+          /field:{result.Fields.length}
+          /hit:{numeral(result.Hit).format(
             "0,0"
-          )}/検索時間:{result.Duration}
+          )}/search time:{result.Duration}
           {#if anomalyTime}
-            /異常検知:{anomalyTime}
+            /anomaly:{anomalyTime}
           {/if}
         {/if}
       </span>
@@ -723,8 +727,8 @@
           <input
             class="form-control input-block"
             type="text"
-            placeholder="検索文"
-            aria-label="検索文"
+            placeholder="$_('LogView.SearchText')"
+            aria-label="$_('LogView.SearchText')"
             bind:value={conf.query}
           />
         </div>
@@ -780,12 +784,12 @@
               on:click={search}
             >
               <Search16 />
-              検索
+              {$_('LogView.SearchBtn')}
             </button>
           {:else}
             <button class="btn btn-primary ml-2" aria-disabled="true">
               <Search16 />
-              <span>検索中</span><span class="AnimatedEllipsis" />
+              <span>{$_('LogView.Searching')}</span><span class="AnimatedEllipsis" />
             </button>
           {/if}
         </div>
@@ -844,37 +848,37 @@
             bind:value={logView}
             on:change={chnageLogView}
           >
-            <option value="timeonly">タイムオンリー</option>
+            <option value="timeonly">{$_('LogView.TimeOnly')}</option>
             {#if result.View == "syslog" || result.View == "auto"}
               <option value="syslog">syslog</option>
             {/if}
             {#if result.View == "access" || result.View == "auto"}
-              <option value="access">アクセスログ</option>
+              <option value="access">{$_('LogView.AccessLog')}</option>
             {/if}
             {#if result.View == "windows" || result.View == "auto"}
               <option value="windows">Windows</option>
             {/if}
             {#if result.Fields.length > 0}
-              <option value="data">抽出データ</option>
+              <option value="data">{$_('LogView.ExtractData')}</option>
             {/if}
             {#if result.ExFields.length > 0}
-              <option value="ex_data">検索時抽出データ</option>
+              <option value="ex_data">{$_('LogView.ExtractDataOnSearch')}</option>
             {/if}
             {#if conf.anomaly != ""}
-              <option value="anomary">異常ログスコア</option>
+              <option value="anomary">{$_('LogView.LogAnomaryScore')}</option>
             {/if}
           </select>
         {/if}
         <!-- svelte-ignore a11y-no-onchange -->
         {#if saveBusy}
-          <span>保存中</span><span class="AnimatedEllipsis" />
+          <span>{$_('LogView.Saving')}</span><span class="AnimatedEllipsis" />
         {:else}
           <select
             class="form-select mr-1"
             bind:value={exportType}
             on:change={exportLogs}
           >
-            <option value="">エクスポート</option>
+            <option value="">{$_('LogView.ExportMenu')}</option>
             {#if result && result.Hit > 0 && result.Fields.length > 0}
               <option value="csv">CSV</option>
               <option value="excel">Excel</option>
@@ -888,18 +892,18 @@
             bind:value={report}
             on:change={showReport}
           >
-            <option value="">レポート</option>
-            <option value="memo">メモ</option>
-            <option value="ranking">ランキング分析</option>
-            <option value="time">時系列分析</option>
-            <option value="time3d">時系列3D分析</option>
-            <option value="cluster">クラスター分析</option>
-            <option value="histogram">ヒストグラム分析</option>
-            <option value="fft">FFT分析</option>
-            <option value="world">位置情報分析</option>
-            <option value="graph">グラフ（フロー）分析</option>
-            <option value="globe">フロー分析（地球儀)</option>
-            <option value="heatmap">ヒートマップ</option>
+            <option value="">{$_('LogView.ReportMenu')}</option>
+            <option value="memo">{$_('LogView.MemoMenu')}</option>
+            <option value="ranking">{$_('LogView.RankingMenu')}</option>
+            <option value="time">{$_('LogView.TimeMenu')}</option>
+            <option value="time3d">{$_('LogView.Time3DMenu')}</option>
+            <option value="cluster">{$_('LogView.ClusterMenu')}</option>
+            <option value="histogram">{$_('LogView.HistogramMenu')}</option>
+            <option value="fft">{$_('LogView.FFTMenu')}</option>
+            <option value="world">{$_('LogView.LocMenu')}</option>
+            <option value="graph">{$_('LogView.GraphMenu')}</option>
+            <option value="globe">{$_('LogView.GlobeMenu')}</option>
+            <option value="heatmap">{$_('LogView.HeatmapMenu')}</option>
           </select>
         {/if}
         <button
@@ -908,7 +912,7 @@
           on:click={showLogTypePage}
         >
           <Checklist16 />
-          ログ定義
+          {$_('LogView.LogDefBtn')}
         </button>
         <button
           class="btn  btn-outline mr-1"
@@ -918,15 +922,15 @@
           }}
         >
           <Check16 />
-          処理結果
+          {$_('LogView.ResultBtn')}
         </button>
         <button class="btn  btn-secondary mr-1" type="button" on:click={back}>
           <Reply16 />
-          戻る
+          {$_('LogView.BackBtn')}
         </button>
         <button class="btn  btn-secondary" type="button" on:click={end}>
           <X16 />
-          終了
+          {$_('LogView.EndBtn')}
         </button>
       </div>
     {/if}

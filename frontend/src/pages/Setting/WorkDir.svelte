@@ -48,7 +48,7 @@
 
 <div class="Box mx-auto" style="max-width: 800px;">
   <div class="Box-header">
-    <h3 class="Box-title">$_('WorkDir.Title')</h3>
+    <h3 class="Box-title">{$_('WorkDir.Title')}</h3>
   </div>
   {#if ErrorMsg != ""}
     <div class="flash flash-error">
@@ -68,8 +68,8 @@
       <input
         class="form-control"
         type="text"
-        placeholder="$_('WorkDir.WorkDir')"
-        aria-label="$_('WorkDir.WorkDir')"
+        placeholder="{$_('WorkDir.WorkDir')}"
+        aria-label="{$_('WorkDir.WorkDir')}"
         bind:value={workdir}
       />
       <span class="input-group-button">
@@ -79,15 +79,15 @@
       </span>
     </div>
     {#if lastWorkDirs.length > 0}
-      <p>$_('WorkDir.History')</p>
+      <p>{$_('WorkDir.History')}</p>
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         class="form-select"
-        aria-label="$_('WorkDir.History')"
+        aria-label="{$_('WorkDir.History')}"
         bind:value={selLast}
         on:change={checkSelectWorkDir}
       >
-        <option value="">$_('WorkDir.SelectMsg')</option>
+        <option value="">{$_('WorkDir.SelectMsg')}</option>
         {#each lastWorkDirs as d}
           <option value={d}>{d}</option>
         {/each}
@@ -97,11 +97,11 @@
   <div class="Box-footer text-right">
     <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
       <X16 />
-      $_('WorkDir.CancelBtn')
+      {$_('WorkDir.CancelBtn')}
     </button>
     <button class="btn btn-primary" type="button" on:click={setWorkDir}>
       <Check16 />
-      $_('WorkDir.SelectBtn')
+      {$_('WorkDir.SelectBtn')}
     </button>
   </div>
 </div>

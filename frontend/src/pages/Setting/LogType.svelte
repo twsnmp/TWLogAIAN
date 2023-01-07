@@ -317,7 +317,7 @@
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
       <h3 class="Box-title pb-2">
-        $_('LogType.Title')
+        {$_('LogType.Title')}
         <button
         class="btn btn-sm float-right"
         type="button"
@@ -349,13 +349,13 @@
           search={gridSearch}
           pagination={extractorTypePagination} 
           columns={extractorTypeColumns} 
-          language={jaJP} 
+          language={gridLang} 
         />
       </div>
     </div>
     <div class="Box-header">
       <h3 class="Box-title pb-2">
-        $_('LogType.FieldDef')
+        {$_('LogType.FieldDef')}
         <button
           class="btn btn-sm float-right"
           type="button"
@@ -386,7 +386,7 @@
           search={gridSearch}
           pagination={fieldTypePagination} 
           columns={fieldTypeColumns} 
-          language={jaJP} 
+          language={gridLang} 
         />
       </div>
     </div>
@@ -397,7 +397,7 @@
       on:click={exportLogTypes}
     >
       <Download16 />
-      $_('LogType.ExportBtn')
+      {$_('LogType.ExportBtn')}
       </button>
       <button
       class="btn btn-outline mr-1"
@@ -405,11 +405,11 @@
       on:click={importLogTypes}
     >
       <Upload16 />
-      $_('LogType.ImportBtn')
+      {$_('LogType.ImportBtn')}
     </button>
     <button class="btn btn-secondary mr-1" type="button" on:click={close}>
         <X16 />
-        $_('LogType.CloseBtn')
+        {$_('LogType.CloseBtn')}
       </button>
     </div>
   </div>

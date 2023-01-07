@@ -2,6 +2,8 @@
   import { getFieldName, getFieldType } from "../../js/define";
   import { Plus16, Trash16, File16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import { _ } from '../../i18n/i18n';
+
 
   export let conf;
   export let fields = [];
@@ -75,17 +77,17 @@
 
 {#if conf.history.length > 0}
   <div class="container-lg clearfix mb-1">
-    <div class="col-2 float-left">検索履歴</div>
+    <div class="col-2 float-left">{$_('Query.History')}</div>
     <div class="col-8 float-left">
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         style="width: 80%;"
         class="form-select"
-        aria-label="履歴"
+        aria-label="{$_('Query.History')}"
         bind:value={history}
         on:change={setHistory}
       >
-        <option value="">履歴を選択してください</option>
+        <option value="">{$_('Query.SelectHistoryMsg')}</option>
         {#each conf.history as h}
           <option value={h}>{h}</option>
         {/each}
@@ -100,33 +102,33 @@
 
 {#if hasStringField}
   <div class="container-lg clearfix mt-1">
-    <div class="col-2 float-left">キーワード</div>
+    <div class="col-2 float-left">{$_('Query.Keyword')}</div>
     <div class="col-8 float-left">
       <select
         class="form-select"
-        aria-label="項目"
+        aria-label="{$_('Query.Item')}"
         bind:value={conf.keyword.field}
       >
-        <option value="">全体</option>
+        <option value="">{$_('Query.All')}</option>
         {#each fields as f}
           {#if !f.startsWith("_") && getFieldType(f) == "string"}
             <option value={f}>{getFieldName(f)}</option>
           {/if}
         {/each}
       </select>
-      に
+      {$_('Query.Include')}
       <input
         class="form-control input-sm"
         type="text"
         style="width: 150px;"
-        placeholder="キーワード"
-        aria-label="キーワード"
+        placeholder="{$_('Query.Keyword')}"
+        aria-label="{$_('Query.Keyword')}"
         bind:value={conf.keyword.key}
       />
-      が
+      {$_('Query.Is')}
       <select class="form-select" bind:value={conf.keyword.mode}>
-        <option value="+">必須</option>
-        <option value="-">除外</option>
+        <option value="+">{$_('Query.Must')}</option>
+        <option value="-">{$_('Query.Exclude')}</option>
       </select>
     </div>
     <div class="col-2 float-left">
@@ -141,11 +143,11 @@
 {/if}
 {#if hasNumberField}
   <div class="container-lg clearfix mt-1">
-    <div class="col-2 float-left">数値判定</div>
+    <div class="col-2 float-left">{$_('Query.NumberCond')}</div>
     <div class="col-8 float-left">
       <select
         class="form-select"
-        aria-label="項目"
+        aria-label="{$_('Query.Item')}"
         bind:value={conf.number.field}
       >
         {#each fields as f}
@@ -165,8 +167,8 @@
         class="form-control input-sm"
         type="text"
         style="width: 100px;"
-        placeholder="数値"
-        aria-label="数値"
+        placeholder="$_('Query.Number')"
+        aria-label="{$_('Query.Number')}"
         bind:value={conf.number.value}
       />
     </div>
