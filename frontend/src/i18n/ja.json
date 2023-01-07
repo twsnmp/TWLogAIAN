@@ -198,5 +198,22 @@
     "Saving": "保存中",
     "ExportBtn": "エクスポート",
     "BackBtn": "戻る"
+  },
+  "World": {
+    "LatLong": "位置（緯度経度）",
+    "City": "都市",
+    "Country": "国",
+    "Count": "件数",
+    "Value": "値",
+    "ExportType": "位置情報分析",
+    "ExportTitle": "位置情報分析",
+    "Title": "位置情報分析",
+    "LocInfoItem": "位置情報項目",
+    "SelectLocItem": "位置情報の項目を選択して下さい",
+    "NumberValue": "数値項目",
+    "SelectColorItemMsg": "色分けの数値項目を選択して下さい",
+    "Saving": "保存中",
+    "ExportBtn": "エクスポート",
+    "BackBtn": "戻る"
   }
 }

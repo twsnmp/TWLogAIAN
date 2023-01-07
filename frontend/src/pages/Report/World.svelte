@@ -5,6 +5,10 @@
   import { showWorldMap, resizeWorldMap,getWorldMapImage } from "./world";
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
+  import { _,getLocale } from '../../i18n/i18n';
+
+  let locale = getLocale();
+  let gridLang = locale == "ja" ? jaJP : undefined;
 
   export let logs = [];
   export let fields = [];
@@ -18,23 +22,23 @@
   let data = [];
   let columns = [
     {
-      name: "位置（緯度経度）",
+      name: $_('World.LatLong'),
       width: "20%",
     },
     {
-      name: "国",
+      name: $_('World.Country'),
       width: "10%",
     },
     {
-      name: "都市",
+      name: $_('World.City'),
       width: "10%",
     },
     {
-      name: "件数",
+      name: $_('World.Count'),
       width: "10%",
     },
     {
-      name: "値",
+      name: $_('World.Value'),
       width: "10%",
     },
   ];
@@ -90,8 +94,8 @@
     }
     saveBusy = true;
     const exportData = {
-      Type: "位置情報分析",
-      Title: "位置情報分析",
+      Type: $_('World.ExportType'),
+      Title: $_('World.ExportTitle'),
       Header: [],
       Data: [],
       Image: "",
@@ -129,15 +133,15 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">位置情報分析</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">$_('World.Title')</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="位置情報項目"
+      aria-label="$_('World.LocInfoItem')"
       bind:value={geoField}
       on:change="{updateWorldMap}"
     >
-      <option value="">位置情報の項目を選択して下さい</option>
+      <option value="">$_('World.SelectLocItem')</option>
       {#each geoFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -145,11 +149,11 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="数値項目"
+      aria-label="$_('World.NumberValue')"
       bind:value={numField}
       on:change="{updateWorldMap}"
     >
-    <option value="">色分けの数値項目を選択して下さい</option>
+    <option value="">$_('World.SelectColorItemMsg')</option>
     {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -165,10 +169,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>保存中</span><span class="AnimatedEllipsis"></span>
+        <span>$_('World.Saving')</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">エクスポート</option>
+          <option value="">$_('World.ExportBtn')</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -176,7 +180,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      戻る
+      $_('World.BackBtn')
     </button>
   </div>
 </div>

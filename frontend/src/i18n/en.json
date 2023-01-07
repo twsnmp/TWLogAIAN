@@ -198,5 +198,22 @@
     "Saving": "Saving",
     "ExportBtn": "Export",
     "BackBtn": "Back"
+  },
+  "World": {
+    "LatLong": "Location (latitude and longitude)",
+    "City": "City",
+    "Country": "Country",
+    "Count": "Count",
+    "Value": "Value",
+    "ExportType": "Location information analysis",
+    "ExportTitle": "Location information analysis",
+    "Title": "Location information analysis",
+    "LocInfoItem": "Location information item",
+    "SelectLocItem": "Please select the location information item",
+    "NumberValue": "Numeric field",
+    "SelectColorItemMsg": "Please select a numeric item for color coding",
+    "Saving": "Saving",
+    "ExportBtn": "Export",
+    "BackBtn": "Back"
   }
 }
