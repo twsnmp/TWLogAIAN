@@ -7,7 +7,6 @@
     Checklist16,
     Trash16,
     Search16,
-    Download16,
   } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import Grid from "gridjs-svelte";
@@ -17,6 +16,10 @@
   import { onMount } from "svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { loadFieldTypes } from "../../js/define";
+  import { _,getLocale } from '../../i18n/i18n';
+
+  let locale = getLocale();
+  let gridLang = locale == "ja" ? jaJP : undefined;
 
   const dispatch = createEventDispatcher();
   const data = [];
@@ -123,7 +126,7 @@
   let pagination = false;
   const getLogSources = () => {
     window.go.main.App.GetLogSources().then((ds) => {
-      data.length = 0; // 空にする
+      data.length = 0;
       if (ds) {
         logSources = ds;
         logSources.forEach((e) => {
@@ -171,7 +174,6 @@
   const editLogSource = (sno) => {
     const no = sno * 1;
     if (sno == "" || no < 0 || no > logSources.length) {
-      // 新規
       logSource = {
         No: 0,
         Type: "folder",
@@ -210,21 +212,21 @@
   const formatLogSourceType = (t) => {
     switch (t) {
       case "folder":
-        return "フォルダー";
+        return $_('Setting.Folder');
       case "file":
-        return "単一ファイル";
+        return $_('Setting.OneFile');
       case "scp":
-        return "SCP転送";
+        return $_('Setting.SCP');
       case "windows":
         return "Windows";
       case "cmd":
-        return "コマンド";
+        return $_('Setting.Command');
       case "ssh":
-        return "SSHコマンド";
+        return $_('Setting.SSH');
       case "twsnmp":
-        return "TWSNMP連携";
+        return $_('Setting.TSNMP');
       case "gravwell":
-        return "Gravwell連携";
+        return $_('Setting.Gravwell');
     }
     return "";
   };
@@ -264,24 +266,24 @@
       width: "10%",
     },
     {
-      name: "タイプ",
+      name: $_('Setting.Type'),
       sort: true,
       width: "20%",
       formatter: formatLogSourceType,
     },
     {
-      name: "パス",
+      name: $_('Setting.Path'),
       sort: true,
       width: "50%",
     },
     {
-      name: "編集",
+      name: $_('Setting.Edit'),
       sort: false,
       width: "10%",
       formatter: editLogSourceButtons,
     },
     {
-      name: "削除",
+      name: $_('Setting.Delete'),
       sort: false,
       width: "10%",
       formatter: deleteLogSourceButtons,
@@ -289,7 +291,6 @@
   ];
   let busy = false;
   const start = () => {
-    // Index作成を開始
     busy = true;
     window.go.main.App.Start(config, false).then((e) => {
       busy = false;
@@ -302,7 +303,6 @@
   };
 
   const clear = () => {
-    // Indexをクリア
     window.go.main.App.ClearIndex().then((e) => {
       if (e && e != "") {
         if (e == "No") {
@@ -316,7 +316,6 @@
   };
 
   const search = () => {
-    // 既存のIndexで検索開始
     busy = true;
     window.go.main.App.Start(config, true).then((e) => {
       busy = false;
@@ -384,16 +383,16 @@
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     {#if busy}
       <div class="Box-header">
-        <h3 class="Box-title">ログ分析起動</h3>
+        <h3 class="Box-title">{$_('Setting.StartingTitle')}</h3>
       </div>
       <div class="flash mt-2">
-        ログの読み込みを準備しています。お待ち下さい<span
+        {$_('Setting.Starting')}<span
           class="AnimatedEllipsis"
         />
       </div>
     {:else}
       <div class="Box-header">
-        <h3 class="Box-title">ログ分析の設定</h3>
+        <h3 class="Box-title">{$_('Setting.Title')}</h3>
       </div>
       {#if errorMsg != ""}
         <div class="flash flash-error">
@@ -425,7 +424,7 @@
         <div class="form-group">
           <div class="form-group-header">
             <h5 class="pb-1">
-              ログを読み込む場所
+              {$_('Setting.LogFrom')}
               <button
                 class="btn btn-sm float-right"
                 type="button"
@@ -439,66 +438,66 @@
             <Grid {data} {pagination} {columns} language={jaJP} />
             <label class="p-1">
               <input type="checkbox" bind:checked={config.Recursive} />
-              tar.gzの再帰読み込み
+              {$_('Setting.RecTGZ')}
             </label>
             <label class="p-1">
               <input type="checkbox" bind:checked={config.ForceUTC} />
-              タイムゾーン不明はUTC
+              {$_('Setting.ForceUTC')}
             </label>
           </div>
         </div>
         <div class="form-group">
           <div class="form-group-header">
-            <h5 class="pb-1">フィルター</h5>
+            <h5 class="pb-1">{$_('Setting.Filter')}</h5>
           </div>
           <div class="form-group-body">
             <input
               class="form-control input-block"
               type="text"
               style="width: 100%;"
-              placeholder="フィルター"
-              aria-label="フィルター"
+              placeholder="{$_('Setting.Filter')}"
+              aria-label="{$_('Setting.Filter')}"
               bind:value={config.Filter}
             />
           </div>
         </div>
         <div class="form-group">
           <div class="form-group-header">
-            <h5 class="pb-1">ログの種類</h5>
+            <h5 class="pb-1">{$_('Setting.LogType')}</h5>
           </div>
           <div class="form-group-body">
             <!-- svelte-ignore a11y-no-onchange -->
             <select
               class="form-select"
-              aria-label="抽出パターン"
+              aria-label="{$_('Setting.ExtractPat')}"
               bind:value={config.Extractor}
               on:change={changeExtractor}
             >
-              <option value="timeonly">タイムスタンプのみ</option>
-              <option value="auto">自動判定</option>
+              <option value="timeonly">{$_('Setting.TimeOnly')}</option>
+              <option value="auto">{$_('Setting.AutoTypeDetect')}</option>
               {#each extractorTypeList as { Key, Name }}
                 <option value={Key}>{Name}</option>
               {/each}
-              <option value="custom">カスタム</option>
+              <option value="custom">{$_('Setting.CustomLogType')}</option>
             </select>
             <label class="p-1">
               <input type="checkbox" bind:checked={config.Strict} />
-                パータンに一致しないログを除外（厳しい読み込みかた）
+                {$_('Setting.StrictPatCheck')}
               </label>
           </div>
         </div>
         <div class="form-group">
           <div class="form-group-header">
-            <h5 class="pb-1">アドレス情報</h5>
+            <h5 class="pb-1">{$_('Setting.AddressInfo')}</h5>
           </div>
           <div class="form-group-body">
             <label class="p-1">
               <input type="checkbox" bind:checked={config.HostName} />
-              ホスト名を調べる
+              {$_('Setting.CheckHostName')}
             </label>
             <label class="p-1">
               <input class="ml-2" type="checkbox" bind:checked={config.GeoIP} />
-              位置情報を調べる
+              {$_('Setting.CheckIPLoc')}
             </label>
             <label class="p-1">
               <input
@@ -506,21 +505,21 @@
                 type="checkbox"
                 bind:checked={config.VendorName}
               />
-              ベンダー名を調べる
+              {$_('Setting.CheckVendorName')}
             </label>
           </div>
         </div>
         {#if config.Extractor == "custom" || config.Extractor.startsWith("EXT")}
           <div class="form-group">
             <div class="form-group-header">
-              <h5 class="pb-1">抽出パターン</h5>
+              <h5 class="pb-1">{$_('Setting.ExtractPat')}</h5>
             </div>
             <div class="form-group-body">
               <input
                 class="form-control input-block"
                 type="text"
-                placeholder="GROKパターン"
-                aria-label="GROKパターン"
+                placeholder="{$_('Setting.GrokPat')}"
+                aria-label="{$_('Setting.GrokPat')}"
                 style="width: 100%;"
                 bind:value={config.Grok}
               />
@@ -528,14 +527,14 @@
           </div>
           <div class="form-group">
             <div class="form-group-header">
-              <h5 class="pb-1">取得情報</h5>
+              <h5 class="pb-1">{$_('Setting.ExtractInfo')}</h5>
             </div>
             <div class="form-group-body">
               <input
                 class="form-control"
                 type="text"
                 style="width: 15%;"
-                placeholder="タイムスタンプ項目"
+                placeholder="{$_('Setting.TimeField')}"
                 bind:value={config.TimeField}
               />
               {#if config.HostName}
@@ -543,7 +542,7 @@
                   class="form-control"
                   type="text"
                   style="width: 25%;"
-                  placeholder="ホスト名解決項目"
+                  placeholder="{$_('Setting.HostNameField')}"
                   bind:value={config.HostFields}
                 />
               {/if}
@@ -551,7 +550,7 @@
                 <input
                   class="form-control"
                   type="text"
-                  placeholder="IP位置情報項目"
+                  placeholder="{$_('Setting.IPLocFiled')}"
                   style="width: 25%;"
                   bind:value={config.GeoFields}
                 />
@@ -560,7 +559,7 @@
                 <input
                   class="form-control"
                   type="text"
-                  placeholder="MACアドレス項目"
+                  placeholder="{$_('Setting.MacFiled')}"
                   style="width: 20%;"
                   bind:value={config.MACFields}
                 />
@@ -570,7 +569,7 @@
         {/if}
         <div class="form-group">
           <div class="form-group-header">
-            <h5 class="pb-1">インデクサー設定</h5>
+            <h5 class="pb-1">{$_('Setting.IndexerSetting')}</h5>
           </div>
           <div class="form-group-body">
             <div class="form-checkbox">
@@ -581,10 +580,10 @@
                   bind:checked={config.InMemory}
                   aria-describedby="help-text-for-inmemory"
                 />
-                インデックスをメモリ上に作成
+                {$_('Setting.IndexInMemory')}
               </label>
               <p class="note" id="help-text-for-inmemory">
-                メモリに余裕があればオンにすると多少高速化できます。
+                {$_('Setting.InMemoryMsg')}
               </p>
             </div>
           </div>
@@ -592,15 +591,15 @@
         {#if config.GeoIP}
           <div class="form-group">
             <div class="form-group-header">
-              <h5 class="pb-1">IP位置情報データベース</h5>
+              <h5 class="pb-1">{$_('Setting.GeoDB')}</h5>
             </div>
             <div class="form-group-body">
               <div class="input-group">
                 <input
                   class="form-control"
                   type="text"
-                  placeholder="Geo IPデータベース"
-                  aria-label="Geo IPデータベース"
+                  placeholder="{$_('Setting.GeoIPDB')}"
+                  aria-label="{$_('Setting.GeoIPDB')}"
                   bind:value={config.GeoIPDB}
                 />
                 <span class="input-group-button">
@@ -620,29 +619,29 @@
           on:click={showLogTypePage}
         >
           <Checklist16 />
-          ログ定義
+          {$_('Setting.LogDefBtn')}
         </button>
         <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
           <X16 />
-          終了
+          {$_('Setting.EndBtn')}
         </button>
         {#if hasIndex}
           <button class="btn btn-danger mr-1" type="button" on:click={clear}>
             <Trash16 />
-            インデックス削除
+            {$_('Setting.DelteIndexBtn')}
           </button>
           <button class="btn btn-danger mr-1" type="button" on:click={start}>
             <Check16 />
-            追加読み込み
+            {$_('Setting.LoadMoreBtn')}
           </button>
           <button class="btn btn-primary mr-1" type="button" on:click={search}>
             <Search16 />
-            検索画面へ
+            {$_('Setting.ToSearch')}
           </button>
         {:else}
           <button class="btn btn-primary" type="button" on:click={start}>
             <Check16 />
-            インデクス作成
+            {$_('Setting.StartBtn')}
           </button>
         {/if}
       </div>
