@@ -1,6 +1,8 @@
 <script>
-  import { X16, Check16, StarFill16, Reply16 } from "svelte-octicons";
+  import { X16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import { _ } from '../../i18n/i18n';
+
   export let fieldType;
   export let add = true;
 
@@ -28,7 +30,7 @@
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header">
-    <h3 class="Box-title">フィールドタイプ編集</h3>
+    <h3 class="Box-title">{$_('EditFieldType.Title')}</h3>
   </div>
   {#if errorMsg}
     <div class="flash flash-error">
@@ -46,14 +48,14 @@
   <div class="Box-body">
     <div class="form-group">
       <div class="form-group-header">
-        <h5>キー（変数名）</h5>
+        <h5>{$_('EditFieldType.Key')}</h5>
       </div>
       <div class="form-group-body">
         <input
           class="form-control"
           type="text"
           disabled={!add}
-          placeholder="フィールドタイプのキー"
+          placeholder="{$_('EditFieldType.KeyInput')}"
           bind:value={fieldType.Key}
         />
       </div>
@@ -61,14 +63,14 @@
     <div class="form-group">
       <div class="form-group-header">
         <h5>
-          名前
+          {$_('EditFieldType.Name')}
         </h5>
       </div>
       <div class="form-group-body">
         <input
           class="form-control"
           type="text"
-          placeholder="フィールドタイプの名前"
+          placeholder="{$_('EditFieldType.NameOfFieldType')}"
           bind:value={fieldType.Name}
         />
       </div>
@@ -76,31 +78,31 @@
     <div class="form-group">
       <div class="form-group-header">
         <h5>
-          データの型
+          {$_('EditFieldType.TypeOfData')}
         </h5>
       </div>
       <div class="form-group-body">
         <select
         class="form-select"
-        aria-label="データの型"
+        aria-label="{$_('EditFieldType.TypeOfData')}"
         bind:value={fieldType.Type}
       >
-        <option value="string">文字列</option>
-        <option value="number">数値</option>
+        <option value="string">{$_('EditFieldType.String')}</option>
+        <option value="number">{$_('EditFieldType.Number')}</option>
       </select>
       </div>
     </div>
     <div class="form-group">
       <div class="form-group-header">
         <h5>
-          単位
+          {$_('EditFieldType.Unit')}
         </h5>
       </div>
       <div class="form-group-body">
         <input
           class="form-control"
           type="text"
-          placeholder="フィールドタイプの単位"
+          placeholder="{$_('EditFieldType.UnitOfFieldType')}"
           bind:value={fieldType.Unit}
         />
       </div>
@@ -109,11 +111,11 @@
   <div class="Box-footer text-right">
     <button class="btn btn-secondary mr-1" type="button" on:click={back}>
       <X16 />
-      キャンセル
+      {$_('EditFieldType.CancelBtn')}
     </button>
     <button class="btn btn-primary mr-1" type="button" on:click={save}>
       <X16 />
-      保存
+      {$_('EditFieldType.SaveBtn')}
     </button>
   </div>
 </div>

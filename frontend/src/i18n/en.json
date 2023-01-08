@@ -370,5 +370,19 @@
     "Test": "Test",
     "CancelBtn": "Cancel",
     "SaveBtn": "Save"
+  },
+  "EditFieldType": {
+    "Title": "Edit field type",
+    "Key": "Key(variable name)",
+    "KeyInput": "Field type key",
+    "Name": "Name",
+    "NameOfFieldType": "Name of field type",
+    "TypeOfData": "Data type",
+    "String": "string",
+    "Number": "numerical value",
+    "Unit": "unit",
+    "UnitOfFieldType": "Field type units",
+    "CancelBtn": "Cancel",
+    "SaveBtn": "Save"
   }
 }

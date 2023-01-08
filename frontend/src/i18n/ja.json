@@ -373,5 +373,19 @@
     "Test": "テスト",
     "CancelBtn": "キャンセル",
     "SaveBtn": "保存"
+  },
+  "EditFieldType": {
+    "Title": "フィールドタイプ編集",
+    "Key": "キー（変数名）",
+    "KeyInput": "フィールドタイプのキー",
+    "Name": "名前",
+    "NameOfFieldType": "フィールドタイプの名前",
+    "TypeOfData": "データの型",
+    "String": "文字列",
+    "Number": "数値",
+    "Unit": "単位",
+    "UnitOfFieldType": "フィールドタイプの単位",
+    "CancelBtn": "キャンセル",
+    "SaveBtn": "保存"
   }
 }
