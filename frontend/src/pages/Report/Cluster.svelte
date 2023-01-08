@@ -118,29 +118,29 @@
     <h3 class="Box-title overflow-hidden flex-auto">{$_('Cluster.Title')}</h3>
     <select
       class="form-select"
-      aria-label="$_('Cluster.XIterm')"
+      aria-label="{$_('Cluster.XIterm')}"
       bind:value={xField}
       on:change="{updateCluster}"
     >
-    <option value="">$_('Cluster.SelectXItemMsg')</option>
+    <option value="">{$_('Cluster.SelectXItemMsg')}</option>
     {#each numFields as f}
       <option value={f}>{getFieldName(f)}</option>
     {/each}
     </select>
     <select
       class="form-select"
-      aria-label="$_('Cluster.YItem')"
+      aria-label="{$_('Cluster.YItem')}"
       bind:value={yField}
       on:change="{updateCluster}"
     >
-      <option value="">$_('Cluster.SelectYItemMsg')</option>
+      <option value="">{$_('Cluster.SelectYItemMsg')}</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
     </select>
     <select
       class="form-select ml-2"
-      aria-label="$_('Cluster.NumberOfCluster')"
+      aria-label="{$_('Cluster.NumberOfCluster')}"
       bind:value={cluster}
       on:change="{updateCluster}"
     >
@@ -160,10 +160,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('Cluster.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('Cluster.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('Cluster.ExportBtn')</option>
+          <option value="">{$_('Cluster.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -171,7 +171,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('Cluster.BackBtn')
+      {$_('Cluster.BackBtn')}
     </button>
   </div>
 </div>
