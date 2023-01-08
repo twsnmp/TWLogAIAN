@@ -4,6 +4,7 @@
   export let conf;
   export let fields = [];
   export let extractorTypeList = [];
+  import { _ } from '../../i18n/i18n';
 
   const geoFields = [];
 
@@ -20,12 +21,12 @@
 </script>
 
 <div class="container-lg clearfix">
-  <div class="col-2 float-left">検索期間</div>
+  <div class="col-2 float-left">{$_('SearchConf.TimeRange')}</div>
   <div class="col-6 float-left">
     <select class="form-select" bind:value={conf.range.mode}>
-      <option value="">指定しない</option>
-      <option value="target">対象指定</option>
-      <option value="range">範囲指定</option>
+      <option value="">{$_('SearchConf.NoSelect')}</option>
+      <option value="target">{$_('SearchConf.TagetTime')}</option>
+      <option value="range">{$_('SearchConf.StartEndTime')}</option>
     </select>
   </div>
   <div class="col-2 float-left" />
@@ -33,32 +34,19 @@
 
 {#if conf.range.mode == "target"}
   <div class="container-lg clearfix">
-    <div class="col-2 float-left">期間(対象)</div>
+    <div class="col-2 float-left">{$_('SearchConf.TargetRange')}</div>
     <div class="col-6 float-left">
       <input
         class="form-control input-sm"
         type="text"
         style="width: 98%;"
-        placeholder="対象の日時"
-        aria-label="対象の日時"
+        placeholder="{$_('SearchConf.TargetDateTime')}"
+        aria-label="{$_('SearchConf.TargetDateTime')}"
         bind:value={conf.range.target}
       />
     </div>
     <div class="col-2 float-left">
-      <select class="form-select" bind:value={conf.range.range}>
-        <option value="-5">まで5秒間</option>
-        <option value="-10">まで10秒間</option>
-        <option value="-30">まで30秒間</option>
-        <option value="-60">まで1分間</option>
-        <option value="-1800">まで30分間</option>
-        <option value="-3600">まで1時間</option>
-        <option value="5">から5秒間</option>
-        <option value="10">から10秒間</option>
-        <option value="30">から30秒間</option>
-        <option value="60">から1分間</option>
-        <option value="1800">から30分間</option>
-        <option value="3600">から1時間</option>
-      </select>
+      <input class="form-control input-sm" type="number" bind:value={conf.range.range}>Sec
     </div>
     <div class="col-2 float-left">
     </div>
@@ -66,21 +54,21 @@
 {/if}
 {#if conf.range.mode == "range"}
   <div class="container-lg clearfix">
-    <div class="col-2 float-left">期間(範囲)</div>
+    <div class="col-2 float-left">{$_('SearchConf.TimeRangeTitle')}</div>
     <div class="col-8 float-left">
       <input
         class="form-control input-sm"
         type="datetime-local"
-        placeholder="開始"
-        aria-label="開始"
+        placeholder="{$_('SearchConf.Start')}"
+        aria-label="{$_('SearchConf.Start')}"
         bind:value={conf.range.start}
       />
       -
       <input
         class="form-control input-sm"
         type="datetime-local"
-        placeholder="終了"
-        aria-label="終了"
+        placeholder="{$_('SearchConf.End')}"
+        aria-label="{$_('SearchConf.End')}"
         bind:value={conf.range.end}
       />
     </div>
@@ -90,11 +78,11 @@
 {/if}
 {#if geoFields.length > 0  }
   <div class="container-lg clearfix">
-    <div class="col-2 float-left">IP位置情報検索</div>
+    <div class="col-2 float-left">{$_('SearchConf.IPLocSearch')}</div>
     <div class="col-6 float-left">
       <select class="form-select" bind:value={conf.geo.mode}>
-        <option value="">検索しない</option>
-        <option value="centor">中心からの範囲</option>
+        <option value="">{$_('SearchConf.NoSearch')}</option>
+        <option value="centor">{$_('SearchConf.DistFromCentor')}</option>
       </select>
     </div>
     <div class="col-2 float-left" />
@@ -102,21 +90,21 @@
 {/if}
 {#if geoFields.length > 0 && conf.geo.mode != "" }
   <div class="container-lg clearfix mt-1">
-    <div class="col-2 float-left">IP位置情報</div>
+    <div class="col-2 float-left">{$_('SearchConf.IPLoc')}</div>
     <div class="col-8 float-left">
-      <select class="form-select" aria-label="項目" bind:value={conf.geo.field}>
+      <select class="form-select" aria-label="{$_('SearchConf.Item')}" bind:value={conf.geo.field}>
         {#each geoFields as f}
           <option value={f}>{getFieldName(f)}</option>
         {/each}
       </select>
-      が
+      {$_('SearchConf.Is')}
       <input
         class="form-control input-sm"
         type="number"
         step="0.01"
         style="width: 80px;"
-        placeholder="緯度"
-        aria-label="緯度"
+        placeholder="{$_('SearchConf.Lat')}"
+        aria-label="{$_('SearchConf.Lat')}"
         bind:value={conf.geo.lat}
       />
       ,
@@ -125,28 +113,28 @@
         type="number"
         step="0.01"
         style="width: 80px;"
-        placeholder="経度"
-        aria-label="経度"
+        placeholder="{$_('SearchConf.Long')}"
+        aria-label="{$_('SearchConf.Long')}"
         bind:value={conf.geo.long}
       />
-      から
+      {$_('SearchConf.From')}
       <input
         class="form-control input-sm"
         type="number"
         step="5"
         style="width: 80px;"
-        placeholder="範囲"
-        aria-label="範囲"
+        placeholder="{$_('SearchConf.Dist')}"
+        aria-label="{$_('SearchConf.Dist')}"
         bind:value={conf.geo.range}
       />
-      Kmの範囲
+      {$_('SearchConf.KMRange')}
     </div>
     <div class="col-2 float-left">
     </div>
   </div>
 {/if}
 <div class="container-lg clearfix mt-1">
-  <div class="col-2 float-left">最大件数</div>
+  <div class="col-2 float-left">{$_('SearchConf.Limit')}</div>
   <div class="col-10 float-left">
     <select class="form-select" bind:value={conf.limit}>
       <option value="1000">1000</option>
@@ -161,36 +149,36 @@
   </div>
 </div>
 <div class="container-lg clearfix mt-1">
-  <div class="col-2 float-left">異常ログ検知方法</div>
+  <div class="col-2 float-left">{$_('SearchConf.AnomaryMode')}</div>
   <div class="col-3 float-left">
     <select class="form-select" bind:value={conf.anomaly}>
-      <option value="">検知しない</option>
+      <option value="">{$_('SearchConf.NotDetect')}</option>
       <option value="iforest">Isolation Forest</option>
       <option value="lof">Local Outlier Factor</option>
       <option value="autoencoder">Auto Encoder</option>
     </select>
   </div>
   {#if conf.anomaly}
-    <div class="col-2 float-left">特徴量の計算方法</div>
+    <div class="col-2 float-left">{$_('SearchConf.CalcVectorMode')}</div>
     <div class="col-3 float-left">
       <select class="form-select" bind:value={conf.vector}>
-        <option value="">数値データ</option>
-        <option value="time">数値データ+曜日と時間帯</option>
-        <option value="all">文字列と数値データ</option>
-        <option value="alltime">文字列と数値データ+曜日と時間帯</option>
-        <option value="sql">SQLインジェクション</option>
-        <option value="oscmd">OSコマンドインジェクション</option>
-        <option value="dirt">ディレクトリトラバーサル</option>
-        <option value="walu">アクセスログ(Waluの方法)</option>
+        <option value="">{$_('SearchConf.NumData')}</option>
+        <option value="time">{$_('SearchConf.NumDataWeekDayH')}</option>
+        <option value="all">{$_('SearchConf.StringNumData')}</option>
+        <option value="alltime">{$_('SearchConf.StringNumWeekDayH')}</option>
+        <option value="sql">{$_('SearchConf.SQLInjection')}</option>
+        <option value="oscmd">{$_('SearchConf.OSCmdInjection')}</option>
+        <option value="dirt">{$_('SearchConf.DirTra')}</option>
+        <option value="walu">{$_('SearchConf.AccessLogWalu')}</option>
       </select>
     </div>
   {/if}
 </div>
 <div class="container-lg clearfix mt-1">
-  <div class="col-2 float-left">検索時データ抽出</div>
+  <div class="col-2 float-left">{$_('SearchConf.ExtractOnSeach')}</div>
   <div class="col-3 float-left">
     <select class="form-select" bind:value={conf.extractor}>
-      <option value="">しない</option>
+      <option value="">{$_('SearchConf.NotUse')}</option>
       {#each extractorTypeList as { Key, Name }}
         <option value={Key}>{Name}</option>
       {/each}
