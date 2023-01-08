@@ -134,13 +134,13 @@
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <!-- svelte-ignore a11y-no-onchange -->
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('Time.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('Time.Title')}</h3>
     <select
       class="form-select"
       bind:value={field}
       on:change="{updateTime}"
     >
-      <option value="">$_('Time.SelectItemMsg')</option>
+      <option value="">{$_('Time.SelectItemMsg')}</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -150,13 +150,13 @@
       bind:value={chartType}
       on:change="{updateTime}"
     >
-      <option value="">$_('Time.RealData')</option>
-      <option value="1m">$_('Time.Sum1Min')</option>
-      <option value="1h">$_('Time.Sum1H')</option>
-      <option value="linear">$_('Time.RegressionLinear')</option>
-      <option value="exponential">$_('Time.RegressionExponential')</option>
-      <option value="logarithmic">$_('Time.RegrfessionLogarithmic')</option>
-      <option value="polynomial">$_('Time.RegressionPlynomial')</option>
+      <option value="">{$_('Time.RealData')}</option>
+      <option value="1m">{$_('Time.Sum1Min')}</option>
+      <option value="1h">{$_('Time.Sum1H')}</option>
+      <option value="linear">{$_('Time.RegressionLinear')}</option>
+      <option value="exponential">{$_('Time.RegressionExponential')}</option>
+      <option value="logarithmic">{$_('Time.RegrfessionLogarithmic')}</option>
+      <option value="polynomial">{$_('Time.RegressionPlynomial')}</option>
     </select>
   </div>
   <div class="Box-row">
@@ -169,10 +169,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('Time.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('Time.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('Time.ExportBtn')</option>
+          <option value="">{$_('Time.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -180,7 +180,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('Time.BackBtn')
+      {$_('Time.BackBtn')}
     </button>
   </div>
 </div>
