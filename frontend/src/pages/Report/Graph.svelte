@@ -124,15 +124,15 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('Graph.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('Graph.Title')}</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="$_('Graph.StartItem')"
+      aria-label="{$_('Graph.StartItem')}"
       bind:value={srcField}
       on:change="{updateGraph}"
     >
-      <option value="">$_('Graph.SelectStartItemMsg')</option>
+      <option value="">{$_('Graph.SelectStartItemMsg')}</option>
       {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -140,11 +140,11 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="$_('Graph.EndItem')"
+      aria-label="{$_('Graph.EndItem')}"
       bind:value={dstField}
       on:change="{updateGraph}"
     >
-    <option value="">$_('Graph.SelectEndItemMsg')</option>
+    <option value="">{$_('Graph.SelectEndItemMsg')}</option>
     {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -152,11 +152,11 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="$_('Graph.NumberItem')"
+      aria-label="{$_('Graph.NumberItem')}"
       bind:value={numField}
       on:change="{updateGraph}"
     >
-    <option value="">$_('Graph.SelectNumberItem')</option>
+    <option value="">{$_('Graph.SelectNumberItem')}</option>
     {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -164,13 +164,13 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="$_('Graph.DisplayMode')"
+      aria-label="{$_('Graph.DisplayMode')}"
       bind:value={graphType}
       on:change="{updateGraph}"
     >
     <option value="gl">3D</option>
-    <option value="force">$_('Graph.ForceModel')</option>
-    <option value="circular">$_('Graph.Circle')</option>
+    <option value="force">{$_('Graph.ForceModel')}</option>
+    <option value="circular">{$_('Graph.Circle')}</option>
     </select>
   </div>
   <div class="Box-row">
@@ -183,10 +183,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('Graph.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('Graph.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('Graph.ExportBtn')</option>
+          <option value="">{$_('Graph.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -194,7 +194,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('Graph.BackBtn')
+      {$_('Graph.BackBtn')}
     </button>
   </div>
 </div>
