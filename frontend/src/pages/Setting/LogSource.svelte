@@ -8,6 +8,7 @@
     FileBadge16,
   } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import { _ } from '../../i18n/i18n';
   export let logSource;
   let windows = false;
 
@@ -66,7 +67,7 @@
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header">
-    <h3 class="Box-title">ログソース編集</h3>
+    <h3 class="Box-title">{$_('LogSource.Title')}</h3>
   </div>
   {#if errorMsg != ""}
     <div class="flash flash-error">
@@ -83,7 +84,7 @@
   <div class="Box-body">
     <div class="form-group">
       <div class="form-group-header">
-        <h5>タイプ</h5>
+        <h5>{$_('LogSource.Type')}</h5>
       </div>
       <div class="form-group-body">
         <select
@@ -91,30 +92,30 @@
           bind:value={logSource.Type}
           disabled={editMode}
         >
-          <option value="folder">フォルダー</option>
-          <option value="file">単一ファイル</option>
-          <option value="scp">SCP転送</option>
+          <option value="folder">{$_('LogSource.Folder')}</option>
+          <option value="file">{$_('LogSource.OneFile')}</option>
+          <option value="scp">{$_('LogSource.SCP')}</option>
           {#if windows || logSource.Type == "windows"}
             <option value="windows">Windows</option>
           {/if}
-          <option value="cmd">コマンド実行</option>
-          <option value="ssh">SSHコマンド実行</option>
-          <option value="twsnmp">TWSNMP FC連携</option>
-          <option value="gravwell">Gravwell連携</option>
+          <option value="cmd">{$_('LogSource.Cmd')}</option>
+          <option value="ssh">{$_('LogSource.SSH')}</option>
+          <option value="twsnmp">{$_('LogSource.TWSNMPFC')}</option>
+          <option value="gravwell">{$_('LogSource.Gravwell')}</option>
         </select>
       </div>
     </div>
     {#if logSource.Type == "folder"}
       <div class="form-group">
         <div class="form-group-header">
-          <h5>フォルダー</h5>
+          <h5>{$_('LogSource.Folder')}</h5>
         </div>
         <div class="form-group-body">
           <div class="input-group">
             <input
               class="form-control"
               type="text"
-              placeholder="フォルダー"
+              placeholder="{$_('LogSource.Folder')}"
               bind:value={logSource.Path}
             />
             <span class="input-group-button">
@@ -129,14 +130,14 @@
     {#if logSource.Type == "file"}
       <div class="form-group">
         <div class="form-group-header">
-          <h5>単一ファイル</h5>
+          <h5>{$_('LogSource.OneFile')}</h5>
         </div>
         <div class="form-group-body">
           <div class="input-group">
             <input
               class="form-control"
               type="text"
-              placeholder="ファイル"
+              placeholder="{$_('LogSource.OneFile')}"
               bind:value={logSource.Path}
             />
             <span class="input-group-button">
@@ -151,31 +152,31 @@
     {#if logSource.Type == "cmd" || logSource.Type == "ssh"}
       <div class="form-group">
         <div class="form-group-header">
-          <h5>コマンド</h5>
+          <h5>{$_('LogSource.Comand')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control input-block"
             type="text"
-            placeholder="コマンド"
+            placeholder="{$_('LogSource.Comand')}"
             bind:value={logSource.Path}
           />
         </div>
         <p class="note error" id="scppath-input-validation">
-          コマンドを指定してください
+          {$_('LogSource.InputCmdMsg')}
         </p>
       </div>
     {/if}
     {#if logSource.Type == "scp" || logSource.Type == "ssh"}
       <div class="form-group">
         <div class="form-group-header">
-          <h5>サーバー</h5>
+          <h5>{$_('LogSource.Server')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control input-block"
             type="text"
-            placeholder="サーバー"
+            placeholder="{$_('LogSource.Server')}"
             bind:value={logSource.Server}
           />
         </div>
@@ -183,13 +184,13 @@
       {#if logSource.Type == "scp"}
         <div class="form-group">
           <div class="form-group-header">
-            <h5>パス</h5>
+            <h5>{$_('LogSource.Path')}</h5>
           </div>
           <div class="form-group-body">
             <input
               class="form-control input-block"
               type="text"
-              placeholder="パス"
+              placeholder="{$_('LogSource.Path')}"
               bind:value={logSource.Path}
             />
           </div>
@@ -197,14 +198,14 @@
       {/if}
       <div class="form-group">
         <div class="form-group-header">
-          <h5>アクセス設定</h5>
+          <h5>{$_('LogSource.AccessSetting')}</h5>
         </div>
         <div class="form-group-body">
           <p>
             <input
               class="form-control ml-2"
               type="text"
-              placeholder="ユーザーID"
+              placeholder="{$_('LogSource.UserID')}"
               bind:value={logSource.User}
             />
           </p>
@@ -212,7 +213,7 @@
             <input
               class="form-control ml-2"
               type="password"
-              placeholder="パスワード"
+              placeholder="{$_('LogSource.Password')}"
               bind:value={logSource.Password}
             />
           </p>
@@ -220,14 +221,14 @@
       </div>
       <div class="form-group">
         <div class="form-group-header">
-          <h5>SSHキーファイル</h5>
+          <h5>{$_('LogSource.SSHKeyFile')}</h5>
         </div>
         <div class="form-group-body">
           <div class="input-group">
             <input
               class="form-control"
               type="text"
-              placeholder="SSHキーファイル"
+              placeholder="{$_('LogSource.SSHKeyFile')}"
               bind:value={logSource.SSHKey}
             />
             <span class="input-group-button">
@@ -242,13 +243,13 @@
     {#if logSource.Type == "folder" || logSource.Type == "scp"}
       <div class="form-group">
         <div class="form-group-header">
-          <h5>ファイル名パターン</h5>
+          <h5>{$_('LogSource.FileNamePat')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control"
             type="text"
-            placeholder="パターン"
+            placeholder="{$_('LogSource.FileNamePat')}"
             bind:value={logSource.Pattern}
           />
         </div>
@@ -257,13 +258,13 @@
     {#if logSource.Type == "folder" || logSource.Type == "file" || logSource.Type == "scp"}
       <div class="form-group">
         <div class="form-group-header">
-          <h5>アーカイブ内ファイル名パターン</h5>
+          <h5>{$_('LogSource.FileNamePatInArc')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control"
             type="text"
-            placeholder="パターン"
+            placeholder="{$_('LogSource.Pat')}"
             bind:value={logSource.InternalPattern}
           />
         </div>
@@ -272,27 +273,27 @@
     {#if logSource.Type == "twsnmp" || logSource.Type == "gravwell" || logSource.Type == "windows"}
       <div class="form-group">
         <div class="form-group-header">
-          <h5>サーバー</h5>
+          <h5>{$_('LogSource.Server')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control input-block"
             type="text"
-            placeholder="サーバー"
+            placeholder="{$_('LogSource.Server')}"
             bind:value={logSource.Server}
           />
         </div>
       </div>
       <div class="form-group">
         <div class="form-group-header">
-          <h5>アクセス設定</h5>
+          <h5>{$_('LogSource.AccessSetting')}</h5>
         </div>
         <div class="form-group-body">
           <p>
             <input
               class="form-control ml-2"
               type="text"
-              placeholder="ユーザーID"
+              placeholder="{$_('LogSource.UserID')}"
               bind:value={logSource.User}
             />
           </p>
@@ -300,14 +301,14 @@
             <input
               class="form-control ml-2"
               type="password"
-              placeholder="パスワード"
+              placeholder="{$_('LogSource.Password')}"
               bind:value={logSource.Password}
             />
           </p>
           {#if logSource.Type == "windows"}
             <p>
               <select class="form-select" bind:value={logSource.Channel}>
-                <option value="">デフォルト</option>
+                <option value="">{$_('LogSource.Default')}</option>
                 <option value="Negotiate">Negotiate</option>
                 <option value="NTLM">NTLM</option>
                 <option value="Kerberos">Kerberos</option>
@@ -318,20 +319,20 @@
       </div>
       <div class="form-group">
         <div class="form-group-header">
-          <h5>検索期間</h5>
+          <h5>{$_('LogSource.TimeRange')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control input-sm"
             type="datetime-local"
-            placeholder="開始"
+            placeholder="{$_('LogSource.Start')}"
             bind:value={logSource.Start}
           />
           -
           <input
             class="form-control input-sm"
             type="datetime-local"
-            placeholder="終了"
+            placeholder="{$_('LogSource.End')}"
             bind:value={logSource.End}
           />
         </div>
@@ -339,39 +340,39 @@
       {#if logSource.Type == "twsnmp"}
         <div class="form-group">
           <div class="form-group-header">
-            <h5>ホスト名フィルター</h5>
+            <h5>{$_('LogSource.HostNameFilter')}</h5>
           </div>
           <div class="form-group-body">
             <input
               class="form-control input-block"
               type="text"
-              placeholder="ホスト名"
+              placeholder="{$_('LogSource.HostName')}"
               bind:value={logSource.Host}
             />
           </div>
         </div>
         <div class="form-group">
           <div class="form-group-header">
-            <h5>タグフィルター</h5>
+            <h5>{$_('LogSource.TagFilter')}</h5>
           </div>
           <div class="form-group-body">
             <input
               class="form-control input-block"
               type="text"
-              placeholder="タグ"
+              placeholder="{$_('LogSource.Tag')}"
               bind:value={logSource.Tag}
             />
           </div>
         </div>
         <div class="form-group">
           <div class="form-group-header">
-            <h5>メッセージフィルター</h5>
+            <h5>{$_('LogSource.MsgFilter')}</h5>
           </div>
           <div class="form-group-body">
             <input
               class="form-control input-block"
               type="text"
-              placeholder="メッセージ"
+              placeholder="{$_('LogSource.Message')}"
               bind:value={logSource.Pattern}
             />
           </div>
@@ -379,26 +380,26 @@
       {:else if logSource.Type == "windows"}
         <div class="form-group">
           <div class="form-group-header">
-            <h5>チャネル</h5>
+            <h5>{$_('LogSource.Channel')}</h5>
           </div>
           <div class="form-group-body">
             <select class="form-select" bind:value={logSource.Channel}>
-              <option value="System">システム</option>
-              <option value="Security">セキュリティー</option>
-              <option value="Application">アプリケーション</option>
+              <option value="System">{$_('LogSource.System')}</option>
+              <option value="Security">{$_('LogSource.Security')}</option>
+              <option value="Application">{$_('LogSource.Application')}</option>
             </select>
           </div>
         </div>
       {:else}
         <div class="form-group">
           <div class="form-group-header">
-            <h5>検索文</h5>
+            <h5>{$_('LogSource.SearchText')}</h5>
           </div>
           <div class="form-group-body">
             <input
               class="form-control input-block"
               type="text"
-              placeholder="検索文"
+              placeholder="{$_('LogSource.SearchText')}"
               bind:value={logSource.Pattern}
             />
           </div>
@@ -409,20 +410,20 @@
   <div class="Box-footer text-right">
     <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
       <X16 />
-      キャンセル
+      {$_('LogSource.CancelBtn')}
     </button>
     {#if editMode}
       <button class="btn btn-danger mr-1" type="button" on:click={del}>
         <Trash16 />
-        削除
+        {$_('LogSource.DeleteBtn')}
       </button>
     {/if}
     <button class="btn btn-primary" type="button" on:click={save}>
       <Check16 />
       {#if editMode}
-        更新
+        {$_('LogSource.UpateBtn')}
       {:else}
-        追加
+        {$_('LogSource.AddBtn')}
       {/if}
     </button>
   </div>
