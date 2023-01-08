@@ -74,7 +74,7 @@ func (b *App) Start(c Config, noRead bool) string {
 		}
 		if len(b.processStat.LogFiles) < 1 {
 			OutLog("no log files")
-			return "処理するファイルがありません"
+			return "no log file"
 		}
 	}
 	if e := b.setupProcess(noRead); e != "" {
@@ -86,7 +86,7 @@ func (b *App) Start(c Config, noRead bool) string {
 	b.logCh = make(chan *LogEnt, 10000)
 	if err := b.StartLogIndexer(); err != nil {
 		OutLog("start log indexer err=%v", err)
-		return fmt.Sprintf("インデクサーを起動できません。err=%v", err)
+		return err.Error()
 	}
 	if noRead {
 		close(b.logCh)
@@ -220,7 +220,7 @@ func (b *App) makeLogFileList() string {
 				LogSrc: s,
 			})
 		default:
-			return "まだサポートしていません！"
+			return "invalid format"
 		}
 	}
 	return ""

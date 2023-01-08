@@ -2,7 +2,6 @@ import * as echarts from 'echarts'
 
 let chart;
 
-// 指定の値の出現回数
 export const getRanking = (logs, type) => {
   const m = new Map();
   logs.forEach((l) => {
@@ -53,7 +52,7 @@ export const showRankingChart = (div, list, max,dark) => {
     },
     xAxis: {
       type: 'value',
-      name: '件数',
+      name: 'Count',
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -77,7 +76,7 @@ export const showRankingChart = (div, list, max,dark) => {
     },
     series: [
       {
-        name: '件数',
+        name: 'Count',
         type: 'bar',
         data: total,
       },

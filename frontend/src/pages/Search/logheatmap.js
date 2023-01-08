@@ -12,30 +12,30 @@ export const showLogHeatmap = (div, timeLine, dark) => {
     return;
   }
   const hours = [
-    "0時",
-    "1時",
-    "2時",
-    "3時",
-    "4時",
-    "5時",
-    "6時",
-    "7時",
-    "8時",
-    "9時",
-    "10時",
-    "11時",
-    "12時",
-    "13時",
-    "14時",
-    "15時",
-    "16時",
-    "17時",
-    "18時",
-    "19時",
-    "20時",
-    "21時",
-    "22時",
-    "23時",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
   ];
   const option = {
     title: {
@@ -59,7 +59,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
           params.name +
           " " +
           params.data[1] +
-          "時 : " +
+          " : " +
           params.data[2]
         );
       },
@@ -69,7 +69,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
     },
     xAxis: {
       type: "category",
-      name: "日付",
+      name: "Date",
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -82,7 +82,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
     },
     yAxis: {
       type: "category",
-      name: "時間帯",
+      name: "Time",
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -119,7 +119,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
     },
     series: [
       {
-        name: "件数",
+        name: "Count",
         type: "heatmap",
         data: [],
         emphasis: {

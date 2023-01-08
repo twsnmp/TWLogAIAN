@@ -90,7 +90,7 @@ export default {
       // variables, using either `var` or `const`
       preferConst: true, // Default: false
 
-      // specify indentation for the generated default export —
+      // specify indentation for the generated default export
       // defaults to '\t'
       indent: '  ',
 

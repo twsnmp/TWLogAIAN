@@ -27,7 +27,7 @@ export const getFFTMap = (logs, field) => {
   let st = Infinity;
   let lt = 0;
   logs.forEach((l) => {
-    const k = l.KeyValue[field] || "項目なし";
+    const k = l.KeyValue[field] || "unknown";
     const e = m.get(k);
     if (!e) {
       m.set(k, { Name: k, Count: 0, Data: [] })
@@ -127,7 +127,7 @@ export const showFFTChart = (div,field, fftMap, key, fftType,dark) => {
     },
     xAxis: {
       type: 'value',
-      name: freq ? '周波数(Hz)' : '周期(Sec)',
+      name: freq ? 'Frequency(Hz)' : 'Cycle(Sec)',
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -141,7 +141,7 @@ export const showFFTChart = (div,field, fftMap, key, fftType,dark) => {
     },
     yAxis: {
       type: 'value',
-      name: '回数',
+      name: 'Count',
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -153,7 +153,7 @@ export const showFFTChart = (div,field, fftMap, key, fftType,dark) => {
     },
     series: [
       {
-        name: '回数',
+        name: 'Count',
         type: 'bar',
         color: '#5470c6',
         emphasis: {
@@ -255,7 +255,7 @@ const showFFT3DChart = (field,fftMap, fftType,dark) => {
     },
     yAxis3D: {
       type: freq ? 'value' : 'log',
-      name: freq ? '周波数(Hz)' : '周期(Sec)',
+      name: freq ? 'Frequency(Hz)' : 'Cycle(Sec)',
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -268,7 +268,7 @@ const showFFT3DChart = (field,fftMap, fftType,dark) => {
     },
     zAxis3D: {
       type: 'value',
-      name: '回数',
+      name: 'Count',
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -287,14 +287,14 @@ const showFFT3DChart = (field,fftMap, fftType,dark) => {
     },
     series: [
       {
-        name: 'Syslog FFT分析',
+        name: 'Syslog FFT',
         type: 'scatter3D',
         symbolSize: 3,
         dimensions: [
           getFieldName(field),
-          freq ? '周波数' : '周期',
-          '回数',
-          freq ? '周期' : '周波数',
+          freq ? 'Frequency' : 'Cycle',
+          'Count',
+          freq ? 'Cycle' : 'Frequency',
         ],
         data,
       },

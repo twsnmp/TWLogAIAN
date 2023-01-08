@@ -27,11 +27,11 @@ func (b *App) Export(exportType string, data *ExportData) string {
 	case "csv":
 		err = b.exportCSV(data)
 	default:
-		return "サポートしていません"
+		return "not suppoerted"
 	}
 	if err != nil {
 		OutLog("ExportTable err=%v", err)
-		return fmt.Sprintf("エクスポートできません err=%v", err)
+		return fmt.Sprintf("export err=%v", err)
 	}
 	return ""
 }
@@ -42,7 +42,7 @@ func (b *App) exportExcel(data *ExportData) error {
 		DefaultFilename:      "TWLogAIAN_Export_Log_" + d + ".xlsx",
 		CanCreateDirectories: true,
 		Filters: []wails.FileFilter{{
-			DisplayName: "Excelファイル",
+			DisplayName: "Excel",
 			Pattern:     "*.xlsx",
 		}},
 	})
@@ -90,7 +90,7 @@ func (b *App) exportCSV(data *ExportData) error {
 		DefaultFilename:      "TWLogAIAN_Export_Log_" + d + ".csv",
 		CanCreateDirectories: true,
 		Filters: []wails.FileFilter{{
-			DisplayName: "CSV ファイル",
+			DisplayName: "CSV",
 			Pattern:     "*.csv",
 		}},
 	})

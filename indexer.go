@@ -87,8 +87,8 @@ func (b *App) CloseIndexor() error {
 func (b *App) ClearIndex() string {
 	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
 		Type:          wails.QuestionDialog,
-		Title:         "インデックスの削除",
-		Message:       "削除しますか?",
+		Title:         "Delete Index",
+		Message:       "Delete?",
 		Buttons:       []string{"Yes", "No"},
 		DefaultButton: "No",
 		CancelButton:  "No",
@@ -325,19 +325,19 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 		a := strings.Split(geo, ",")
 		if len(a) < 4 {
 			OutLog("invalid geo formar=%s", geo)
-			ret.ErrorMsg = fmt.Sprintf("位置検索条件が正しくありません%s", geo)
+			ret.ErrorMsg = fmt.Sprintf("invalid geo=%s", geo)
 			return ret
 		}
 		lat, err := strconv.ParseFloat(a[1], 64)
 		if err != nil {
 			OutLog("SearchLog err=%v", err)
-			ret.ErrorMsg = fmt.Sprintf("位置検索条件が正しくありません err=%v", err)
+			ret.ErrorMsg = fmt.Sprintf("invalid geo err=%v", err)
 			return ret
 		}
 		long, err := strconv.ParseFloat(a[2], 64)
 		if err != nil {
 			OutLog("SearchLog err=%v", err)
-			ret.ErrorMsg = fmt.Sprintf("位置検索条件が正しくありません err=%v", err)
+			ret.ErrorMsg = fmt.Sprintf("invalid geo err=%v", err)
 			return ret
 		}
 		gq := bluge.NewGeoDistanceQuery(long, lat, a[3]).SetField(a[0])

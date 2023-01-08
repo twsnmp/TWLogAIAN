@@ -79,7 +79,7 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
     },
     xAxis: {
       type: "time",
-      name: "日時",
+      name: "Time",
       axisLabel: {
         fontSize: "8px",
         formatter: (value, index) => {
@@ -121,27 +121,27 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
   };
   let data = [];
   if (chartType == "1h" || chartType == "1m" ) {
-    option.series[0].name = "平均値";
+    option.series[0].name = "Mean";
     option.series.push({
-      name: "最大値",
+      name: "Max",
       type: "line",
       large: true,
       data: [],
     });
     option.series.push({
-      name: "最小値",
+      name: "Min",
       type: "line",
       large: true,
       data: [],
     });
     option.series.push({
-      name: "中央値",
+      name: "Median",
       type: "line",
       large: true,
       data: [],
     });
     option.series.push({
-      name: "分散",
+      name: "Variant",
       type: "line",
       large: true,
       yAxisIndex: 1,
@@ -149,7 +149,7 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
     });
     option.yAxis.push({
       type: "value",
-      name: "分散",
+      name: "Variant",
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -159,11 +159,11 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
         margin: 2,
       },
     });
-    option.legend.data[0]= "平均値";
-    option.legend.data.push("最大値");
-    option.legend.data.push("最小値");
-    option.legend.data.push("中央値");
-    option.legend.data.push("分散");
+    option.legend.data[0]= "Mean";
+    option.legend.data.push("Max");
+    option.legend.data.push("Min");
+    option.legend.data.push("Median");
+    option.legend.data.push("Variant");
     let tS = -1;
     const values = [];
     const dt = chartType == "1h" ? 3600 * 1000 : 60 * 1000;
@@ -206,9 +206,9 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
       option.series[0].data.push([t, l.KeyValue[field] || 0.0]);
     });
     const reg = calcRegression(logs, field, chartType);
-    option.legend.data.push('回帰分析('+ reg.expression +")");
+    option.legend.data.push('Regression('+ reg.expression +")");
     option.series.push({
-        name: '回帰分析('+ reg.expression +")",
+        name: 'Regression('+ reg.expression +")",
         type: 'line',
         showSymbol: false,
         data: reg.points,

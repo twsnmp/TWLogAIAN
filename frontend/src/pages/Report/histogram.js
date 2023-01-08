@@ -19,7 +19,7 @@ const makeHistogramChart = (div, field, dark) => {
       trigger: 'axis',
       formatter(params) {
         const p = params[0]
-        return p.value[0] + 'の回数:' + p.value[1]
+        return p.value[0] + ':' + p.value[1]
       },
       axisPointer: {
         type: 'shadow',
@@ -43,7 +43,7 @@ const makeHistogramChart = (div, field, dark) => {
       },
     },
     yAxis: {
-      name: '回数',
+      name: 'Count',
       min: 0,
     },
     series: [

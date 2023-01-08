@@ -79,7 +79,7 @@ func main() {
 			WebviewIsTransparent: true,
 			WindowIsTranslucent:  true,
 			About: &mac.AboutInfo{
-				Title:   "AIアシストログ分析ツール",
+				Title:   "TWLogAIAN",
 				Message: "© 2021 Masayuki Yamai",
 				Icon:    icon,
 			},

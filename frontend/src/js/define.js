@@ -1,4 +1,3 @@
-// GO言語側で定義した値をJavaScript側で使う
 let fieldTypes = {};
 
 export const loadFieldTypes = () => {
@@ -13,7 +12,7 @@ export const getFieldName = (f) => {
   if (f=="") {
     return "";
   }
-  return fieldTypes[f] ? fieldTypes[f].Name : f + "(未定義)";
+  return fieldTypes[f] ? fieldTypes[f].Name : f + "(unknown)";
 };
 
 export const getFieldType = (f) => {

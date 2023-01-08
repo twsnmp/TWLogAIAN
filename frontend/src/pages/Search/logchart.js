@@ -128,7 +128,7 @@ export const showLogChart = (div, logs, dark, cb) => {
     },
     series: [
       {
-        name: "正常",
+        name: "Normal",
         type: "bar",
         color: "RGB(14,80,209)",
         stack: "count",
@@ -136,7 +136,7 @@ export const showLogChart = (div, logs, dark, cb) => {
         data: data.normal,
       },
       {
-        name: "注意",
+        name: "Warning",
         type: "bar",
         color: "RGB(255,248,185)",
         stack: "count",
@@ -144,7 +144,7 @@ export const showLogChart = (div, logs, dark, cb) => {
         data: data.warn,
       },
       {
-        name: "エラー",
+        name: "Error",
         type: "bar",
         color: "RGB(194,11,35)",
         stack: "count",
@@ -156,7 +156,7 @@ export const showLogChart = (div, logs, dark, cb) => {
       textStyle: {
         fontSize: 10,
       },
-      data: ["正常", "注意", "エラー"],
+      data: ["Normal", "Warnning", "Error"],
     },
   });
   chart.resize();

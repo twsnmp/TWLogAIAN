@@ -1,4 +1,3 @@
-// Log を表示するための処理
 import * as echarts from "echarts";
 import { html, h } from "gridjs";
 import { getFieldName } from "../../js/define";
@@ -15,23 +14,23 @@ const formatCode = (code) => {
 const formatLevel = (level) => {
   switch (level) {
     case "error":
-      return html(`<div class="color-fg-danger">エラー</div>`);
+      return html(`<div class="color-fg-danger">Error</div>`);
     case "warn":
-      return html(`<div class="color-fg-attention">注意</div>`);
+      return html(`<div class="color-fg-attention">Warnning</div>`);
   }
-  return html(`<div class="color-fg-default">正常</div>`);
+  return html(`<div class="color-fg-default">Normal</div>`);
 };
 
 const columnsTimeOnly = [
   {
     id: "level",
-    name: "レベル",
+    name: "Level",
     width: "6%",
     formatter: (cell) => cell ? formatLevel(cell) : "",
   },
   {
     id: "_timestamp",
-    name: "日時",
+    name: "Time",
     width: "15%",
     formatter: (cell) =>
     cell ?
@@ -43,13 +42,13 @@ const columnsTimeOnly = [
   },
   {
     id: "score",
-    name: "スコア",
+    name: "Score",
     width: "5%",
     formatter: (cell) => cell.toFixed(2),
   },
   {
     id: "all",
-    name: "ログ",
+    name: "Log",
     width: "60%",
   },
   {
@@ -102,13 +101,13 @@ const getTimeOnlyLogData = (r, filter, scoreField) => {
 const columnsSyslog = [
   {
     id: "level",
-    name: "レベル",
+    name: "Level",
     width: "6%",
     formatter: (cell) => cell ? formatLevel(cell) : "",
   },
   {
     id: "_timestamp",
-    name: "日時",
+    name: "Time",
     width: "15%",
     formatter: (cell) => cell ?
       echarts.time.format(
@@ -119,17 +118,17 @@ const columnsSyslog = [
   },
   {
     id: "logsrc",
-    name: "送信元",
+    name: "SRC",
     width: "14%",
   },
   {
     id: "tag",
-    name: "タグ",
+    name: "Tag",
     width: "18%",
   },
   {
     id: "message",
-    name: "メッセージ",
+    name: "Message",
     width: "38%",
   },
   {
@@ -164,13 +163,13 @@ const columnsSyslog = [
 const columnsAccessLog = [
   {
     id: "response",
-    name: "応答",
+    name: "Code",
     width: "6%",
     formatter: (cell) => cell ? formatCode(cell) : "",
   },
   {
     id: "_timestamp",
-    name: "日時",
+    name: "Time",
     width: "15%",
     formatter: (cell) => 
     cell ?
@@ -182,27 +181,27 @@ const columnsAccessLog = [
   },
   {
     id: "verb",
-    name: "リクエスト",
+    name: "Request",
     width: "7%",
   },
   {
     id: "bytes",
-    name: "サイズ",
+    name: "Size",
     width: "6%",
   },
   {
     id: "clientip",
-    name: "アクセス元",
+    name: "Client",
     width: "25%",
   },
   {
     id: "clientip_geo_country",
-    name: "国",
+    name: "Country",
     width: "6%",
   },
   {
     id: "request",
-    name: "パス",
+    name: "Path",
     width: "26%",
   },
   {
@@ -238,23 +237,23 @@ const formatWinLevel = (level) => {
   switch (level * 0) {
     case 1:
     case 2:
-      return html(`<div class="color-fg-danger">エラー(${level})</div>`);
+      return html(`<div class="color-fg-danger">Error(${level})</div>`);
     case 3:
-      return html(`<div class="color-fg-attention">注意</div>`);
+      return html(`<div class="color-fg-attention">Warnning</div>`);
   }
-  return html(`<div class="color-fg-default">正常</div>`);
+  return html(`<div class="color-fg-default">Normal</div>`);
 };
 
 const columnsWindowsLog = [
   {
     id: "level",
-    name: "レベル",
+    name: "Level",
     width: "8%",
     formatter: (cell) => cell ? formatWinLevel(cell) : "",
   },
   {
     id: "_timestamp",
-    name: "日時",
+    name: "Time",
     width: "15%",
     formatter: (cell) =>
     cell ?
@@ -266,27 +265,27 @@ const columnsWindowsLog = [
   },
   {
     id: "winComputer",
-    name: "コンピューター",
+    name: "Computer",
     width: "20%",
   },
   {
     id: "winEventID",
-    name: "イベントID",
+    name: "Event ID",
     width: "9%",
   },
   {
     id: "winEventRecordID",
-    name: "レコードID",
+    name: "Record ID",
     width: "10%",
   },
   {
     id: "winChannel",
-    name: "チャネル",
+    name: "Channel",
     width: "15%",
   },
   {
     id: "winProvider",
-    name: "プロバイダー",
+    name: "Provider",
     width: "20%",
   },
   {
@@ -322,7 +321,7 @@ const makeDataColumns = (fields) => {
   const colums = [];
   colums.push({
     id: "_timestamp",
-    name: "日時",
+    name: "Time",
     formatter: (cell) =>
     cell ? 
       echarts.time.format(
@@ -412,7 +411,6 @@ const getAccessLogData = (r, filter) => {
 export const getLogLevel = (l) => {
   let suverity = l.KeyValue.suverity || l.KeyValue.priority;
   if (suverity && suverity != "") {
-    // 数値のsuverityを優先する
     suverity %= 8;
     return suverity < 4 ? "error" : suverity == 4 ? "warn" : "normal";
   }

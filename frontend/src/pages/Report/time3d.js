@@ -11,7 +11,7 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
   const colors = []
   logs.forEach((l) => {
     const t = new Date(l.Time / (1000 *1000))
-    const x = l.KeyValue[xField] || "項目なし";
+    const x = l.KeyValue[xField] || "Unknown";
     const z = l.KeyValue[zField] ? l.KeyValue[zField]  * 1 : 0.0;
     const c = l.KeyValue[colorField] ? l.KeyValue[colorField] * 1 : 0.0;
     colors.push(c)
@@ -106,7 +106,7 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
     },
     yAxis3D: {
       type: 'time',
-      name: '日時',
+      name: 'Time',
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -142,7 +142,7 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
     },
     series: [
       {
-        name: '3D集計',
+        name: '3D Sum',
         type: 'scatter3D',
         symbolSize: 4,
         dimensions: [xField, 'Time', zField, colorField],

@@ -29,30 +29,30 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
   }
   chart = echarts.init(document.getElementById(div), dark ? "dark" : null);
   const hours = [
-    "0時",
-    "1時",
-    "2時",
-    "3時",
-    "4時",
-    "5時",
-    "6時",
-    "7時",
-    "8時",
-    "9時",
-    "10時",
-    "11時",
-    "12時",
-    "13時",
-    "14時",
-    "15時",
-    "16時",
-    "17時",
-    "18時",
-    "19時",
-    "20時",
-    "21時",
-    "22時",
-    "23時",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
   ];
   const option = {
     title: {
@@ -77,7 +77,7 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
           params.name +
           " " +
           params.data[1] +
-          "時 : " +
+          " : " +
           params.data[2].toFixed(1)
         );
       },
@@ -87,7 +87,7 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
     },
     xAxis: {
       type: "category",
-      name: "日付",
+      name: "Date",
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -100,7 +100,7 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
     },
     yAxis: {
       type: "category",
-      name: "時間帯",
+      name: "Time",
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -137,7 +137,7 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
     },
     series: [
       {
-        name: field ? getFieldName(field) : "回数",
+        name: field ? getFieldName(field) : "Count",
         type: "heatmap",
         data: [],
         emphasis: {
@@ -198,8 +198,8 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
       }
     }
   } else {
-    option.xAxis.name = "曜日";
-    option.xAxis.data = ["日", "月", "火", "水", "木", "金", "土"];
+    option.xAxis.name = "Day of week";
+    option.xAxis.data = ["Sun", "Man", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const values = [];
     for (let x = 0; x < 7; x++) {
       const ent = [];

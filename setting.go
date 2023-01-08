@@ -68,20 +68,20 @@ func (b *App) SelectFile(t string) string {
 	switch t {
 	case "work":
 		dir = true
-		title = "作業フォルダ"
+		title = "Work folder"
 	case "geoip":
 		dir = false
-		title = "GeoIPデータベース"
+		title = "GeoIP DB"
 	case "sshkey":
 		dir = false
-		title = "SSHキー"
+		title = "SSH Ket"
 		sh = true
 	case "logdir":
 		dir = true
-		title = "ログフォルダ"
+		title = "Log folder"
 	case "logfile":
 		dir = false
-		title = "ログファイル"
+		title = "Log File"
 	}
 	if dir {
 		dir, err := wails.OpenDirectoryDialog(b.ctx, wails.OpenDialogOptions{
@@ -113,11 +113,11 @@ func (b *App) SetWorkDir(wd string) string {
 	fs, err := os.Stat(wd)
 	if err != nil {
 		OutLog("SetWorkDir err=%v", err)
-		return fmt.Sprintf("作業フォルダが正しくありません err=%v", err)
+		return err.Error()
 	}
 	if !fs.IsDir() {
 		OutLog("SetWorkDir not dir")
-		return "指定した作業フォルダはディレクトリではありません"
+		return "not dir"
 	}
 	b.logSources = []*LogSource{}
 	b.config = Config{}
@@ -125,7 +125,7 @@ func (b *App) SetWorkDir(wd string) string {
 	b.clearProcessStat()
 	err = b.openDB(wd)
 	if err != nil {
-		return fmt.Sprintf("データベースを開けません err=%v", err)
+		return err.Error()
 	}
 	b.addWorkDirs(wd)
 	b.workdir = wd
@@ -323,8 +323,8 @@ func (b *App) saveResultToDB() error {
 func (b *App) CloseWorkDir() string {
 	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
 		Type:          wails.QuestionDialog,
-		Title:         "分析の終了",
-		Message:       "終了しますか?",
+		Title:         "Stop",
+		Message:       "Stop?",
 		Buttons:       []string{"Yes", "No"},
 		DefaultButton: "No",
 		CancelButton:  "No",
@@ -421,12 +421,12 @@ func (b *App) UpdateLogSource(ls LogSource) string {
 func (b *App) DeleteLogSource(no int) string {
 	OutLog("DeleteLogSource no=%d", no)
 	if no <= 0 || no > len(b.logSources) {
-		return "送信元がありません"
+		return "no sources"
 	}
 	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
 		Type:          wails.QuestionDialog,
-		Title:         "ログソースの削除",
-		Message:       "削除しますか?",
+		Title:         "Delete Log Source",
+		Message:       "Delete?",
 		Buttons:       []string{"Yes", "No"},
 		DefaultButton: "No",
 		CancelButton:  "No",
@@ -482,7 +482,7 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 		total++
 		values, err := g.Parse("%{TWLOGAIAN}", l)
 		if err != nil {
-			ret.ErrorMsg = fmt.Sprintf("%d行目のエラー:%v", ln, err)
+			ret.ErrorMsg = fmt.Sprintf("line[%d] err=%v", ln, err)
 			break
 		} else if len(values) > 0 {
 			if len(ret.Fields) < 1 {
@@ -502,7 +502,7 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 		}
 	}
 	if skip > 0 {
-		ret.ErrorMsg = fmt.Sprintf("全%d行中%d行が対象外でした", total, skip)
+		ret.ErrorMsg = fmt.Sprintf("total=%d skiped=%d", total, skip)
 	}
 	return ret
 }
@@ -556,7 +556,7 @@ func (b *App) AutoGrok(testData string) AutoGrokResp {
 	}
 	findSplunkPat(testData, replaceMap)
 	if len(replaceMap) < 1 {
-		ret.ErrorMsg = "フィールドを検知できません"
+		ret.ErrorMsg = "filed not found"
 		return ret
 	}
 	ret.Grok = b.makeGrok(testData, replaceMap)
@@ -615,9 +615,9 @@ func (b *App) makeGrok(td string, rmap map[string]string) string {
 func (b *App) LoadKeyword() []string {
 	ret := []string{}
 	file, err := wails.OpenFileDialog(b.ctx, wails.OpenDialogOptions{
-		Title: "キーワード",
+		Title: "Keyword File",
 		Filters: []wails.FileFilter{{
-			DisplayName: "キーワードファイル",
+			DisplayName: "Keyword file",
 			Pattern:     "*.txt",
 		}},
 	})
