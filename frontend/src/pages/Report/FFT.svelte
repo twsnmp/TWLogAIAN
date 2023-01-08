@@ -136,17 +136,17 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('FFT.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('FFT.Title')}</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="$_('FFT.SumItem')"
+      aria-label="{$_('FFT.SumItem')}"
       bind:value={selected}
       on:change={updateFFT}
     >
-      <option value="">$_('FFT.SelectSumItem')</option>
+      <option value="">{$_('FFT.SelectSumItem')}</option>
       {#if catFields.length < 1 }
-        <option value="_None">$_('FFT.NoItem')</option>
+        <option value="_None">{$_('FFT.NoItem')}</option>
       {/if}
       {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
@@ -156,11 +156,11 @@
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         class="form-select ml-2"
-        aria-label="$_('FFT.DisplayItem')"
+        aria-label="{$_('FFT.DisplayItem')}"
         bind:value={key}
         on:change={updateFFTChart}
       >
-        <option value="">$_('FFT.3DChart')</option>
+        <option value="">{$_('FFT.3DChart')}</option>
         {#each keyList as k}
           <option value={k}>{k}</option>
         {/each}
@@ -168,12 +168,12 @@
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         class="form-select ml-2"
-        aria-label="$_('FFT.CharMode')"
+        aria-label="{$_('FFT.CharMode')}"
         bind:value={fftType}
         on:change={updateFFTChart}
       >
-        <option value="hz">$_('FFT.Freq')</option>
-        <option value="time">$_('FFT.Cycle')</option>
+        <option value="hz">{$_('FFT.Freq')}</option>
+        <option value="time">{$_('FFT.Cycle')}</option>
       </select>
     {/if}
   </div>
@@ -187,10 +187,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('FFT.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('FFT.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('FFT.ExportBtn')</option>
+          <option value="">{$_('FFT.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -198,7 +198,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('FFT.BackBtn')
+      {$_('FFT.BackBtn')}
     </button>
   </div>
 </div>
