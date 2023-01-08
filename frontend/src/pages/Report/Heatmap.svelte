@@ -104,15 +104,15 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('Heatmap.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('Heatmap.Title')}</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="$_('Heatmap.SumItem')"
+      aria-label="{$_('Heatmap.SumItem')}"
       bind:value={field}
       on:change="{updateHeatmap}"
     >
-      <option value="">$_('Heatmap.CountItem')</option>
+      <option value="">{$_('Heatmap.CountItem')}</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -123,8 +123,8 @@
       bind:value={sumUnit}
       on:change="{updateHeatmap}"
     >
-      <option value="week">$_('Heatmap.Weekly')</option>
-      <option value="day">$_('Heatmap.Daily')</option>
+      <option value="week">{$_('Heatmap.Weekly')}</option>
+      <option value="day">{$_('Heatmap.Daily')}</option>
     </select>
     {#if field != "" }
       <!-- svelte-ignore a11y-no-onchange -->
@@ -133,10 +133,10 @@
         bind:value={calcMode}
         on:change="{updateHeatmap}"
       >
-        <option value="sum">$_('Heatmap.Sum')</option>
-        <option value="mean">$_('Heatmap.Mean')</option>
-        <option value="median">$_('Heatmap.Median')</option>
-        <option value="variance">$_('Heatmap.Variance')</option>
+        <option value="sum">{$_('Heatmap.Sum')}</option>
+        <option value="mean">{$_('Heatmap.Mean')}</option>
+        <option value="median">{$_('Heatmap.Median')}</option>
+        <option value="variance">{$_('Heatmap.Variance')}</option>
       </select>
     {/if}
   </div>
@@ -150,10 +150,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('Heatmap.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('Heatmap.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('Heatmap.ExportBtn')</option>
+          <option value="">{$_('Heatmap.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -161,7 +161,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('Heatmap.BackBtn')
+      {$_('Heatmap.BackBtn')}
     </button>
   </div>
 </div>
