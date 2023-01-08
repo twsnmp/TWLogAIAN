@@ -190,7 +190,7 @@
     "Title": "3D time series analysis",
     "X": "X-axis",
     "SelectXMsg": "Please select an item for the X-axis",
-    "NoItem": "No item",
+    "NoItem": "None",
     "Z": "Z-axis",
     "SelectZMsg": "Please select an item for the Z axis",
     "Color": "Color",

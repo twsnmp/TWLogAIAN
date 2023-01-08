@@ -115,17 +115,17 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('Time3D.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('Time3D.Title')}</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="$_('Time3D.X')"
+      aria-label="{$_('Time3D.X')}"
       bind:value={xField}
       on:change="{updateTime3DChart}"
     >
-      <option value="">$_('Time3D.SelectXMsg')</option>
+      <option value="">{$_('Time3D.SelectXMsg')}</option>
       {#if catFields.length < 1 }
-        <option value="_None">$_('Time3D.NoItem')</option>
+        <option value="_None">{$_('Time3D.NoItem')}</option>
       {/if}
       {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
@@ -134,11 +134,11 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="$_('Time3D.Z')"
+      aria-label="{$_('Time3D.Z')}"
       bind:value={zField}
       on:change="{updateTime3DChart}"
     >
-    <option value="">$_('Time3D.SelectZMsg')</option>
+    <option value="">{$_('Time3D.SelectZMsg')}</option>
     {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -146,11 +146,11 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="$_('Time3D.Color')"
+      aria-label="{$_('Time3D.Color')}"
       bind:value={colorField}
       on:change="{updateTime3DChart}"
     >
-      <option value="">$_('Time3D.SelectColorMsg')</option>
+      <option value="">{$_('Time3D.SelectColorMsg')}</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -166,10 +166,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('Time3D.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('Time3D.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('Time3D.ExportBtn')</option>
+          <option value="">{$_('Time3D.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -177,7 +177,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('Time3D.BackBtn')
+      {$_('Time3D.BackBtn')}
     </button>
   </div>
 </div>
