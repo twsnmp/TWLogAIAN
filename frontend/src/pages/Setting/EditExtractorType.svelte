@@ -13,6 +13,10 @@
   } from "../../js/define";
   import { onMount } from "svelte";
   import EditFieldType from "./EditFieldType.svelte";
+  import { _,getLocale } from '../../i18n/i18n';
+
+  let locale = getLocale();
+  let gridLang = locale == "ja" ? jaJP : undefined;
 
   export let extractorType;
   export let add = true;
@@ -63,11 +67,11 @@
 
   const test = () => {
     if (extractorType.Grok == "") {
-      errorMsg = "パターンを指定してください";
+      errorMsg = $_('EditExtractorType.InputPatMsg');
       return;
     }
     if (testLog == "") {
-      errorMsg = "テストデータを指定してください";
+      errorMsg = $_('EditExtractorType.InputTestDataMsg');
       return;
     }
     window.go.main.App.TestGrok(extractorType.Grok, testLog).then((r) => {
@@ -83,7 +87,7 @@
 
   const auto = () => {
     if (testLog == "") {
-      errorMsg = "テストデータを指定してください";
+      errorMsg = $_('EditExtractorType.InputTestDataMsg');
       return;
     }
     window.go.main.App.AutoGrok(testLog).then((r) => {
@@ -193,7 +197,7 @@
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
-      <h3 class="Box-title">抽出(Grok)パターン編集</h3>
+      <h3 class="Box-title">{$_('EditExtractorType.Title')}</h3>
     </div>
     {#if errorMsg}
       <div class="flash flash-error">
@@ -211,35 +215,34 @@
     <div class="Box-body">
       <div class="form-group">
         <div class="form-group-header">
-          <h5>キー</h5>
+          <h5>{$_('EditExtractorType.Key')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control"
             type="text"
             disabled={!add}
-            placeholder="抽出パターンのキー"
+            placeholder="{$_('EditExtractorType.PatKey')}"
             bind:value={extractorType.Key}
           />
         </div>
       </div>
       <div class="form-group">
         <div class="form-group-header">
-          <h5>名前</h5>
+          <h5>{$_('EditExtractorType.Name')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control"
             type="text"
-            placeholder="抽出パターンの名前"
+            placeholder="{$_('EditExtractorType.NameOfPat')}"
             bind:value={extractorType.Name}
           />
         </div>
       </div>
       <div class="form-group">
         <div class="form-group-header">
-          <h5>
-            抽出パターン
+          <h5>{$_('EditExtractorType.ExtractPat')}
           {#if showInput}
             <button type="button" class="btn btn-sm ml-2" on:click={()=> showInput = false}>
               <TriangleUp16 />
@@ -263,7 +266,7 @@
           <input
             class="form-control grok"
             type="text"
-            placeholder="抽出パターン"
+            placeholder="{$_('EditExtractorType.ExtractPat')}"
             bind:value={extractorType.Grok}
           />
         </div>
@@ -276,27 +279,27 @@
       </div>
       <div class="form-group">
         <div class="form-group-header">
-          <h5 class="pb-1">取得情報</h5>
+          <h5 class="pb-1">{$_('EditExtractorType.ExtractInfo')}</h5>
         </div>
         <div class="form-group-body">
           <input
             class="form-control"
             type="text"
             style="width: 15%;"
-            placeholder="タイムスタンプ項目"
+            placeholder="{$_('EditExtractorType.TimeStampItem')}"
             bind:value={extractorType.TimeField}
           />
           <input
             class="form-control"
             type="text"
             style="width: 25%;"
-            placeholder="IPアドレス項目"
+            placeholder="{$_('EditExtractorType.IPField')}"
             bind:value={extractorType.IPFields}
           />
           <input
             class="form-control"
             type="text"
-            placeholder="MACアドレス項目"
+            placeholder="{$_('EditExtractorType.MacField')}"
             style="width: 20%;"
             bind:value={extractorType.MACFields}
           />
@@ -304,7 +307,7 @@
       </div>
       <div class="form-group">
         <div class="form-group-header">
-          <h5>テストデータ</h5>
+          <h5>{$_('EditExtractorType.TestData')}</h5>
         </div>
         <div class="form-group-body">
           <textarea class="form-control testdata" bind:value={testLog} />
@@ -313,15 +316,15 @@
     </div>
     {#if fields.length > 0}
       <div class="Box-row markdown-body log">
-        <h5>抽出した項目</h5>
+        <h5>{$_('EditExtractorType.ExtractFields')}</h5>
         <table class="fields" width="100%">
           <thead>
             <tr>
-              <th width="20%">変数名</th>
-              <th width="40%">名前</th>
-              <th width="20%">種別</th>
-              <th width="10%">単位</th>
-              <th width="10%">追加</th>
+              <th width="20%">{$_('EditExtractorType.ValueName')}</th>
+              <th width="40%">{$_('EditExtractorType.Name')}</th>
+              <th width="20%">{$_('EditExtractorType.Type')}</th>
+              <th width="10%">{$_('EditExtractorType.Unit')}</th>
+              <th width="10%">{$_('EditExtractorType.Add')}</th>
             </tr>
           </thead>
           <tbody>
@@ -350,26 +353,26 @@
         </table>
       </div>
       <div class="Box-row markdown-body log">
-        <h5>抽出したデータ</h5>
-        <Grid {data} {columns} language={jaJP} />
+        <h5>{$_('EditExtractorType.ExtractData')}</h5>
+        <Grid {data} {columns} language={gridLang} />
       </div>
     {/if}
     <div class="Box-footer text-right">
       <button class="btn btn-danger mr-1" type="button" on:click={auto}>
         <StarFill16 />
-        自動抽出パターン生成
+        {$_('EditExtractorType.AutoPatGen')}
       </button>
       <button class="btn btn-primary" type="button" on:click={test}>
         <Check16 />
-        テスト
+        {$_('EditExtractorType.Test')}
       </button>
       <button class="btn btn-secondary mr-1" type="button" on:click={back}>
         <X16 />
-        キャンセル
+        {$_('EditExtractorType.CancelBtn')}
       </button>
       <button class="btn btn-primary mr-1" type="button" on:click={save}>
         <X16 />
-        保存
+        {$_('EditExtractorType.SaveBtn')}
       </button>
     </div>
   </div>

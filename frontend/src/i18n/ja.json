@@ -345,5 +345,33 @@
     "AccessLogWalu": "アクセスログ(Waluの方法)",
     "ExtractOnSeach": "検索時データ抽出",
     "NotUse": "しない"
+  },
+  "EditExtractorType": {
+    "InputPatMsg": "パターンを指定してください",
+    "InputTestDataMsg": "テストデータを指定してください",
+    "Title": "抽出(Grok)パターン編集",
+    "Key": "キー",
+    "PatKey": "抽出パターンのキー",
+    "Name": "名前",
+    "NameOfPat": "抽出パターンの名前",
+    "ExtractPat": "抽出パターン"
+  },
+  "ExtractorType": {
+    "ExtractInfo": "取得情報",
+    "TimeStampItem": "タイムスタンプ項目",
+    "IPField": "IPアドレス項目",
+    "MacField": "MACアドレス項目",
+    "TestData": "テストデータ",
+    "ExtractFields": "抽出した項目",
+    "ValueName": "変数名",
+    "Name": "名前",
+    "Type": "種別",
+    "Unit": "単位",
+    "Add": "追加",
+    "ExtractData": "抽出したデータ",
+    "AutoPatGen": "自動抽出パターン生成",
+    "Test": "テスト",
+    "CancelBtn": "キャンセル",
+    "SaveBtn": "保存"
   }
 }

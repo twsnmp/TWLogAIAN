@@ -345,5 +345,30 @@
     "AccessLogWalu": "Access log (Walu's method)",
     "ExtractOnSeach": "Search-time data extraction",
     "NotUse": "None"
+  },
+  "EditExtractorType": {
+    "InputPatMsg": "Please specify a pattern",
+    "InputTestDataMsg": "Please specify test data",
+    "Title": "Extraction (Grok) pattern editing",
+    "Key": "Key",
+    "PatKey": "Extract pattern key",
+    "Name": "Name",
+    "NameOfPat": "Pattern",
+    "ExtractPat": "Grok pattern",
+    "ExtractInfo": "Information",
+    "TimeStampItem": "Timestamp field",
+    "IPField": "IP address item",
+    "MacField": "MAC address item",
+    "TestData": "Test data",
+    "ExtractFields": "Extracted Fields",
+    "ValueName": "Value",
+    "Type": "Type",
+    "Unit": "Unit",
+    "Add": "Add",
+    "ExtractData": "Extracted data",
+    "AutoPatGen": "Automatic extraction pattern generation",
+    "Test": "Test",
+    "CancelBtn": "Cancel",
+    "SaveBtn": "Save"
   }
 }
