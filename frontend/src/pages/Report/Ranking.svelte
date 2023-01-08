@@ -114,15 +114,15 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('Ranking.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('Ranking.Title')}</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="$_('Ranking.Item')"
+      aria-label="{$_('Ranking.Item')}"
       bind:value={selected}
       on:change={updateRanking}
     >
-    <option value="">$_('Ranking.SelectSumItemMsg')</option>
+    <option value="">{$_('Ranking.SelectSumItemMsg')}</option>
       {#each catFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -138,10 +138,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('Ranking.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('Ranking.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('Ranking.ExportBtn')</option>
+          <option value="">{$_('Ranking.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -149,7 +149,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('Ranking.BackBtn')
+      {$_('Ranking.BackBtn')}
     </button>
   </div>
 </div>
