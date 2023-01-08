@@ -133,15 +133,15 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('World.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('World.Title')}</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="$_('World.LocInfoItem')"
+      aria-label="{$_('World.LocInfoItem')}"
       bind:value={geoField}
       on:change="{updateWorldMap}"
     >
-      <option value="">$_('World.SelectLocItem')</option>
+      <option value="">{$_('World.SelectLocItem')}</option>
       {#each geoFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -149,11 +149,11 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="$_('World.NumberValue')"
+      aria-label="{$_('World.NumberValue')}"
       bind:value={numField}
       on:change="{updateWorldMap}"
     >
-    <option value="">$_('World.SelectColorItemMsg')</option>
+    <option value="">{$_('World.SelectColorItemMsg')}</option>
     {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -169,10 +169,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('World.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('World.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('World.ExportBtn')</option>
+          <option value="">{$_('World.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -180,7 +180,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('World.BackBtn')
+      {$_('World.BackBtn')}
     </button>
   </div>
 </div>
