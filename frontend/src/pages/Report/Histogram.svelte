@@ -120,15 +120,15 @@
 <svelte:window on:resize={onResize} />
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('Histogram.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('Histogram.Title')}</h3>
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="$_('Histogram.Item')"
+      aria-label="{$_('Histogram.Item')}"
       bind:value={selected}
       on:change={updateHistogram}
     >
-    <option value="">$_('Histogram.SelectItemMsg')</option>
+    <option value="">{$_('Histogram.SelectItemMsg')}</option>
       {#each numFields as f}
         <option value={f}>{getFieldName(f)}</option>
       {/each}
@@ -144,10 +144,10 @@
     {#if data.length > 0}
       <!-- svelte-ignore a11y-no-onchange -->
       {#if saveBusy}
-        <span>$_('Histogram.Saving')</span><span class="AnimatedEllipsis"></span>
+        <span>{$_('Histogram.Saving')}</span><span class="AnimatedEllipsis"></span>
       {:else}
         <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">$_('Histogram.ExportBtn')</option>
+          <option value="">{$_('Histogram.ExportBtn')}</option>
           <option value="csv">CSV</option>
           <option value="excel">Excel</option>
         </select>
@@ -155,7 +155,7 @@
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('Histogram.BackBtn')
+      {$_('Histogram.BackBtn')}
     </button>
   </div>
 </div>
