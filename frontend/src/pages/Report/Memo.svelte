@@ -96,7 +96,7 @@
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
   <div class="Box-header d-flex flex-items-center">
-    <h3 class="Box-title overflow-hidden flex-auto">$_('Memo.Title')</h3>
+    <h3 class="Box-title overflow-hidden flex-auto">{$_('Memo.Title')}</h3>
   </div>
   {#if errorMsg != ""}
   <div class="flash flash-error">
@@ -130,15 +130,15 @@
         class="form-select"
         bind:value={memo.Type}
       >
-        <option value="">$_('Memo.Deffault')</option>
-        <option value="info">$_('Memo.Info')</option>
-        <option value="warn">$_('Memo.Warn')</option>
-        <option value="error">$_('Memo.Error')</option>
+        <option value="">{$_('Memo.Deffault')}</option>
+        <option value="info">{$_('Memo.Info')}</option>
+        <option value="warn">{$_('Memo.Warn')}</option>
+        <option value="error">{$_('Memo.Error')}</option>
       </select>
       <input
         class="form-control"
         type="text"
-        placeholder="$_('Memo.Memo')"
+        placeholder="{$_('Memo.Memo')}"
         bind:value={memo.Memo}
       />
       <button class="btn btn-secondary" type="button" on:click={() => {editMode = false}}>
@@ -192,12 +192,12 @@
     {#if memos.length > 0}
       <button class="btn btn-secondary" type="button" on:click={copy}>
         <Copy16 />
-        $_('Memo.CopyBtn')
+        {$_('Memo.CopyBtn')}
       </button>
     {/if}
     <button class="btn btn-secondary" type="button" on:click={back}>
       <X16 />
-      $_('Memo.BackBtn')
+      {$_('Memo.BackBtn')}
     </button>
   </div>
 </div>

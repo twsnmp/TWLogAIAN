@@ -126,15 +126,15 @@
     "CopyError": "Copy error.",
     "TypeNameInfo": "Info:",
     "TypeNameWarn": "Warnning:",
-    "TypeNameError": "error:",
-    "Title": "memo",
+    "TypeNameError": "Error:",
+    "Title": "Memo",
     "Deffault": "Default",
     "Info": "Info",
     "Warn": "Warnning",
     "Error": "Error",
     "Memo": "Memo",
-    "CopyBtn": "copy",
-    "BackBtn": "return"
+    "CopyBtn": "Copy",
+    "BackBtn": "Back"
   },
   "Ranking": {
     "Rank": "Rank",
