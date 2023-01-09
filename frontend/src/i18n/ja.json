@@ -510,6 +510,10 @@
     "Error": "エラー",
     "Count": "件数",
     "Date": "日付",
-    "TimeH": "時間帯"
+    "TimeH": "時間帯",
+    "Total": "トータル",
+    "Unknown": "不明",
+    "Frequency": "周波数",
+    "Cycle": "周期"
   }
 }

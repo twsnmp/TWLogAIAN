@@ -510,6 +510,10 @@
     "Provider": "Provider",
     "Count": "Count",
     "Date": "Date",
-    "TimeH": "Time"
+    "TimeH": "Time",
+    "Total": "Total",
+    "Unknown": "Unknown",
+    "Frequency": "Frequency",
+    "Cycle": "Cycle"
   }
 }

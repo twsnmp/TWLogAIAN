@@ -3,6 +3,9 @@ import * as ecStat from 'echarts-stat'
 
 import {fft,util} from 'fft-js';
 import { getFieldName } from '../../js/define';
+import { _,unwrapFunctionStore } from 'svelte-i18n';
+
+const $_ = unwrapFunctionStore(_);
 
 
 const doFFT = (signal, sampleRate) => {
@@ -23,11 +26,11 @@ const doFFT = (signal, sampleRate) => {
 
 export const getFFTMap = (logs, field) => {
   const m = new Map()
-  m.set('Total', { Name: 'Total', Count: 0, Data: [] })
+  m.set('Total', { Name: $_('Js.Total'), Count: 0, Data: [] })
   let st = Infinity;
   let lt = 0;
   logs.forEach((l) => {
-    const k = l.KeyValue[field] || "unknown";
+    const k = l.KeyValue[field] || $_("Js.Unknown");
     const e = m.get(k);
     if (!e) {
       m.set(k, { Name: k, Count: 0, Data: [] })
@@ -127,7 +130,7 @@ export const showFFTChart = (div,field, fftMap, key, fftType,dark) => {
     },
     xAxis: {
       type: 'value',
-      name: freq ? 'Frequency(Hz)' : 'Cycle(Sec)',
+      name: freq ? $_('Js.Frequency') + "(Hz)" : $_('Js.Cycle') + "(Sec)",
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -153,7 +156,7 @@ export const showFFTChart = (div,field, fftMap, key, fftType,dark) => {
     },
     series: [
       {
-        name: 'Count',
+        name: $_('Js.Count'),
         type: 'bar',
         color: '#5470c6',
         emphasis: {
@@ -255,7 +258,7 @@ const showFFT3DChart = (field,fftMap, fftType,dark) => {
     },
     yAxis3D: {
       type: freq ? 'value' : 'log',
-      name: freq ? 'Frequency(Hz)' : 'Cycle(Sec)',
+      name: freq ? $_('Js.Frequency') + "(Hz)" : $_('Js.Cycle') + "(Sec)",
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -294,7 +297,7 @@ const showFFT3DChart = (field,fftMap, fftType,dark) => {
           getFieldName(field),
           freq ? 'Frequency' : 'Cycle',
           'Count',
-          freq ? 'Cycle' : 'Frequency',
+          freq ? $_('Js.Cycle') : $_('Js.Frequency'),
         ],
         data,
       },
