@@ -1,62 +1,66 @@
 import * as echarts from "echarts";
 import { getLogLevel } from "./logview";
+import { _, unwrapFunctionStore } from "svelte-i18n";
+
+const $_ = unwrapFunctionStore(_);
 
 let chart;
 
-const baseOption = {
-  title: {
-    show: false,
-  },
-  toolbox: {
-    feature: {
-      dataZoom: {},
-    },
-  },
-  dataZoom: [{}],
-  tooltip: {
-    trigger: "axis",
-    axisPointer: {
-      type: "shadow",
-    },
-  },
-  grid: {
-    left: "8%",
-    right: "8%",
-    top: 10,
-    buttom: 0,
-  },
-  xAxis: {
-    type: "time",
-    name: "Time",
-    axisLabel: {
-      fontSize: "8px",
-      formatter: (value, index) => {
-        const date = new Date(value);
-        return echarts.time.format(date, "{MM}/{dd} {HH}:{mm}");
-      },
-    },
-    nameTextStyle: {
-      fontSize: 8,
-      margin: 2,
-    },
-    splitLine: {
+const baseOption = () => {
+  return {
+    title: {
       show: false,
     },
-  },
-  yAxis: {
-    type: "value",
-    name: "Count",
-    nameTextStyle: {
-      fontSize: 8,
-      margin: 2,
+    toolbox: {
+      feature: {
+        dataZoom: {},
+      },
     },
-    axisLabel: {
-      fontSize: 8,
-      margin: 2,
+    dataZoom: [{}],
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "shadow",
+      },
     },
-  },
+    grid: {
+      left: "8%",
+      right: "8%",
+      top: 10,
+      buttom: 0,
+    },
+    xAxis: {
+      type: "time",
+      name: $_("Js.Time"),
+      axisLabel: {
+        fontSize: "8px",
+        formatter: (value, index) => {
+          const date = new Date(value);
+          return echarts.time.format(date, "{MM}/{dd} {HH}:{mm}");
+        },
+      },
+      nameTextStyle: {
+        fontSize: 8,
+        margin: 2,
+      },
+      splitLine: {
+        show: false,
+      },
+    },
+    yAxis: {
+      type: "value",
+      name: $_("Js.Count"),
+      nameTextStyle: {
+        fontSize: 8,
+        margin: 2,
+      },
+      axisLabel: {
+        fontSize: 8,
+        margin: 2,
+      },
+    },
+  };
 };
-
 
 const addMultiChartData = (data, count, ctm, newCtm) => {
   let t = new Date(ctm * 60 * 1000);
@@ -84,7 +88,7 @@ export const showLogChart = (div, logs, dark, cb) => {
     chart.dispose();
   }
   chart = echarts.init(document.getElementById(div), dark ? "dark" : "");
-  chart.setOption(baseOption);
+  chart.setOption(baseOption());
   const data = {
     normal: [],
     warn: [],
@@ -128,7 +132,7 @@ export const showLogChart = (div, logs, dark, cb) => {
     },
     series: [
       {
-        name: "Normal",
+        name: $_("Js.Normal"),
         type: "bar",
         color: "RGB(14,80,209)",
         stack: "count",
@@ -136,7 +140,7 @@ export const showLogChart = (div, logs, dark, cb) => {
         data: data.normal,
       },
       {
-        name: "Warning",
+        name: $_("Js.Warnning"),
         type: "bar",
         color: "RGB(255,248,185)",
         stack: "count",
@@ -144,7 +148,7 @@ export const showLogChart = (div, logs, dark, cb) => {
         data: data.warn,
       },
       {
-        name: "Error",
+        name: $_("Js.Error"),
         type: "bar",
         color: "RGB(194,11,35)",
         stack: "count",
@@ -156,7 +160,7 @@ export const showLogChart = (div, logs, dark, cb) => {
       textStyle: {
         fontSize: 10,
       },
-      data: ["Normal", "Warnning", "Error"],
+      data: [$_("Js.Normal"), $_("Js.Warnning"), $_("Js.Error")],
     },
   });
   chart.resize();
@@ -169,9 +173,9 @@ export const showLogChart = (div, logs, dark, cb) => {
             e.batch[0].startValue * 1000 * 1000,
             e.batch[0].endValue * 1000 * 1000
           );
-        } else if( e.batch[0].end == 100 ) {
+        } else if (e.batch[0].end == 100) {
           // Reset ZOOM
-          cb(false,false);
+          cb(false, false);
         }
       } else if (e.start !== undefined && e.end !== undefined) {
         // Scroll ZOOM

@@ -507,6 +507,7 @@
     "EventID": "Event ID",
     "RecordID": "Record ID",
     "Channel": "Channel",
-    "Provider": "Provider"
+    "Provider": "Provider",
+    "Count": "Count"
   }
 }

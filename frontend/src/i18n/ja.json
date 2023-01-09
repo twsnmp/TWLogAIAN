@@ -504,9 +504,10 @@
     "EventID": "イベントID",
     "RecordID": "レコードID",
     "Channel": "チャネル",
-    "Provider":"プロバイダー",
+    "Provider": "プロバイダー",
     "Normal": "正常",
     "Warnning": "注意",
-    "Error": "エラー"
+    "Error": "エラー",
+    "Count": "件数"
   }
 }
