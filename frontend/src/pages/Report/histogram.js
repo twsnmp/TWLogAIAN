@@ -1,6 +1,9 @@
 import * as echarts from 'echarts'
 import * as ecStat from 'echarts-stat'
 import { getFieldName } from "../../js/define";
+import { _,unwrapFunctionStore } from 'svelte-i18n';
+
+const $_ = unwrapFunctionStore(_);
 
 let chart;
 
