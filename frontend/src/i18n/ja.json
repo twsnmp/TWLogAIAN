@@ -273,7 +273,13 @@
     "ResultBtn": "処理結果",
     "BackBtn": "戻る",
     "EndBtn": "終了",
-    "Searching": "検索中"
+    "Searching": "検索中",
+    "Total": "トータル",
+    "IndexTime": "インデック時間",
+    "Field": "項目数",
+    "Hit": "ヒット",
+    "SearchDur": "検索時間",
+    "AnomalyTime": "異常検知時間"
   },
   "Query": {
     "History": "検索履歴",

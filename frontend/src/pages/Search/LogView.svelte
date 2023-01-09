@@ -118,11 +118,6 @@
     ExFields: [],
     LastTime: 0,
   };
-  GetIndexInfo().then((r) => {
-    if (r) {
-      indexInfo = r;
-    }
-  });
   let pagination = false;
   let logView = "";
   let gridSearch = true;
@@ -216,6 +211,31 @@
       "km";
   };
 
+  let searchInfo = "";
+
+  const setSearchInfo = () => {
+    let r =  $_("LogView.Total") + ":" +
+        numeral(indexInfo.Total).format("0,0") + "/" +
+        $_("LogView.IndexTime") + ":" +
+        indexInfo.Duration + "/";
+      r += $_("LogView.Field") + ":" + 
+        indexInfo.Fields.length;
+    if (result.Hit > 0) {
+      r += "/" + $_("LogView.Hit") + ":" + numeral(result.Hit).format("0,0");
+      r += "/" + $_("LogView.SearchDur") + ":" + result.Duration;
+    }
+    if (anomalyTime) {
+      r += "/" + $_("LogView.AnomalyTime") + ":" + anomalyTime
+    }
+    searchInfo = r;
+  }
+  GetIndexInfo().then((r) => {
+    if (r) {
+      indexInfo = r;
+      setSearchInfo();
+    }
+  });
+
   const search = () => {
     data.length = 0;
     aecdata = [];
@@ -239,7 +259,7 @@
       if (r) {
         result = r;
         if (logView == "") {
-          logView = r.View;
+          logView = r.View == "auto" ? "timeonly" : r.View;
         }
         if (lastExtractor != conf.extractor && r.ExFields.length > 0) {
           logView = "ex_data";
@@ -263,6 +283,7 @@
         errorMsg = r.ErrorMsg;
         setLogTable();
         updateChart();
+        setSearchInfo();
       }
     });
   };
@@ -394,27 +415,7 @@
     }
   };
 
-  let dY = 0;
-  const onWheel = (e) => {
-    if (!pagination || logView == "data") {
-      return;
-    }
-    dY += e.deltaY;
-    if (dY > 120) {
-      dY = 0;
-      if (data.length > (pagination.page + 1) * pagination.limit) {
-        pagination.page++;
-      }
-    }
-    if (dY < -120) {
-      dY = 0;
-      if (pagination.page > 0) {
-        pagination.page--;
-      }
-    }
-    e.preventDefault();
-  };
-
+ 
   const handleUpdateQuery = (e) => {
     if (e && e.detail && e.detail.query) {
       if (e.detail.add) {
@@ -637,34 +638,34 @@
     page = "logType";
   };
 
-
 </script>
 
-<svelte:window on:resize={onResize} on:wheel={onWheel} />
+<svelte:window on:resize={onResize} />
+
 {#if page == "result"}
   <Result {indexInfo} {dark} {aecdata} on:done={handleDone} />
 {:else if page == "memo"}
-  <Memo on:done={handleDone} />
+  <Memo on:done={handleDone} dark/>
 {:else if page == "ranking"}
-  <Ranking fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <Ranking fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "time"}
-  <Time fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <Time fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "time3d"}
-  <Time3D fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <Time3D fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "cluster"}
   <Cluster fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "histogram"}
-  <Histogram fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <Histogram fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "fft"}
-  <FFT fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <FFT fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "world"}
-  <World fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <World fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "graph"}
-  <Graph fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <Graph fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "globe"}
-  <Globe fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <Globe fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "heatmap"}
-  <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "extractorType"}
   <EditExtractorType
     {extractorType}
@@ -678,22 +679,7 @@
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header d-flex flex-items-center">
       <h3 class="Box-title overflow-hidden flex-auto">{$_('LogView.Title')}</h3>
-      <span class="f6">
-        total:{numeral(indexInfo.Total).format("0,0")}
-        /time:{indexInfo.Duration}
-        {#if result.Hit < 1}
-          /field:{indexInfo.Fields.length}
-        {/if}
-        {#if result.Hit > 0}
-          /field:{result.Fields.length}
-          /hit:{numeral(result.Hit).format(
-            "0,0"
-          )}/search time:{result.Duration}
-          {#if anomalyTime}
-            /anomaly:{anomalyTime}
-          {/if}
-        {/if}
-      </span>
+      <span class="f6">{searchInfo}</span>
     </div>
     {#if errorMsg != ""}
       <div class="flash flash-error">

@@ -273,7 +273,13 @@
     "ResultBtn": "Processing result",
     "BackBtn": "Back",
     "EndBtn": "End",
-    "Searching": "Searching"
+    "Searching": "Searching",
+    "Total": "Total",
+    "IndexTime": "Index Time",
+    "Field": "Fileds",
+    "Hit": "Hit",
+    "SearchDur": "Search time",
+    "AnomalyTime": "Anpmalu time"
   },
   "Query": {
     "History": "History",
