@@ -508,6 +508,8 @@
     "RecordID": "Record ID",
     "Channel": "Channel",
     "Provider": "Provider",
-    "Count": "Count"
+    "Count": "Count",
+    "Date": "Date",
+    "TimeH": "Time"
   }
 }

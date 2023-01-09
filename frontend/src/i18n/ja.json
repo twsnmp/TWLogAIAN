@@ -508,6 +508,8 @@
     "Normal": "正常",
     "Warnning": "注意",
     "Error": "エラー",
-    "Count": "件数"
+    "Count": "件数",
+    "Date": "日付",
+    "TimeH": "時間帯"
   }
 }

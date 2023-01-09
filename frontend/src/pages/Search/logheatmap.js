@@ -1,4 +1,7 @@
 import * as echarts from "echarts";
+import { _,unwrapFunctionStore } from 'svelte-i18n';
+
+const $_ = unwrapFunctionStore(_);
 
 let chart;
 
@@ -69,7 +72,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
     },
     xAxis: {
       type: "category",
-      name: "Date",
+      name: $_("Js.Date"),
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -82,7 +85,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
     },
     yAxis: {
       type: "category",
-      name: "Time",
+      name: $_("Js.TimeH"),
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -119,7 +122,7 @@ export const showLogHeatmap = (div, timeLine, dark) => {
     },
     series: [
       {
-        name: "Count",
+        name: $_("Js.Count"),
         type: "heatmap",
         data: [],
         emphasis: {
