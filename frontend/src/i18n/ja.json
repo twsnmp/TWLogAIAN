@@ -522,6 +522,13 @@
     "Wed": "水",
     "Thu": "木",
     "Fri": "金",
-    "Sat": "土"
+    "Sat": "土",
+    "Mean": "平均",
+    "Max": "最大",
+    "Min": "最小",
+    "Median": "中央値",
+    "Variant": "分散",
+    "Regression": "回帰分析",
+    "3DSum": "３D集計"
   }
 }

@@ -522,6 +522,13 @@
     "Wed": "Wed",
     "Thu": "Thu",
     "Fri": "Fri",
-    "Sat": "Sat"
+    "Sat": "Sat",
+    "Mean": "Mean",
+    "Max": "Max",
+    "Min": "Min",
+    "Median": "Median",
+    "Variant": "Variant",
+    "Regression": "Regression",
+    "3DSum": "3D Sum"
   }
 }

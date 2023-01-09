@@ -1,4 +1,8 @@
 import * as echarts from 'echarts'
+import { _,unwrapFunctionStore } from 'svelte-i18n';
+
+const $_ = unwrapFunctionStore(_);
+
 
 let chart;
 
@@ -52,7 +56,7 @@ export const showRankingChart = (div, list, max,dark) => {
     },
     xAxis: {
       type: 'value',
-      name: 'Count',
+      name: $_('Js.Count'),
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -76,7 +80,7 @@ export const showRankingChart = (div, list, max,dark) => {
     },
     series: [
       {
-        name: 'Count',
+        name: $_('Js.Count'),
         type: 'bar',
         data: total,
       },
