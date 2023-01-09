@@ -9,10 +9,12 @@
   } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import { _ } from '../../i18n/i18n';
+  import {IsWindows,SelectFile,UpdateLogSource,DeleteLogSource} from '../../../wailsjs/go/main/App';
   export let logSource;
+
   let windows = false;
 
-  window.go.main.App.IsWindows().then((r) => {
+  IsWindows().then((r) => {
     windows = r;
   });
 
@@ -21,19 +23,19 @@
   let editMode = logSource && logSource.No > 0;
 
   const selectLogFolder = () => {
-    window.go.main.App.SelectFile("logdir").then((f) => {
+    SelectFile("logdir",$_('LogSorce.LogFolder'),).then((f) => {
       logSource.Path = f;
     });
   };
 
   const selectLogFile = () => {
-    window.go.main.App.SelectFile("logfile").then((f) => {
+    SelectFile("logfile",$_('LogSource.LogFile')).then((f) => {
       logSource.Path = f;
     });
   };
 
   const selectSSHKey = () => {
-    window.go.main.App.SelectFile("sshkey").then((f) => {
+    SelectFile("sshkey",$_('LogSource.SSHKeyFile')).then((f) => {
       logSource.SSHKey = f;
     });
   };
@@ -47,7 +49,7 @@
   };
 
   const save = () => {
-    window.go.main.App.UpdateLogSource(logSource).then((e) => {
+    UpdateLogSource(logSource).then((e) => {
       errorMsg = e;
       if (e == "") {
         dispatch("done", { update: true });
@@ -56,7 +58,7 @@
   };
 
   const del = () => {
-    window.go.main.App.DeleteLogSource(logSource.No).then((e) => {
+    DeleteLogSource(logSource.No).then((e) => {
       errorMsg = e;
       if (e == "") {
         dispatch("done", { update: true });

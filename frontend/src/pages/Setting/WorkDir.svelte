@@ -2,6 +2,7 @@
   import { X16, FileDirectory16, Check16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import { _ } from '../../i18n/i18n';
+  import {GetLastWorkDirs,SetWorkDir,SelectFile} from '../../../wailsjs/go/main/App';
 
   const dispatch = createEventDispatcher();
   let workdir = "";
@@ -9,7 +10,7 @@
   let lastWorkDirs = [];
   let selLast = "";
 
-  window.go.main.App.GetLastWorkDirs().then((wds) => {
+  GetLastWorkDirs().then((wds) => {
     lastWorkDirs = wds;
     if (lastWorkDirs.length > 0 && workdir == "") {
       workdir = lastWorkDirs[0];
@@ -20,7 +21,7 @@
       ErrorMsg = $_('WorkDir.SelectWorkDirMsg');
       return;
     }
-    window.go.main.App.SetWorkDir(workdir).then((r) => {
+    SetWorkDir(workdir).then((r) => {
       if (r === "") {
         dispatch("done", { page: "setting" });
       } else {
@@ -29,7 +30,7 @@
     });
   };
   const selectWorkDir = () => {
-    window.go.main.App.SelectFile("work").then((d) => {
+    SelectFile("work",$_('WorkDir.WorkDir')).then((d) => {
       workdir = d;
     });
   };

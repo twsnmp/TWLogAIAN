@@ -14,6 +14,7 @@
   import { onMount } from "svelte";
   import EditFieldType from "./EditFieldType.svelte";
   import { _,getLocale } from '../../i18n/i18n';
+  import {SaveExtractorType,TestGrok,AutoGrok} from '../../../wailsjs/go/main/App';
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -53,7 +54,7 @@
   };
 
   const save = () => {
-    window.go.main.App.SaveExtractorType(extractorType).then((r) => {
+    SaveExtractorType(extractorType).then((r) => {
       errorMsg = r;
       if (r == "") {
         dispatch("done", { save: true });
@@ -74,7 +75,7 @@
       errorMsg = $_('EditExtractorType.InputTestDataMsg');
       return;
     }
-    window.go.main.App.TestGrok(extractorType.Grok, testLog).then((r) => {
+    TestGrok(extractorType.Grok, testLog).then((r) => {
       errorMsg = r.ErrorMsg;
       data = r.Data;
       columns = [];
@@ -90,7 +91,7 @@
       errorMsg = $_('EditExtractorType.InputTestDataMsg');
       return;
     }
-    window.go.main.App.AutoGrok(testLog).then((r) => {
+    AutoGrok(testLog).then((r) => {
       errorMsg = r.ErrorMsg;
       if (r.Grok) {
         if (extractorType.Grok) {

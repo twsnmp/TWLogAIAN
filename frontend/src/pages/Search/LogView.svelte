@@ -652,7 +652,7 @@
 {:else if page == "time3d"}
   <Time3D fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "cluster"}
-  <Cluster fields={result.Fields} logs={result.Logs} on:done={handleDone} />
+  <Cluster fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "histogram"}
   <Histogram fields={result.Fields} logs={result.Logs} on:done={handleDone} />
 {:else if page == "fft"}

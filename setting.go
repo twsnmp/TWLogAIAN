@@ -61,27 +61,21 @@ type WindowSettings struct {
 }
 
 // SelectFile : ファイル/フォルダを選択する
-func (b *App) SelectFile(t string) string {
-	title := ""
+func (b *App) SelectFile(t, title string) string {
 	dir := false
 	sh := false
 	switch t {
 	case "work":
 		dir = true
-		title = "Work folder"
 	case "geoip":
 		dir = false
-		title = "GeoIP DB"
 	case "sshkey":
 		dir = false
-		title = "SSH Ket"
 		sh = true
 	case "logdir":
 		dir = true
-		title = "Log folder"
 	case "logfile":
 		dir = false
-		title = "Log File"
 	}
 	if dir {
 		dir, err := wails.OpenDirectoryDialog(b.ctx, wails.OpenDialogOptions{

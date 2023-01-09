@@ -6,13 +6,14 @@
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _,getLocale } from '../../i18n/i18n';
+  import {Export} from '../../../wailsjs/go/main/App';
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
 
   export let logs = [];
   export let fields = [];
-  let dark = false;
+  export let dark = false;
   let catFields = [];
   let numFields = [];
   let srcField = "";
@@ -72,9 +73,6 @@
     if(numField == "" && numFields.length >0 ){
       numField = numFields[0];
     }
-    window.go.main.App.GetDark().then((v) => {
-      dark = v;
-    });
   });
 
   let exportType = '';
@@ -105,7 +103,7 @@
       });
       exportData.Data.push(row);
     });
-    window.go.main.App.Export(exportType,exportData).then(()=>{
+    Export(exportType,exportData).then(()=>{
       saveBusy = false;
       exportType = "";
     });

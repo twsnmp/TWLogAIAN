@@ -17,6 +17,17 @@
   import jaJP from "../../js/gridjsJaJP";
   import { loadFieldTypes } from "../../js/define";
   import { _,getLocale } from '../../i18n/i18n';
+  import {
+    GetConfig,
+    HasIndex,
+    GetLogSources,
+    GetExtractorTypes,
+    DeleteLogSource,
+    Start,
+    ClearIndex,
+    SelectFile,
+    CloseWorkDir,
+  } from '../../../wailsjs/go/main/App';
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -66,14 +77,14 @@
   let hasIndex = false;
 
   const getConfig = () => {
-    window.go.main.App.GetConfig().then((c) => {
+    GetConfig().then((c) => {
       config = c;
       orgConfig = c;
     });
   };
 
   const getHasIndex = () => {
-    window.go.main.App.HasIndex().then((r) => {
+    HasIndex().then((r) => {
       hasIndex = r;
     });
   };
@@ -125,7 +136,7 @@
 
   let pagination = false;
   const getLogSources = () => {
-    window.go.main.App.GetLogSources().then((ds) => {
+    GetLogSources().then((ds) => {
       data.length = 0;
       if (ds) {
         logSources = ds;
@@ -151,7 +162,7 @@
   let extractorTypeList = [];
 
   const getExtractorTypes = () => {
-    window.go.main.App.GetExtractorTypes().then((r) => {
+    GetExtractorTypes().then((r) => {
       if (r) {
         extractorTypes = r;
         extractorTypeList = [];
@@ -198,7 +209,7 @@
 
   const deleteLogSource = (sno) => {
     const no = sno * 1;
-    window.go.main.App.DeleteLogSource(no).then((e) => {
+    DeleteLogSource(no).then((e) => {
       if (e == "No") {
         return;
       }
@@ -292,7 +303,7 @@
   let busy = false;
   const start = () => {
     busy = true;
-    window.go.main.App.Start(config, false).then((e) => {
+    Start(config, false).then((e) => {
       busy = false;
       if (e && e != "") {
         errorMsg = e;
@@ -303,7 +314,7 @@
   };
 
   const clear = () => {
-    window.go.main.App.ClearIndex().then((e) => {
+    ClearIndex().then((e) => {
       if (e && e != "") {
         if (e == "No") {
           return;
@@ -317,7 +328,7 @@
 
   const search = () => {
     busy = true;
-    window.go.main.App.Start(config, true).then((e) => {
+    Start(config, true).then((e) => {
       busy = false;
       if (e && e != "") {
         errorMsg = e;
@@ -328,13 +339,13 @@
   };
 
   const selectGeoIPDB = () => {
-    window.go.main.App.SelectFile("geoip").then((f) => {
+    SelectFile("geoip",$_('Setting.IPGeoDB')).then((f) => {
       config.GeoIPDB = f;
     });
   };
 
   const cancel = () => {
-    window.go.main.App.CloseWorkDir().then((r) => {
+    CloseWorkDir().then((r) => {
       if (r == "") {
         dispatch("done", { page: "wellcome" });
       }

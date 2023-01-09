@@ -424,7 +424,8 @@
     "CancelBtn": "キャンセル",
     "DeleteBtn": "削除",
     "UpateBtn": "更新",
-    "AddBtn": "追加"
+    "AddBtn": "追加",
+    "LogFile": "ログファイル"
   },
   "Setting": {
     "Folder": "フォルダー",
@@ -471,6 +472,10 @@
     "DelteIndexBtn": "インデックス削除",
     "LoadMoreBtn": "追加読み込み",
     "ToSearch": "検索画面へ",
-    "StartBtn": "インデクス作成"
+    "StartBtn": "インデクス作成",
+    "IPGeoDB": "IP位置情報DBファイル"
+  },
+  "LogSorce": {
+    "LogFolder": "ログフォルダー"
   }
 }

@@ -1,6 +1,7 @@
 <script>
   import { X16, PaperAirplane16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
+  import {SendFeedBack} from '../../wailsjs/go/main/App';
   import { _ } from '../i18n/i18n';
 
   const dispatch = createEventDispatcher();
@@ -14,7 +15,7 @@
   };
   const sendFeedBack = () => {
     feedbackWait = true;
-    window.go.main.App.SendFeedBack(feedbackMsg).then((r) => {
+    SendFeedBack(feedbackMsg).then((r) => {
       feedbackWait = false;
       if (r) {
         feedbackSent = true;

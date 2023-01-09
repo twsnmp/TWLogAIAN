@@ -13,6 +13,7 @@
   } from "../../js/define";
   import * as echarts from "echarts";
   import { _ } from '../../i18n/i18n';
+  import {GetProcessInfo} from '../../../wailsjs/go/main/App';
 
   export let indexInfo;
   export let aecdata;
@@ -27,7 +28,7 @@
   let logFiles = [];
 
   const getProcessInfo = () => {
-    window.go.main.App.GetProcessInfo().then((r) => {
+    GetProcessInfo().then((r) => {
       if (r) {
         if (r.LogFiles) {
           logFiles = r.LogFiles
@@ -39,9 +40,7 @@
         skipLines = r.SkipLines;
         startTime = echarts.time.format(new Date(r.StartTime / (1000 * 1000)),"{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}");
         endTime = echarts.time.format(new Date(r.EndTime / (1000 * 1000)),"{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}");
-        window.go.main.App.GetDark().then((dark) => {
-          showChart(r.TimeLine,dark);
-        });
+        showChart(r.TimeLine,dark);
       }
     });
   };

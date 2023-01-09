@@ -13,6 +13,14 @@
   import { onMount } from "svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _,getLocale } from '../../i18n/i18n';
+  import {
+    GetExtractorTypes,
+    GetFieldTypes,
+    ImportLogTypes,
+    ExportLogTypes,
+    DeleteExtractorType,
+    DeleteFieldType
+  } from '../../../wailsjs/go/main/App';
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -43,7 +51,7 @@
   });
 
   const getExtractorTypes = () => {
-    window.go.main.App.GetExtractorTypes().then((r) => {
+    GetExtractorTypes().then((r) => {
       if (r) {
         extractorTypes = r;
         extractorTypeList = [];
@@ -56,7 +64,7 @@
   };
 
   const getFieldTypes = () => {
-    window.go.main.App.GetFieldTypes().then((r) =>{
+    GetFieldTypes().then((r) =>{
       if (r) {
         fieldTypes = r;
         fieldTypeList = [];
@@ -69,7 +77,7 @@
   }
 
   const importLogTypes = () => {
-    window.go.main.App.ImportLogTypes().then((r) => {
+    ImportLogTypes().then((r) => {
       extractorTypeErrorMsg = r;
       if (r == "") {
         getExtractorTypes();
@@ -79,13 +87,13 @@
   };
 
   const exportLogTypes = () => {
-    window.go.main.App.ExportLogTypes().then((r) => {
+    ExportLogTypes().then((r) => {
       extractorTypeErrorMsg = r;
     });
   };
 
   const deleteExtractorType = (key) => {
-    window.go.main.App.DeleteExtractorType(key).then((r) => {
+    DeleteExtractorType(key).then((r) => {
       extractorTypeErrorMsg = r;
       if (r == "") {
         getExtractorTypes();
@@ -95,7 +103,7 @@
   };
 
   const deleteFieldType = (key) => {
-    window.go.main.App.DeleteFieldType(key).then((r) => {
+    DeleteFieldType(key).then((r) => {
       fieldTypeErrorMsg = r;
       if (r == "") {
         getFieldTypes();

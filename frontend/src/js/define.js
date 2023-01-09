@@ -1,7 +1,9 @@
+import {GetFieldTypes} from '../../wailsjs/go/main/App';
+
 let fieldTypes = {};
 
 export const loadFieldTypes = () => {
-  window.go.main.App.GetFieldTypes().then((r) =>{
+  GetFieldTypes().then((r) =>{
     if (r) {
       fieldTypes = r;
     }

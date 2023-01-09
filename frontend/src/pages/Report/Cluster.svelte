@@ -7,10 +7,11 @@
   import Grid from "gridjs-svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _,getLocale } from '../../i18n/i18n';
+  import {Export} from '../../../wailsjs/go/main/App';
 
   export let logs = [];
   export let fields = [];
-  let dark = false;
+  export let dark = false;
   let numFields = [];
   let xField = "";
   let yField = "";
@@ -62,9 +63,6 @@
 
   onMount(() => {
     numFields = getFields(fields,"number");
-    window.go.main.App.GetDark().then((v) => {
-      dark = v;
-    });
   });
 
   let exportType = '';
@@ -95,7 +93,7 @@
       });
       exportData.Data.push(row);
     });
-    window.go.main.App.Export(exportType,exportData).then(()=>{
+    Export(exportType,exportData).then(()=>{
       saveBusy = false;
       exportType = "";
     });

@@ -424,7 +424,8 @@
     "CancelBtn": "Cancel",
     "DeleteBtn": "Delete",
     "UpateBtn": "Update",
-    "AddBtn": "Add"
+    "AddBtn": "Add",
+    "LogFile": "Log File"
   },
   "Setting": {
     "Folder": "Folder",
@@ -471,6 +472,10 @@
     "LoadMoreBtn": "Additional load",
     "ToSearch": "Back to search",
     "StartBtn": "Start",
-    "GeoDB": "IP location information database"
+    "GeoDB": "IP location information database",
+    "IPGeoDB": "IP Geo DB file"
+  },
+  "LogSorce": {
+    "LogFolder": "Log folder"
   }
 }

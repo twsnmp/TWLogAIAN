@@ -3,6 +3,7 @@
   import { Plus16, Trash16, File16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import { _ } from '../../i18n/i18n';
+  import {LoadKeyword} from '../../../wailsjs/go/main/App';
 
 
   export let conf;
@@ -61,7 +62,7 @@
   };
 
   const loadKeyword = () => {
-    window.go.main.App.LoadKeyword().then((r) => {
+    LoadKeyword().then((r) => {
       if (r) {
         r.forEach((k) => {
           const q =

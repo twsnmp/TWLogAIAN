@@ -2,6 +2,7 @@
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import { _ } from '../../i18n/i18n';
+  import {SaveFieldType} from '../../../wailsjs/go/main/App';
 
   export let fieldType;
   export let add = true;
@@ -14,7 +15,7 @@
   };
 
   const save = () => {
-    window.go.main.App.SaveFieldType(fieldType).then((r) => {
+    SaveFieldType(fieldType).then((r) => {
       errorMsg = r;
       if (r == "") {
         dispatch("done", {save:true});

@@ -2,15 +2,14 @@
   import { MortarBoard16, PaperAirplane16, Sun16, Moon16,ThreeBars16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import { _,setLocale,getLocale } from '../i18n/i18n';
+  import {GetVersion,GetDark,SetDark} from '../../wailsjs/go/main/App';
+  import { BrowserOpenURL } from "../../wailsjs/runtime/runtime.js";
 
   const dispatch = createEventDispatcher();
   let version = "1.0.0(xxxxx)";
-  window.go.main.App.GetVersion().then((v) => {
+  GetVersion().then((v) => {
     version = v;
   });
-  const openURL = (url) => {
-    window.go.main.App.OpenURL(url);
-  };
   const feedback = () => {
     dispatch("done", { page: "feedback" });
   };
@@ -19,14 +18,14 @@
   };
 
   let dark = true;
-  window.go.main.App.GetDark().then((v) => {
+  GetDark().then((v) => {
     if (!v) {
       toggleDark()
     }
   });
   const toggleDark = () => {
     dark = !dark;
-    window.go.main.App.SetDark(dark)
+    SetDark(dark)
     const e = document.querySelector("body");
     if (e) {
       e.dataset.colorMode = dark ? "dark" : "light";
@@ -76,14 +75,14 @@
       <a
         href="##"
         on:click={() => {
-          openURL("https://note.com/twsnmp/m/m9c88e79743b6");
+          BrowserOpenURL("https://note.com/twsnmp/m/m9c88e79743b6");
         }}
       >Note</a><br />
       {$_('Wellcome.Line3')}<br />
       <a
         href="##"
         on:click={() => {
-          openURL("https://github.com/twsnmp/TWLogAIAN");
+          BrowserOpenURL("https://github.com/twsnmp/TWLogAIAN");
         }}
       >
         GitHUB
@@ -92,7 +91,7 @@
       <a
         href="##"
         on:click={() => {
-          openURL("https://github.com/twsnmp/TWLogAIAN/issues");
+          BrowserOpenURL("https://github.com/twsnmp/TWLogAIAN/issues");
         }}
       >
         GitHub Issues

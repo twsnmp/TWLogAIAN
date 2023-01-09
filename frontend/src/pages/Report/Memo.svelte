@@ -3,6 +3,7 @@
   import { createEventDispatcher, onMount } from "svelte";
   import * as echarts from "echarts";
   import { _ } from '../../i18n/i18n';
+  import {GetMemos,SetMemo,DeleteMemo} from '../../../wailsjs/go/main/App';
 
   let memos = [];
   let editMode = false;
@@ -15,7 +16,7 @@
   const dispatch = createEventDispatcher();
 
   const updateMemo = () => {
-    window.go.main.App.GetMemos().then((r)=>{
+    GetMemos().then((r)=>{
       memos = r || [];
     });
   }
@@ -28,7 +29,7 @@
   }
 
   const saveMemo = () => {
-    window.go.main.App.SetMemo(memo).then(()=>{
+    SetMemo(memo).then(()=>{
       updateMemo();
       editMode = false;
     })
@@ -40,7 +41,7 @@
 
   const deleteMemo = (i) => {
     if (i >= 0 && i < memos.length) {
-      window.go.main.App.DeleteMemo(memos[i]).then(()=>{
+      DeleteMemo(memos[i]).then(()=>{
         updateMemo()
       })
     }

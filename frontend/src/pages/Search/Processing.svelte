@@ -4,13 +4,14 @@
   import { onMount } from 'svelte';
   import numeral from 'numeral';
   import { _ } from '../../i18n/i18n';
+  import {GetProcessInfo,Stop} from '../../../wailsjs/go/main/App';
 
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   let logFiles = [];
   let timer;
   const getProcessInfo = () => {
-    window.go.main.App.GetProcessInfo().then((r) => {
+    GetProcessInfo().then((r) => {
       if (r) {
         logFiles = r.LogFiles
         if (r.ErrorMsg) {
@@ -35,7 +36,7 @@
   });
 
   const stop = () => {
-    window.go.main.App.Stop().then((r) => {
+    Stop().then((r) => {
       if (r === "") {
         clearTimeout(timer);
         dispatch("done", { page: "setting" });
@@ -49,7 +50,7 @@
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header">
-      <h3 class="Box-title">$_('Processing.Title')<span class="AnimatedEllipsis"></span></h3>
+      <h3 class="Box-title">{$_('Processing.Title')}<span class="AnimatedEllipsis"></span></h3>
     </div>
     {#if errorMsg != ""}
       <div class="flash flash-error">
@@ -60,13 +61,13 @@
       <table width="100%">
         <thead>
           <tr>
-            <th width="8%">$_('Processing.Rate')</th>
-            <th width="8%">$_('Processing.Done')</th>
-            <th width="8%">$_('Processing.Target')</th>
-            <th width="8%">$_('Processing.Time')</th>
-            <th width="8%">$_('Processing.Size')</th>
-            <th width="15%">$_('Processing.GrokPat')</th>
-            <th width="45%">$_('Processing.Path')</th>
+            <th width="8%">{$_('Processing.Rate')}</th>
+            <th width="8%">{$_('Processing.Done')}</th>
+            <th width="8%">{$_('Processing.Target')}</th>
+            <th width="8%">{$_('Processing.Time')}</th>
+            <th width="8%">{$_('Processing.Size')}</th>
+            <th width="15%">{$_('Processing.GrokPat')}</th>
+            <th width="45%">{$_('Processing.Path')}</th>
           </tr>
         </thead>
         <tbody>
@@ -87,7 +88,7 @@
     <div class="Box-footer text-right">
       <button class="btn btn-danger" type="button" on:click={stop}>
         <X16 />
-        $_('Processing.StopBtn')
+        {$_('Processing.StopBtn')}
       </button>
     </div>
 </div>
