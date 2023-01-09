@@ -237,7 +237,10 @@
     "FieldDef": "Field definition",
     "ExportBtn": "Export",
     "ImportBtn": "Import",
-    "CloseBtn": "Close"
+    "CloseBtn": "Close",
+    "DeleteExtractType": "Delete extract type",
+    "DeleteMsg": "Delete?",
+    "DeleteFieldType": "Delete field type"
   },
   "LogView": {
     "CantCopy": "Cannot copy.",
@@ -425,7 +428,9 @@
     "DeleteBtn": "Delete",
     "UpateBtn": "Update",
     "AddBtn": "Add",
-    "LogFile": "Log File"
+    "LogFile": "Log File",
+    "DeleteLogSource": "Delete log source",
+    "DeleteMsg": "Delete?"
   },
   "Setting": {
     "Folder": "Folder",
@@ -473,7 +478,12 @@
     "ToSearch": "Back to search",
     "StartBtn": "Start",
     "GeoDB": "IP location information database",
-    "IPGeoDB": "IP Geo DB file"
+    "IPGeoDB": "IP Geo DB file",
+    "DeleteLogSourceTitle": "Delete log source",
+    "DeleteMsg": "Delete?",
+    "ClearIndexTitle": "Delete index",
+    "StopTitle": "Analysis finished",
+    "CloseMsg": "Are you sure you want to quit?"
   },
   "LogSorce": {
     "LogFolder": "Log folder"

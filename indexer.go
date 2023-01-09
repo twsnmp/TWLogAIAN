@@ -84,11 +84,11 @@ func (b *App) CloseIndexor() error {
 }
 
 // 作業ディレクトリのインデックスを削除
-func (b *App) ClearIndex() string {
+func (b *App) ClearIndex(title, message string) string {
 	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
 		Type:          wails.QuestionDialog,
-		Title:         "Delete Index",
-		Message:       "Delete?",
+		Title:         title,
+		Message:       message,
 		Buttons:       []string{"Yes", "No"},
 		DefaultButton: "No",
 		CancelButton:  "No",

@@ -58,7 +58,7 @@
   };
 
   const del = () => {
-    DeleteLogSource(logSource.No).then((e) => {
+    DeleteLogSource(logSource.No,$_('LogSource.DeleteLogSource'),$_('LogSource.DeleteMsg')).then((e) => {
       errorMsg = e;
       if (e == "") {
         dispatch("done", { update: true });

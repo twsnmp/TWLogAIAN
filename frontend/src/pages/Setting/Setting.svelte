@@ -209,7 +209,7 @@
 
   const deleteLogSource = (sno) => {
     const no = sno * 1;
-    DeleteLogSource(no).then((e) => {
+    DeleteLogSource(no,$_('Setting.DeleteLogSourceTitle'),$_('Setting.DeleteMsg')).then((e) => {
       if (e == "No") {
         return;
       }
@@ -314,7 +314,7 @@
   };
 
   const clear = () => {
-    ClearIndex().then((e) => {
+    ClearIndex($_('Setting.ClearIndexTitle'),$_('Setting.DeleteMsg')).then((e) => {
       if (e && e != "") {
         if (e == "No") {
           return;
@@ -345,7 +345,7 @@
   };
 
   const cancel = () => {
-    CloseWorkDir().then((r) => {
+    CloseWorkDir($_('Setting.StopTitle'),$_('Setting.CloseMsg')).then((r) => {
       if (r == "") {
         dispatch("done", { page: "wellcome" });
       }
@@ -446,7 +446,7 @@
             </h5>
           </div>
           <div class="form-group-body markdown-body mt-3">
-            <Grid {data} {pagination} {columns} language={jaJP} />
+            <Grid {data} {pagination} {columns} language={gridLang} />
             <label class="p-1">
               <input type="checkbox" bind:checked={config.Recursive} />
               {$_('Setting.RecTGZ')}

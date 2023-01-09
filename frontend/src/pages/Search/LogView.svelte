@@ -299,7 +299,7 @@
 
   const end = () => {
     SaveHistory(conf.history);
-    CloseWorkDir().then((r) => {
+    CloseWorkDir($_('Setting.StopTitle'),$_('Setting.CloseMsg')).then((r) => {
       if (r == "") {
         dispatch("done", { page: "wellcome" });
       }
@@ -835,7 +835,7 @@
         search={gridSearch}
         {pagination}
         {columns}
-        language={jaJP}
+        language={gridLang}
         on:cellClick={cellClick}
       />
     </div>

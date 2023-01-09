@@ -93,7 +93,7 @@
   };
 
   const deleteExtractorType = (key) => {
-    DeleteExtractorType(key).then((r) => {
+    DeleteExtractorType(key,$_('LogType.DeleteExtractType'),$_('LogType.DeleteMsg')).then((r) => {
       extractorTypeErrorMsg = r;
       if (r == "") {
         getExtractorTypes();
@@ -103,7 +103,7 @@
   };
 
   const deleteFieldType = (key) => {
-    DeleteFieldType(key).then((r) => {
+    DeleteFieldType(key,$_('LogType.DeleteFieldType'),$_('LogType.DeleteMsg')).then((r) => {
       fieldTypeErrorMsg = r;
       if (r == "") {
         getFieldTypes();

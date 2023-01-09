@@ -200,14 +200,14 @@ func (b *App) SaveExtractorType(et ExtractorType) string {
 }
 
 // DeleteExtractorType : 抽出パターンを削除する
-func (b *App) DeleteExtractorType(key string) string {
+func (b *App) DeleteExtractorType(key, title, message string) string {
 	if et, ok := extractorTypes[key]; ok && !et.CanEdit {
 		return "Can not Detele"
 	}
 	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
 		Type:          wails.QuestionDialog,
-		Title:         "Delete Extract Pattern",
-		Message:       "Delete?",
+		Title:         title,
+		Message:       message,
 		Buttons:       []string{"Yes", "No"},
 		DefaultButton: "No",
 		CancelButton:  "No",
@@ -235,14 +235,14 @@ func (b *App) SaveFieldType(ft FieldType) string {
 }
 
 // DeleteFieldType : フィールドタイプを削除する
-func (b *App) DeleteFieldType(key string) string {
+func (b *App) DeleteFieldType(key, title, message string) string {
 	if ft, ok := fieldTypes[key]; ok && !ft.CanEdit {
 		return "Can not delete"
 	}
 	result, err := wails.MessageDialog(b.ctx, wails.MessageDialogOptions{
 		Type:          wails.QuestionDialog,
-		Title:         "Delete field type",
-		Message:       "Delete?",
+		Title:         title,
+		Message:       message,
 		Buttons:       []string{"Yes", "No"},
 		DefaultButton: "No",
 		CancelButton:  "No",
