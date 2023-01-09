@@ -46,7 +46,7 @@ const makeHistogramChart = (div, field, dark) => {
       },
     },
     yAxis: {
-      name: 'Count',
+      name: $_('Js.Count'),
       min: 0,
     },
     series: [

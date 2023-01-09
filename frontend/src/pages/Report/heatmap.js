@@ -1,6 +1,9 @@
 import * as echarts from "echarts";
 import { getFieldName } from "../../js/define";
 import * as ecStat from "echarts-stat";
+import { _,unwrapFunctionStore } from 'svelte-i18n';
+
+const $_ = unwrapFunctionStore(_);
 
 let chart;
 
@@ -87,7 +90,7 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
     },
     xAxis: {
       type: "category",
-      name: "Date",
+      name: $_("Js.Date"),
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -100,7 +103,7 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
     },
     yAxis: {
       type: "category",
-      name: "Time",
+      name: $_("Js.TimeH"),
       nameTextStyle: {
         fontSize: 10,
         margin: 2,
@@ -137,7 +140,7 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
     },
     series: [
       {
-        name: field ? getFieldName(field) : "Count",
+        name: field ? getFieldName(field) : $_("Js.Count"),
         type: "heatmap",
         data: [],
         emphasis: {
@@ -198,8 +201,8 @@ export const showHeatmap = (div, logs, field, sumMode, calcMode, dark) => {
       }
     }
   } else {
-    option.xAxis.name = "Day of week";
-    option.xAxis.data = ["Sun", "Man", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    option.xAxis.name = $_("Js.DayOfWeek");
+    option.xAxis.data = [$_("Js.Sun"), $_("Js.Man"), $_("Js.Tue"), $_("Js.Wed"), $_("Js.Thu"), $_("Js.Fri"), $_("Js.Sat")];
     const values = [];
     for (let x = 0; x < 7; x++) {
       const ent = [];

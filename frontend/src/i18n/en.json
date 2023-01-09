@@ -514,6 +514,14 @@
     "Total": "Total",
     "Unknown": "Unknown",
     "Frequency": "Frequency",
-    "Cycle": "Cycle"
+    "Cycle": "Cycle",
+    "DayOfWeek": "Day of Week",
+    "Sun": "Sun",
+    "Man": "Man",
+    "Tue": "Tue",
+    "Wed": "Wed",
+    "Thu": "Thu",
+    "Fri": "Fri",
+    "Sat": "Sat"
   }
 }
