@@ -23,7 +23,7 @@
   let editMode = logSource && logSource.No > 0;
 
   const selectLogFolder = () => {
-    SelectFile("logdir",$_('LogSorce.LogFolder'),).then((f) => {
+    SelectFile("logdir",$_('LogSource.LogFolder'),).then((f) => {
       logSource.Path = f;
     });
   };

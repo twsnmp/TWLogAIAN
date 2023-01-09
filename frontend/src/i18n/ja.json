@@ -430,6 +430,7 @@
     "AddBtn": "追加",
     "LogFile": "ログファイル",
     "DeleteLogSource": "ログソース削除",
+    "LogFolder": "ログフォルダー",
     "DeleteMsg": "削除しますか？"
   },
   "Setting": {
@@ -485,7 +486,27 @@
     "StopTitle": "分析終了",
     "CloseMsg": "終了しますか？"
   },
-  "LogSorce": {
-    "LogFolder": "ログフォルダー"
+  "Js": {
+    "Level": "レベル",
+    "Time": "日時",
+    "Score": "スコア",
+    "Log": "ログ",
+    "SRC": "送信元",
+    "Tag": "タグ",
+    "Message": "メッセージ",
+    "RespCode": "応答コード",
+    "Request": "リクエスト",
+    "Size": "サイズ",
+    "Client": "クライアント",
+    "Country": "国",
+    "Path": "パス",
+    "Computer": "コンピューター",
+    "EventID": "イベントID",
+    "RecordID": "レコードID",
+    "Channel": "チャネル",
+    "Provider":"プロバイダー",
+    "Normal": "正常",
+    "Warnning": "注意",
+    "Error": "エラー"
   }
 }

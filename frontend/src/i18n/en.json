@@ -430,6 +430,7 @@
     "AddBtn": "Add",
     "LogFile": "Log File",
     "DeleteLogSource": "Delete log source",
+    "LogFolder": "Log Folder",
     "DeleteMsg": "Delete?"
   },
   "Setting": {
@@ -485,7 +486,27 @@
     "StopTitle": "Analysis finished",
     "CloseMsg": "Are you sure you want to quit?"
   },
-  "LogSorce": {
-    "LogFolder": "Log folder"
+  "Js": {
+    "Error": "Error",
+    "Level": "Level",
+    "Time": "Time",
+    "Score": "Score",
+    "Log": "Log",
+    "SRC": "Log Src",
+    "Tag": "TAG",
+    "Message": "Message",
+    "RespCode": "Code",
+    "Request": "Verb",
+    "Size": "Size",
+    "Client": "Client",
+    "Country": "Country",
+    "Path": "Path",
+    "Warnning": "Warnning",
+    "Normal": "Normal",
+    "Computer": "Computer",
+    "EventID": "Event ID",
+    "RecordID": "Record ID",
+    "Channel": "Channel",
+    "Provider": "Provider"
   }
 }
