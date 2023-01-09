@@ -325,19 +325,19 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 		a := strings.Split(geo, ",")
 		if len(a) < 4 {
 			OutLog("invalid geo formar=%s", geo)
-			ret.ErrorMsg = fmt.Sprintf("invalid geo=%s", geo)
+			ret.ErrorMsg = fmt.Sprintf("invalid geo %s", geo)
 			return ret
 		}
 		lat, err := strconv.ParseFloat(a[1], 64)
 		if err != nil {
 			OutLog("SearchLog err=%v", err)
-			ret.ErrorMsg = fmt.Sprintf("invalid geo err=%v", err)
+			ret.ErrorMsg = err.Error()
 			return ret
 		}
 		long, err := strconv.ParseFloat(a[2], 64)
 		if err != nil {
 			OutLog("SearchLog err=%v", err)
-			ret.ErrorMsg = fmt.Sprintf("invalid geo err=%v", err)
+			ret.ErrorMsg = err.Error()
 			return ret
 		}
 		gq := bluge.NewGeoDistanceQuery(long, lat, a[3]).SetField(a[0])
