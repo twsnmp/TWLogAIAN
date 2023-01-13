@@ -14,7 +14,7 @@
   import { onMount } from "svelte";
   import EditFieldType from "./EditFieldType.svelte";
   import { _,getLocale } from '../../i18n/i18n';
-  import {SaveExtractorType,TestGrok,AutoGrok} from '../../../wailsjs/go/main/App';
+  import {SaveExtractorType,TestGrok,AutoGrok,SaveFieldType} from '../../../wailsjs/go/main/App';
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -58,6 +58,21 @@
     SaveExtractorType(extractorType).then((r) => {
       errorMsg = r;
       if (r == "") {
+        if (fields) {
+          fields.forEach((key) => {
+            if (!isFieldValid(key)) {
+              SaveFieldType(
+                {
+                  Key: key,
+                  Name: _getFieldName(key),
+                  Type: _getFieldType(key),
+                  Unit: "",
+                  CanEdit: true,
+                }
+              );
+            }
+          });
+        }
         dispatch("done", { save: true });
       }
     });
