@@ -247,6 +247,7 @@ func (b *App) GetIndexInfo() (IndexInfo, error) {
 }
 
 type SearchRequest struct {
+	Mode       string
 	Query      string
 	TimeFilter string
 	GeoFilter  string
@@ -269,7 +270,7 @@ type SearchResult struct {
 }
 
 func (b *App) SearchLog(r SearchRequest) SearchResult {
-	OutLog("SearchLog q=%#v", r)
+	OutLog("SearchLog r=%#v", r)
 	view := "timeonly"
 	if b.config.Extractor == "auto" {
 		view = "auto"
@@ -303,48 +304,12 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 	defer func() {
 		reader.Close()
 	}()
-	q := r.Query
-	q = strings.TrimSpace(q)
-	if q == "" {
-		// 空欄は全件検索にする
-		q = "*"
-	}
-	if r.TimeFilter != "" {
-		q += " " + r.TimeFilter
-	}
-	qo := querystr.DefaultOptions()
-	query, err := querystr.ParseQueryString(q, qo)
+	query, err := b.makeQuery(r)
 	if err != nil {
-		OutLog("SearchLog err=%v", err)
+		OutLog("makeQuery err=%v", err)
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
-	geo := r.GeoFilter
-	geo = strings.TrimSpace(geo)
-	if geo != "" {
-		a := strings.Split(geo, ",")
-		if len(a) < 4 {
-			OutLog("invalid geo formar=%s", geo)
-			ret.ErrorMsg = fmt.Sprintf("invalid geo %s", geo)
-			return ret
-		}
-		lat, err := strconv.ParseFloat(a[1], 64)
-		if err != nil {
-			OutLog("SearchLog err=%v", err)
-			ret.ErrorMsg = err.Error()
-			return ret
-		}
-		long, err := strconv.ParseFloat(a[2], 64)
-		if err != nil {
-			OutLog("SearchLog err=%v", err)
-			ret.ErrorMsg = err.Error()
-			return ret
-		}
-		gq := bluge.NewGeoDistanceQuery(long, lat, a[3]).SetField(a[0])
-		OutLog("GeoDistanceQuery gq=%#v", gq)
-		query = bluge.NewBooleanQuery().AddMust(gq, query)
-	}
-
 	OutLog("query=%#+v", query)
 	req := bluge.NewTopNSearch(r.Limit, query).WithStandardAggregations().SortBy([]string{"time"})
 	dmi, err := reader.Search(b.ctx, req)
@@ -413,6 +378,101 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 			return ret
 		}
 	}
+}
+
+// 検索を作る
+func (b *App) makeQuery(r SearchRequest) (bluge.Query, error) {
+	var q bluge.Query
+	var err error
+	qs := r.Query
+	qs = strings.TrimSpace(qs)
+	qo := querystr.DefaultOptions()
+	switch r.Mode {
+	case "regexp":
+		q, err = b.makeRegexpQuery(qs)
+	case "full":
+		if qs == "" {
+			// 空欄は全件検索にする
+			qs = "*"
+		}
+		q, err = querystr.ParseQueryString(qs, qo)
+	default:
+		q, err = b.makeSimpleQuery(qs)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if r.TimeFilter != "" {
+		OutLog("time filter=%s", r.TimeFilter)
+		qt, err := querystr.ParseQueryString(r.TimeFilter, qo)
+		if err != nil {
+			return nil, err
+		}
+		q = bluge.NewBooleanQuery().AddMust(qt, q)
+	}
+
+	geo := r.GeoFilter
+	geo = strings.TrimSpace(geo)
+	if geo != "" {
+		a := strings.Split(geo, ",")
+		if len(a) < 4 {
+			return nil, fmt.Errorf("invalid geo format=%s", geo)
+		}
+		lat, err := strconv.ParseFloat(a[1], 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid geo format=%s err=%v", geo, err)
+		}
+		long, err := strconv.ParseFloat(a[2], 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid geo format=%s err=%v", geo, err)
+		}
+		gq := bluge.NewGeoDistanceQuery(long, lat, a[3]).SetField(a[0])
+		OutLog("GeoDistanceQuery gq=%#v", gq)
+		q = bluge.NewBooleanQuery().AddMust(gq, q)
+	}
+	return q, nil
+}
+
+func (b *App) makeSimpleQuery(qs string) (bluge.Query, error) {
+	if qs == "" {
+		return bluge.NewMatchAllQuery(), nil
+	}
+	q := bluge.NewBooleanQuery()
+	a := strings.Split(qs, " ")
+	for _, s := range a {
+		s = strings.TrimSpace(s)
+		not := false
+		if strings.HasPrefix(s, "!") {
+			s = s[1:]
+			not = true
+		}
+		if strings.HasSuffix(s, "*") && len(s) > 1 {
+			s = s[:len(s)-1]
+			if not {
+				q = q.AddMustNot(bluge.NewPrefixQuery(s))
+			} else {
+				q = q.AddMust(bluge.NewPrefixQuery(s))
+			}
+		} else {
+			if not {
+				q = q.AddMustNot(bluge.NewMatchQuery(s))
+			} else {
+				q = q.AddMust(bluge.NewMatchQuery(s))
+			}
+		}
+	}
+	return q, nil
+}
+
+func (b *App) makeRegexpQuery(qs string) (bluge.Query, error) {
+	if qs == "" {
+		return bluge.NewMatchAllQuery(), nil
+	}
+	q := bluge.NewRegexpQuery(qs)
+	if q == nil {
+		return nil, fmt.Errorf("invalut regexp query=%s", qs)
+	}
+	return bluge.NewBooleanQuery().AddMust(q), nil
 }
 
 // 検索結果に追加のフィールドを設定する

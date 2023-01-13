@@ -23,7 +23,6 @@
     Pencil16,
     Question16,
   } from "svelte-octicons";
-  import Query from "./Query.svelte";
   import SerachConf from "./SearchConf.svelte";
   import Result from "./Result.svelte";
   import { createEventDispatcher, onMount, tick } from "svelte";
@@ -56,11 +55,11 @@
   const dispatch = createEventDispatcher();
   const excludeColMap = { copy: true, memo: true, extractor: true };
   let page = "";
-  let showQuery = false;
   let showConf = false;
   let busy = false;
   let dark = false;
   const conf = {
+    mode: "simple",
     query: "",
     limit: "10000",
     anomaly: "",
@@ -150,11 +149,12 @@
 
   const getTargetRange = () => {
     let t = Date.parse(conf.range.target);
-    const d = conf.range.range * 1;
     if (!t || t == NaN) {
       const nt = d < 0 ? indexInfo.EndTime : indexInfo.StartTime;
       t = new Date(nt / (1000 * 1000)).getTime();
     }
+    let d = parseInt(conf.range.range);
+    d = d == 0 ?  3600 : d;
     const sd = d < 0 ? -d : 0;
     const ed = d < 0 ?  0 : d;
     const tz = getTZStr();
@@ -237,11 +237,11 @@
     data.length = 0;
     aecdata = [];
     anomalyTime = "";
-    showQuery = false;
     showConf = false;
     filter.st = false;
     filter.et = false;
     const request = {
+      Mode: conf.mode,
       Query: conf.query,
       TimeFilter: getTimeFilter(),
       GeoFilter: getGeoFilter(),
@@ -730,15 +730,6 @@
           >
             <Question16 />
           </button>
-          <button
-            class="btn  btn-secondary"
-            type="button"
-            on:click={() => {
-              showQuery = !showQuery;
-            }}
-          >
-            <Pencil16 />
-          </button>
           {#if !showConf}
             <button
               class="btn  btn-secondary"
@@ -781,15 +772,6 @@
     {#if showConf}
       <div class="Box-row">
         <SerachConf
-          {conf}
-          fields={indexInfo.Fields}
-          {extractorTypeList}
-        />
-      </div>
-    {/if}
-    {#if showQuery}
-      <div class="Box-row">
-        <Query
           {conf}
           fields={indexInfo.Fields}
           {extractorTypeList}

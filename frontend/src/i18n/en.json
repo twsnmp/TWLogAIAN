@@ -281,19 +281,6 @@
     "SearchDur": "Search time",
     "AnomalyTime": "Anpmalu time"
   },
-  "Query": {
-    "History": "History",
-    "SelectHistoryMsg": "Please select history",
-    "Keyword": "Keyword",
-    "Item": "Item",
-    "All": "All",
-    "Include": "includes",
-    "Is": "is ",
-    "Must": "Must",
-    "Exclude": "Exclude",
-    "NumberCond": "Numerical Cond",
-    "Number": "Numerical value"
-  },
   "Result": {
     "Title": "Log reading result",
     "OverView": "Overview",
@@ -353,7 +340,21 @@
     "DirTra": "Directory traversal",
     "AccessLogWalu": "Access log (Walu's method)",
     "ExtractOnSeach": "Search-time data extraction",
-    "NotUse": "None"
+    "NotUse": "None",
+    "History": "History",
+    "SelectHistoryMsg": "Please select history",
+    "Keyword": "Keyword",
+    "All": "All",
+    "Include": "includes",
+    "Must": "Must",
+    "Exclude": "Exclude",
+    "NumberCond": "Numerical Cond",
+    "Number": "Numerical value",
+    "QueryMode": "Query Mode",
+    "Simple": "Simple",
+    "Regexp": "Regular expressions",
+    "FullTextSearch": "Full-text search",
+    "Sec": "seconds"
   },
   "EditExtractorType": {
     "InputPatMsg": "Please specify a pattern",

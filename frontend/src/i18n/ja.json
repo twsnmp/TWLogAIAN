@@ -281,19 +281,6 @@
     "SearchDur": "検索時間",
     "AnomalyTime": "異常検知時間"
   },
-  "Query": {
-    "History": "検索履歴",
-    "SelectHistoryMsg": "履歴を選択してください",
-    "Keyword": "キーワード",
-    "Item": "項目",
-    "All": "全体",
-    "Include": "に",
-    "Is": "が",
-    "Must": "必須",
-    "Exclude": "除外",
-    "NumberCond": "数値判定",
-    "Number": "数値"
-  },
   "Result": {
     "Title": "ログ読み込み結果",
     "OverView": "概要",
@@ -353,7 +340,21 @@
     "DirTra": "ディレクトリトラバーサル",
     "AccessLogWalu": "アクセスログ(Waluの方法)",
     "ExtractOnSeach": "検索時データ抽出",
-    "NotUse": "しない"
+    "NotUse": "しない",
+    "History": "検索履歴",
+    "SelectHistoryMsg": "履歴を選択してください",
+    "Keyword": "キーワード",
+    "All": "全体",
+    "Include": "に",
+    "Must": "必須",
+    "Exclude": "除外",
+    "NumberCond": "数値判定",
+    "Number": "数値",
+    "QueryMode": "検索文のモード",
+    "Simple": "シンプル",
+    "Regexp": "正規表現",
+    "FullTextSearch": "全文検索",
+    "Sec": "秒"
   },
   "EditExtractorType": {
     "InputPatMsg": "パターンを指定してください",
