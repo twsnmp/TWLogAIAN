@@ -36,7 +36,7 @@
   const data = [];
   let config = {
     Filter: "",
-    Extractor: "timeonly",
+    Extractor: "auto",
     Grok: "",
     TimeField: "",
     GeoIP: false,
@@ -78,6 +78,9 @@
 
   const getConfig = () => {
     GetConfig().then((c) => {
+      if (!c.Extractor) {
+        c.Extractor = "auto"
+      }
       config = c;
       orgConfig = c;
     });

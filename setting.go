@@ -445,6 +445,7 @@ func (b *App) DeleteLogSource(no int, title, message string) string {
 type TestGrokResp struct {
 	ErrorMsg string
 	Fields   []string
+	Types    map[string]string
 	Data     [][]string
 }
 
@@ -453,6 +454,7 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 	ret := TestGrokResp{
 		Fields: []string{},
 		Data:   [][]string{},
+		Types:  make(map[string]string),
 	}
 	config := grok.Config{
 		Patterns:          make(map[string]string),
@@ -468,6 +470,7 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 	skip := 0
 	total := 0
 	ln := 0
+	numReg := regexp.MustCompile(`[-+]*[0-9\.]+`)
 	for _, l := range strings.Split(testData, "\n") {
 		ln++
 		if strings.TrimSpace(l) == "" {
@@ -482,6 +485,11 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 			if len(ret.Fields) < 1 {
 				for k := range values {
 					ret.Fields = append(ret.Fields, k)
+					t := "string"
+					if numReg.MatchString(values[k]) {
+						t = "number"
+					}
+					ret.Types[k] = t
 				}
 				sort.Strings(ret.Fields)
 			}
@@ -584,7 +592,7 @@ func findGrok(field, td string, groks []string, rmap map[string]string) {
 }
 
 func findSplunkPat(td string, rmap map[string]string) {
-	reg := regexp.MustCompile(`([a-zA-Z0-9]+)=(\w+)`)
+	reg := regexp.MustCompile(`([a-zA-Z0-9_]+)=([^ ]+)`)
 	regNum := regexp.MustCompile(`\d+(\.\d+)?`)
 	for _, m := range reg.FindAllStringSubmatch(td, -1) {
 		if len(m) > 2 {
@@ -593,7 +601,7 @@ func findSplunkPat(td string, rmap map[string]string) {
 			} else {
 				rmap[m[0]] = fmt.Sprintf("%s=%%{WORD:%s}", m[1], m[1])
 			}
-			OutLog("rmap %s -> %s %v", m[0], rmap[m[0]], m)
+			OutLog("rmap %s -> %s", m[0], rmap[m[0]])
 		}
 	}
 }

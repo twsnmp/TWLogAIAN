@@ -77,11 +77,8 @@
       value: "0.0",
     },
     range: {
-      start: echarts.time.format(
-        Date.now() - 3600 * 1000,
-        "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"
-      ),
-      end: echarts.time.format(Date.now(), "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}"),
+      start: echarts.time.format(Date.now() - 3600 * 1000,"{yyyy}-{MM}-{dd}T{HH}:{mm}"),
+      end: echarts.time.format(Date.now(), "{yyyy}-{MM}-{dd}T{HH}:{mm}"),
       range: "-60",
       target: "",
       mode: "",
@@ -184,10 +181,10 @@
       break;
     case "range":
       if (conf.range.start) {
-        ret += ` +time:>="` + conf.range.start + `${tz}"`;
+        ret += ` +time:>="` + echarts.time.format(Date.parse(conf.range.start), "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}") + `${tz}"`;
       }
       if (conf.range.end) {
-        ret += ` +time:<="` + conf.range.end + `${tz}"`;
+        ret += ` +time:<="` + echarts.time.format(Date.parse(conf.range.end), "{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}") + `${tz}"`;
       }
       break;
     }

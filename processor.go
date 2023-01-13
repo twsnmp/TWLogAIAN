@@ -157,8 +157,20 @@ func (b *App) GetProcessInfo() ProcessStat {
 	if b.processStat.Done {
 		b.wg.Wait()
 		b.cleanupProcess()
+		return b.processStat
 	}
-	return b.processStat
+	ret := ProcessStat{
+		Done:        false,
+		ReadLines:   b.processStat.ReadLines,
+		SkipLines:   b.processStat.SkipLines,
+		StartTime:   b.processStat.StartTime,
+		EndTime:     b.processStat.EndTime,
+		LogFiles:    b.processStat.LogFiles,
+		IntLogFiles: b.processStat.IntLogFiles,
+		ReadFiles:   make(map[string]bool),
+		TimeLine:    make(map[int64]int),
+	}
+	return ret
 }
 
 func (b *App) makeLogFileList() string {

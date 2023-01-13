@@ -25,6 +25,7 @@
   
   let data = [];
   let fields = [];
+  let types = {};
   let columns = [];
   const dispatch = createEventDispatcher();
   let errorMsg = "";
@@ -66,6 +67,19 @@
     errorMsg = "";
   };
 
+  const _getFieldName = (k) => {
+    const n = getFieldName(k);
+    return  n.includes("(unkn") ?  k : n;
+  }
+
+  const _getFieldType = (k) => {
+    const n = getFieldName(k);
+    if (n.includes("(unkn")) {
+      return types[k] || "string";
+    }
+    return   getFieldType(k);
+  }
+
   const test = () => {
     if (extractorType.Grok == "") {
       errorMsg = $_('EditExtractorType.InputPatMsg');
@@ -80,8 +94,10 @@
       data = r.Data;
       columns = [];
       fields = r.Fields;
+      types  = r.Types;
+      console.log(types);
       fields.forEach((e) => {
-        columns.push(getFieldName(e));
+        columns.push(_getFieldName(e));
       });
     });
   };
@@ -177,8 +193,8 @@
   const addFieldType = (key) => {
     fieldType = {
       Key: key,
-      Name: getFieldName(key),
-      Type: getFieldType(key),
+      Name: _getFieldName(key),
+      Type: _getFieldType(key),
       Unit: "",
       CanEdit: true,
     };
@@ -333,9 +349,9 @@
               <tr>
                 <td>{f}</td>
                 <td class:color-fg-danger={!isFieldValid(f)}
-                  >{getFieldName(f)}</td
+                  >{_getFieldName(f)}</td
                 >
-                <td>{getFieldType(f)}</td>
+                <td>{_getFieldType(f)}</td>
                 <td>{getFieldUnit(f)}</td>
                 <td>
                   {#if !isFieldValid(f)}
