@@ -710,8 +710,8 @@
           <input
             class="form-control input-block"
             type="text"
-            placeholder="$_('LogView.SearchText')"
-            aria-label="$_('LogView.SearchText')"
+            placeholder="{$_('LogView.SearchText')}"
+            aria-label="{$_('LogView.SearchText')}"
             bind:value={conf.query}
           />
         </div>

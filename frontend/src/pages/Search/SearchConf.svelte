@@ -357,7 +357,7 @@
           class="form-control input-sm"
           type="text"
           style="width: 100px;"
-          placeholder="$_('SearchConf.Number')"
+          placeholder="{$_('SearchConf.Number')}"
           aria-label={$_("SearchConf.Number")}
           bind:value={conf.number.value}
         />
