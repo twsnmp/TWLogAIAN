@@ -19,7 +19,7 @@ windebug:
 	wails build  -platform windows -debug
 
 mac:
-	wails build  -platform darwin -ldflags $(LDFLAGS)
+	wails build  -platform darwin/universal -clean -ldflags $(LDFLAGS)
 
 dev:
 	wails dev -extensions svelte,go,js
