@@ -510,7 +510,7 @@
             </label>
           </div>
         </div>
-        {#if config.Extractor == "custom" || config.Extractor.startsWith("EXT")}
+        {#if config.Extractor == "custom" || config.Extractor == "auto" || config.Extractor.startsWith("EXT")}
           <div class="form-group">
             <div class="form-group-header">
               <h5 class="pb-1">{$_('Setting.ExtractPat')}</h5>
