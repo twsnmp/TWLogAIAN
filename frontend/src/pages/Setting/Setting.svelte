@@ -111,17 +111,6 @@
           "&message=" +
           e.Pattern
         );
-      case "gravwell":
-        return (
-          e.Server +
-          "/?start=" +
-          e.Start +
-          "&end=" +
-          e.End +
-          "&qeury=`" +
-          e.Pattern +
-          "`"
-        );
       case "windows":
         return (
           e.Server +
@@ -239,8 +228,6 @@
         return $_('Setting.SSH');
       case "twsnmp":
         return $_('Setting.TSNMP');
-      case "gravwell":
-        return $_('Setting.Gravwell');
     }
     return "";
   };

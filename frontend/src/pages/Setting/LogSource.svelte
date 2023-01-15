@@ -103,7 +103,6 @@
           <option value="cmd">{$_('LogSource.Cmd')}</option>
           <option value="ssh">{$_('LogSource.SSH')}</option>
           <option value="twsnmp">{$_('LogSource.TWSNMPFC')}</option>
-          <option value="gravwell">{$_('LogSource.Gravwell')}</option>
         </select>
       </div>
     </div>
@@ -272,7 +271,7 @@
         </div>
       </div>
     {/if}
-    {#if logSource.Type == "twsnmp" || logSource.Type == "gravwell" || logSource.Type == "windows"}
+    {#if logSource.Type == "twsnmp" || logSource.Type == "windows"}
       <div class="form-group">
         <div class="form-group-header">
           <h5>{$_('LogSource.Server')}</h5>

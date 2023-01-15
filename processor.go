@@ -213,15 +213,6 @@ func (b *App) makeLogFileList() string {
 				Send:   0,
 				LogSrc: s,
 			})
-		case "gravwell":
-			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
-				Name:   s.Server,
-				Path:   fmt.Sprintf("%s/?start=%s&end=%s&query=`%s`", s.Server, s.Start, s.End, s.Pattern),
-				Size:   0,
-				Read:   0,
-				Send:   0,
-				LogSrc: s,
-			})
 		case "windows":
 			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
 				Name:   s.Server,
@@ -354,10 +345,6 @@ func (b *App) logReader() {
 		}
 		if lf.LogSrc.Type == "twsnmp" {
 			b.readLogFromTWSNMP(lf)
-			continue
-		}
-		if lf.LogSrc.Type == "gravwell" {
-			b.readLogFromGravwell(lf)
 			continue
 		}
 		if lf.LogSrc.Type == "windows" {

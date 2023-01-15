@@ -13,10 +13,10 @@ clean:
 	rm -rf build/bin/TWLogAIAN*
 
 windows:
-	wails build  -platform windows -ldflags $(LDFLAGS)
+	wails build  -platform windows/amd64 -clean -ldflags $(LDFLAGS)
 
 windebug:
-	wails build  -platform windows -debug
+	wails build  -platform windows/amd64 -clean -debug
 
 mac:
 	wails build  -platform darwin/universal -clean -ldflags $(LDFLAGS)
