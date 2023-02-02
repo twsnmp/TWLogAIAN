@@ -489,6 +489,70 @@
         </div>
         <div class="form-group">
           <div class="form-group-header">
+            <h5 class="pb-1">{$_('Setting.TimeExtract')}</h5>
+          </div>
+          <div class="form-group-body">
+            <!-- svelte-ignore a11y-no-onchange -->
+            <select
+              class="form-select"
+              aria-label="{$_('Setting.TimeGrinderOverride')}"
+              bind:value={config.TimeGrinderOverride}
+            >
+              <option value="">{$_('Setting.Auto')}</option>
+              <option value="AnsiC">AnsiC(Jan _2 15:04:05 2006)</option>
+              <option value="Unix">Unix(Jan _2 15:04:05 MST 2006)</option>
+              <option value="Ruby">Ruby(Jan _2 15:04:05 -0700 2006)</option>
+              <option value="RFC822">RFC822(02 Jan 06 15:04 MST)</option>
+              <option value="RFC822Z">RFC822Z(02 Jan 06 15:04 -0700)</option>
+              <option value="RFC850">RFC850(02-Jan-06 15:04:05 MST)</option>
+              <option value="RFC1123">RFC1123(02 Jan 2006 15:04:05 MST)</option>
+              <option value="RFC1123Z">RFC1123Z(02 Jan 2006 15:04:05 -0700)</option>
+              <option value="RFC3339">RFC3339(2006-01-02T15:04:05Z07:00)</option>
+              <option value="RFC3339Nano">RFC3339Nano(2006-01-02T15:04:05.999999999Z07:00)</option>
+              <option value="ZonelessRFC3339">ZonelessRFC3339(2006-01-02T15:04:05.999999999)</option>
+              <option value="Apache">Apache(_2/Jan/2006:15:04:05 -0700)</option>
+              <option value="ApacheNoTz">ApacheNoTz(_2/Jan/2006:15:04:05)</option>
+              <option value="NGINX">NGINX(2006/01/02 15:04:05)</option>
+              <option value="Syslog">Syslog(Jan _2 15:04:05)</option>
+              <option value="SyslogFile">SyslogFile(2006-01-02T15:04:05.999999999-07:00)</option>
+              <option value="SyslogFileTZ">SyslogFileTZ(2006-01-02T15:04:05.999999999-0700)</option>
+              <option value="DPKG">DPKG(2006-01-02 15:04:05)</option>
+              <option value="SyslogVariant">SyslogVariant(Jan 02 2006 15:04:05)</option>
+              <option value="UnpaddedDateTime">UnpaddedDateTime(2006-1-2 15:04:05)</option>
+              <option value="UnpaddedMilliDateTime">UnpaddedMilliDateTime(2006-1-2 15:04:05.999999999)</option>
+              <option value="UK">UK(02/01/2006 15:04:05,99999)</option>
+              <option value="Gravwell">Gravwell(1-2-2006 15:04:05.99999)</option>
+              <option value="Bind">Bind(02-Jan-2006 15:04:05.999)</option>
+              <option value="DirectAdmin">DirectAdmin(2006:01:02-15:04:05)</option>
+              <option value="custom01">Jan _2 15:04:05 2006</option>
+              <option value="custom02">2006/1/2 3:04:05</option>
+              <option value="custom00">{$_('Setting.CustomLogType')}</option>
+            </select>
+          </div>
+          {#if config.TimeGrinderOverride == "custom00"}
+            <div class="form-group-body">
+              <input
+                class="form-control"
+                type="text"
+                placeholder="{$_('Setting.TimeGrinderRegExp')}"
+                aria-label="{$_('Setting.TimeGrinderRegExp')}"
+                style="width: 45%;"
+                bind:value={config.TimeGrinderRegExp}
+              />
+              <input
+                class="form-control"
+                type="text"
+                placeholder="{$_('Setting.TimeGrinderFormat')}"
+                aria-label="{$_('Setting.TimeGrinderFormat')}"
+                style="width: 45%;"
+                bind:value={config.TimeGrinderFormat}
+              />
+            </div>
+          {/if}
+        </div>
+
+        <div class="form-group">
+          <div class="form-group-header">
             <h5 class="pb-1">{$_('Setting.AddressInfo')}</h5>
           </div>
           <div class="form-group-body">

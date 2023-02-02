@@ -489,7 +489,12 @@
     "DeleteMsg": "Delete?",
     "ClearIndexTitle": "Delete index",
     "StopTitle": "Analysis finished",
-    "CloseMsg": "Are you sure you want to quit?"
+    "CloseMsg": "Are you sure you want to quit?",
+    "TimeExtract": "Timestamp extraction",
+    "TimeGrinderOverride": "Timestamp format",
+    "TimeGrinderRegExp": "Timestamp extraction pattern",
+    "TimeGrinderFormat": "Timestamp format",
+    "Auto": "automatic"
   },
   "Js": {
     "Error": "Error",

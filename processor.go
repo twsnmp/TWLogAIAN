@@ -704,12 +704,34 @@ func (b *App) setTimeGrinder() error {
 			b.processConf.TimeGrinder.SetLocalTime()
 		}
 		// [Sun Oct 09 00:36:03 2022]
-		if p, err := timegrinder.NewUserProcessor("twWebError", `[JFMASOND][anebriyunlgpctov]+\s+\d+\s+\d\d:\d\d:\d\d\s+\d\d\d\d`, "Jan _2 15:04:05 2006"); err == nil && p != nil {
+		if p, err := timegrinder.NewUserProcessor("custom01", `[JFMASOND][anebriyunlgpctov]+\s+\d+\s+\d\d:\d\d:\d\d\s+\d\d\d\d`, "Jan _2 15:04:05 2006"); err == nil && p != nil {
 			if _, err := b.processConf.TimeGrinder.AddProcessor(p); err != nil {
 				OutLog("AddProcessor err=%v", err)
 			}
 		} else {
 			OutLog("timegrinder.NewUserProcessor err=%v", err)
+		}
+		// 2022/12/26 5:48:00
+		if p, err := timegrinder.NewUserProcessor("custom02", `\d\d\d\d/\d+/\d+\s+\d+:\d\d:\d\d`, "2006/1/2 3:04:05"); err == nil && p != nil {
+			if _, err := b.processConf.TimeGrinder.AddProcessor(p); err != nil {
+				OutLog("AddProcessor err=%v", err)
+			}
+		} else {
+			OutLog("timegrinder.NewUserProcessor err=%v", err)
+		}
+		if b.config.TimeGrinderOverride != "" {
+			if b.config.TimeGrinderOverride == "custom00" &&
+				b.config.TimeGrinderRegExp != "" &&
+				b.config.TimeGrinderFormat != "" {
+				if p, err := timegrinder.NewUserProcessor("custom00", b.config.TimeGrinderRegExp, b.config.TimeGrinderFormat); err == nil && p != nil {
+					if _, err := b.processConf.TimeGrinder.AddProcessor(p); err != nil {
+						OutLog("AddProcessor err=%v", err)
+					}
+				} else {
+					OutLog("timegrinder.NewUserProcessor err=%v", err)
+				}
+			}
+			b.processConf.TimeGrinder.SetFormatOverride(b.config.TimeGrinderOverride)
 		}
 	}
 	return err

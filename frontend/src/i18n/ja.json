@@ -489,7 +489,12 @@
     "DeleteMsg": "削除しますか？",
     "ClearIndexTitle": "インデックス削除",
     "StopTitle": "分析終了",
-    "CloseMsg": "終了しますか？"
+    "CloseMsg": "終了しますか？",
+    "TimeExtract": "タイムスタンプ抽出",
+    "Auto": "自動",
+    "TimeGrinderOverride": "タイムスタンプ形式",
+    "TimeGrinderRegExp": "タイムスタンプ抽出パターン",
+    "TimeGrinderFormat": "タイムスタンプ形式"
   },
   "Js": {
     "Level": "レベル",

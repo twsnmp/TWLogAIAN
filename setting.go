@@ -32,6 +32,10 @@ type Config struct {
 	InMemory   bool
 	ForceUTC   bool
 	Strict     bool
+	// TimeGrinder
+	TimeGrinderOverride string
+	TimeGrinderRegExp   string
+	TimeGrinderFormat   string
 }
 
 type LogSource struct {
