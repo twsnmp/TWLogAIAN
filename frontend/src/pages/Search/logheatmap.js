@@ -5,7 +5,6 @@ const $_ = unwrapFunctionStore(_);
 
 let chart;
 
-
 export const showLogHeatmap = (div, timeLine, dark) => {
   if (chart) {
     chart.dispose();
@@ -164,6 +163,30 @@ export const showLogHeatmap = (div, timeLine, dark) => {
   });
   chart.setOption(option);
   chart.resize();
+  chart.on("dblclick",(p) => {
+    if (!navigator || !navigator.clipboard || !p || !p.name) {
+      return;
+    }
+    const text = p.name + " " + p.data[1] + ":00:00";
+    navigator.clipboard.writeText(text);
+    chart.showLoading("default",{
+      text: 'Copied:' + text,
+      color: '#c23531',
+      textColor: '#000',
+      maskColor: 'rgba(255, 255, 255, 0.8)',
+      zlevel: 0,
+      fontSize: 18,
+      showSpinner: false,
+      spinnerRadius: 10,
+      lineWidth: 5,
+      fontWeight: 'normal',
+      fontStyle: 'normal',
+      fontFamily: 'sans-serif'
+    });
+    setTimeout(()=>{
+      chart.hideLoading();
+    },500) 
+  });
   return data;
 };
 
