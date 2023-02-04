@@ -1,4 +1,7 @@
 <script>
+  import Quill from "quill";
+  import "quill/dist/quill.bubble.css";
+
   import highlightWords from "highlight-words";
   import { X16, Check16, StarFill16, Reply16, Plus16,EyeClosed16,Eye16,TriangleDown16,TriangleUp16 } from "svelte-octicons";
   import Grid from "gridjs-svelte";
@@ -29,26 +32,7 @@
   let columns = [];
   const dispatch = createEventDispatcher();
   let errorMsg = "";
-  let selected = '';
-  let showInput = false;
-  let showReplace = false;
-
-  onMount(() => {
-    loadFieldTypes();
-    document.addEventListener(`selectionchange`, () => {
-      const s = document.getSelection().toString();
-      if (s == "") {
-        showReplace = false;
-        return;
-      }
-      const si = extractorType.Grok.indexOf(s);
-      const li = extractorType.Grok.lastIndexOf(s);
-      showReplace = si > 0 && (si == li);
-      if (showReplace) {
-        selected = s;
-      }
-    });
-  });
+  let quill;
 
   const back = () => {
     dispatch("done", {});
@@ -110,7 +94,6 @@
       columns = [];
       fields = r.Fields;
       types  = r.Types;
-      console.log(types);
       fields.forEach((e) => {
         columns.push(_getFieldName(e));
       });
@@ -125,21 +108,12 @@
     AutoGrok(testLog).then((r) => {
       errorMsg = r.ErrorMsg;
       if (r.Grok) {
-        if (extractorType.Grok) {
-          oldGrok.push(extractorType.Grok);
-          oldGrok = oldGrok;
-        }
         extractorType.Grok = r.Grok;
+        if (quill) {
+          quill.setText(r.Grok,"user");
+        }
       }
     });
-  };
-
-  let oldGrok = [];
-  const resetGrok = () => {
-    if (oldGrok.length > 0) {
-      extractorType.Grok = oldGrok.pop();
-      oldGrok = oldGrok;
-    }
   };
 
   const getGrokPat = (s) => {
@@ -173,33 +147,45 @@
   };
 
   const replaceGrok = (w) => {
-    if (selected == "") {
+    if(!quill) {
       return;
     }
-    const r = w ? getGrokPat(selected) : '.+';
-    if (extractorType.Grok) {
-      oldGrok.push(extractorType.Grok);
-      oldGrok = oldGrok;
+    const range = quill.getSelection();
+    if (!range || range.length === 0) {
+      return;
     }
-    extractorType.Grok = extractorType.Grok.replace(selected,r);
+    const text = quill.getText(range.index, range.length);
+    if (text == "") {
+      return;
+    }
+    const r = w ? getGrokPat(text) : '.+';
+    extractorType.Grok = extractorType.Grok.substring(0,range.index) + r + extractorType.Grok.substring(range.index + range.length);
+    quill.setText(extractorType.Grok,"user");
   };
 
-  $: grokChunks = highlightWords({
-    text: extractorType.Grok,
-    query: /(%\{.+?\}|\.\+|\\s\+)/,
-  });
-
-  const getGrokClass = (c) => {
+  const getGrokColor = (c) => {
     if (!c.match) {
       return "";
     }
+    if (c.text.includes("%{IP")) {
+      return "#1a7f37";
+    }
+    if (c.text.includes("%{MAC")) {
+      return "#8250df";
+    }
+    if (c.text.includes("%{INT") || c.text.includes("%{NUM") ) {
+      return "#6fdd8b";
+    }
+    if (c.text.includes("%{URL")) {
+      return "#bc4c00";
+    }
     if (c.text.includes("%{")) {
-      return "color-fg-attention text-underline";
+      return "#bf8722";
     }
     if (c.text.includes("s")) {
-      return "color-fg-accent";
+      return "#0969da";
     }
-    return "color-fg-danger";
+    return "#cf222e";
   };
 
   let page = "";
@@ -215,6 +201,7 @@
     };
     page = "fieldType";
   };
+
   const handleEditFieldTypeDone = (e) => {
     if (e && e.detail && e.detail.save) {
       loadFieldTypes();
@@ -222,6 +209,61 @@
     }
     page = "";
   };
+
+  onMount(() => {
+    loadFieldTypes();
+    quill = new Quill('#quill', {
+      theme: 'bubble',
+      modules: {
+       toolbar: ['underline','strike'],
+        history: {
+          delay: 2000,
+          maxStack: 500,
+          userOnly: true,
+        },
+      }
+    });
+    if (!quill) {
+      return;
+    }
+    const toolbar = quill.getModule('toolbar');
+    if(toolbar) {
+      toolbar.addHandler('underline', (v) => { replaceGrok(true) });
+      toolbar.addHandler('strike', (v) => { replaceGrok(false) });
+    }
+    quill.on('text-change', (delta, oldDelta, source) => {
+      if(source == "api") {
+        return;
+      }
+      extractorType.Grok = quill.getText().trim();
+      if (extractorType.Grok.includes("\n")) {
+        extractorType.Grok = extractorType.Grok.replaceAll("\n","");
+        quill.setText(extractorType.Grok,"user");
+        return;
+      }
+      const chunk =  highlightWords({
+          text: extractorType.Grok,
+          query: /(%\{.+?\}|\.\+|\\s\+)/,
+      });
+      let i = 0;
+      quill.removeFormat(0,extractorType.Grok.length);
+      for (const c of chunk) {
+        const col = getGrokColor(c)
+        if (col != "") {
+          quill.formatText(i,c.text.length,"color",col)
+          if (c.text.startsWith("%{")) {
+            quill.formatText(i,c.text.length,"underline",true)
+          } else {
+            quill.formatText(i,c.text.length,"underline",false)
+          }
+        }
+        i += c.text.length;
+      }
+    });
+    quill.keyboard.addBinding({ key: 'S', metaKey: true }, (r,c) => {replaceGrok(false) });
+    quill.keyboard.addBinding({ key: 'W', metaKey: true }, (r,c) => {replaceGrok(true) });
+    quill.setText(extractorType.Grok,"user");
+  });
 </script>
 
 {#if page == "fieldType"}
@@ -275,38 +317,9 @@
       <div class="form-group">
         <div class="form-group-header">
           <h5>{$_('EditExtractorType.ExtractPat')}
-          {#if showInput}
-            <button type="button" class="btn btn-sm ml-2" on:click={()=> showInput = false}>
-              <TriangleUp16 />
-            </button>
-          {:else}
-            <button type="button" class="btn btn-sm ml-2" on:click={()=> showInput = true}>
-              <TriangleDown16 />
-            </button>
-          {/if}
-            {#if showReplace }
-              <button type="button" class="btn btn-sm btn-danger ml-2" on:click={() => replaceGrok(true)}><Eye16 /></button>
-              <button type="button" class="btn btn-sm btn-danger ml-2" on:click={() => replaceGrok(false)}><EyeClosed16 /></button>
-            {/if}
-            {#if oldGrok.length > 0 }
-              <button type="button" class="btn btn-sm ml-2" on:click={resetGrok}><Reply16 /></button>
-            {/if}
           </h5>
         </div>
-      {#if showInput}
-        <div class="form-group-body">
-          <input
-            class="form-control grok"
-            type="text"
-            placeholder="{$_('EditExtractorType.ExtractPat')}"
-            bind:value={extractorType.Grok}
-          />
-        </div>
-      {/if}
-        <div class="form-group-body mt-1">
-          {#each grokChunks as chunk}
-            <span class={getGrokClass(chunk)}>{chunk.text}</span>
-          {/each}
+        <div id="quill" class="form-group-body mt-1">
         </div>
       </div>
       <div class="form-group">
@@ -411,10 +424,10 @@
 {/if}
 
 <style>
-  .form-group-body input.grok {
-    width: 99%;
-  }
 
+  #quill {
+    font-size: 14px;
+  }
   .form-group-body textarea.testdata {
     height: 100px;
     min-height: 100px;
@@ -424,7 +437,6 @@
     font-size: 12px;
     padding: 3px 6px;
   }
-
   table.fields td {
     font-size: 10px;
     padding: 3px 6px;

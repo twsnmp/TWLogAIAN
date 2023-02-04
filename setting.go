@@ -464,7 +464,7 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 		Patterns:          make(map[string]string),
 		NamedCapturesOnly: true,
 	}
-	config.Patterns["TWLOGAIAN"] = p
+	config.Patterns["TWLOGAIAN"] = strings.TrimSpace(p)
 	g, err := grok.NewWithConfig(&config)
 	if err != nil {
 		OutLog("TestGrok err=%v", err)
@@ -508,6 +508,7 @@ func (b *App) TestGrok(p, testData string) TestGrokResp {
 		}
 	}
 	if skip > 0 {
+		OutLog("pat=%s", p)
 		ret.ErrorMsg = fmt.Sprintf("total=%d skiped=%d", total, skip)
 	}
 	return ret
