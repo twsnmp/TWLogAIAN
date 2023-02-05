@@ -330,17 +330,6 @@ const columnsWindowsLog = () => {
 
 const makeDataColumns = (fields) => {
   const colums = [];
-  colums.push({
-    id: "_timestamp",
-    name: $_("Js.Time"),
-    formatter: (cell) =>
-    cell ? 
-      echarts.time.format(
-        new Date(cell / (1000 * 1000)),
-        "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}"
-      ) : "",
-    convert: true,
-  });
   fields.forEach((f) => {
     if (f == "time" || f.startsWith("_") || f.endsWith("_geo")) {
       return;
@@ -352,6 +341,17 @@ const makeDataColumns = (fields) => {
   });
   colums.sort((a,b)=> {
     return a.id < b.id ? -1 : 1;
+  });
+  colums.unshift({
+    id: "time",
+    name: $_("Js.Time"),
+    formatter: (cell) =>
+    cell ? 
+      echarts.time.format(
+        new Date(cell / (1000 * 1000)),
+        "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}"
+      ) : "",
+    convert: true,
   });
   colums.push(
     {
