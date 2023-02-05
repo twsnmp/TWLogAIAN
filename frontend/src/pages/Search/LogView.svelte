@@ -311,6 +311,12 @@
           extractorTypeList.push(extractorTypes[k]);
         }
         extractorTypeList.sort((a, b) => a.Name > b.Name);
+        extractorTypeList.unshift(
+          {
+            Key: "",
+            Name: $_("SearchConf.NotUse"),
+          }
+        )
       }
     });
   };

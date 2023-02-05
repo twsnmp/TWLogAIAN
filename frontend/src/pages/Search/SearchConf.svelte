@@ -4,14 +4,26 @@
   import { createEventDispatcher } from "svelte";
   import { _ } from "../../i18n/i18n";
   import { LoadKeyword } from "../../../wailsjs/go/main/App";
+  import AutoComplete from "simple-svelte-autocomplete";
 
   export let conf;
   export let fields = [];
   export let extractorTypeList = [];
   const geoFields = [];
 
+  const setSelectedExtractor =  () => {
+    for (const e of extractorTypeList) {
+      if (e.Key == conf.extractor) {
+      return e;
+      }
+    }
+    return extractorTypeList[0];
+  }
+
   let hasStringField = false;
   let hasNumberField = false;
+  let selectedExtractor = setSelectedExtractor();
+
 
   let history = "";
   const dispatch = createEventDispatcher();
@@ -281,12 +293,14 @@
 <div class="container-lg clearfix mt-1">
   <div class="col-2 float-left">{$_("SearchConf.ExtractOnSeach")}</div>
   <div class="col-3 float-left">
-    <select class="form-select" bind:value={conf.extractor}>
-      <option value="">{$_("SearchConf.NotUse")}</option>
-      {#each extractorTypeList as { Key, Name }}
-        <option value={Key}>{Name}</option>
-      {/each}
-    </select>
+    <AutoComplete
+      items="{extractorTypeList}"
+      bind:value ="{conf.extractor}"
+      labelFieldName="Name"
+      valueFieldName="Key"
+      inputClassName="form-control"
+      bind:selectedItem="{selectedExtractor}"
+      />
   </div>
 </div>
 {#if conf.mode == "full"}

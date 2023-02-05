@@ -28,6 +28,7 @@
     SelectFile,
     CloseWorkDir,
   } from '../../../wailsjs/go/main/App';
+  import AutoComplete from "simple-svelte-autocomplete";
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -152,6 +153,7 @@
 
   let extractorTypes = {};
   let extractorTypeList = [];
+  let selectedExtractor;
 
   const getExtractorTypes = () => {
     GetExtractorTypes().then((r) => {
@@ -160,8 +162,33 @@
         extractorTypeList = [];
         for (let k in extractorTypes) {
           extractorTypeList.push(extractorTypes[k]);
+          if(config.Extractor == k) {
+            selectedExtractor = extractorTypes[k];
+          }
         }
         extractorTypeList.sort((a, b) => a.Name > b.Name);
+        const autoExtractor = {
+          Key: "auto",
+          Name: $_('Setting.AutoTypeDetect'),
+        };
+        const timeonlyExtractor = {
+          Key: "timeonly",
+          Name: $_('Setting.TimeOnly'),
+        }
+        const csutomExtractor = {
+          Key: "custom",
+          Name: $_('Setting.CustomLogType'),
+        }
+        extractorTypeList.unshift(autoExtractor);
+        extractorTypeList.unshift(timeonlyExtractor);
+        extractorTypeList.push(csutomExtractor);
+        if (config.Extractor == "auto") {
+          selectedExtractor = autoExtractor;
+        } else if (config.Extractor == "timeonly") {
+          selectedExtractor = timeonlyExtractor;
+        } else if (config.Extractor == "custom") {
+          selectedExtractor = customExtractor;
+        }
       }
     });
   };
@@ -467,20 +494,15 @@
             <h5 class="pb-1">{$_('Setting.LogType')}</h5>
           </div>
           <div class="form-group-body">
-            <!-- svelte-ignore a11y-no-onchange -->
-            <select
-              class="form-select"
-              aria-label="{$_('Setting.ExtractPat')}"
-              bind:value={config.Extractor}
-              on:change={changeExtractor}
-            >
-              <option value="timeonly">{$_('Setting.TimeOnly')}</option>
-              <option value="auto">{$_('Setting.AutoTypeDetect')}</option>
-              {#each extractorTypeList as { Key, Name }}
-                <option value={Key}>{Name}</option>
-              {/each}
-              <option value="custom">{$_('Setting.CustomLogType')}</option>
-            </select>
+            <AutoComplete
+              items="{extractorTypeList}"
+              bind:value="{config.Extractor}"
+              labelFieldName="Name"
+              valueFieldName="Key"
+              onChange="{changeExtractor}"
+              inputClassName="form-control"
+              bind:selectedItem="{selectedExtractor}"
+            />
             <label class="p-1">
               <input type="checkbox" bind:checked={config.Strict} />
                 {$_('Setting.StrictPatCheck')}
