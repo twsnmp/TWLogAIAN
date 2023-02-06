@@ -20,7 +20,6 @@
     Trash16,
     Reply16,
     Checklist16,
-    Pencil16,
     Question16,
   } from "svelte-octicons";
   import SerachConf from "./SearchConf.svelte";
@@ -466,7 +465,7 @@
       return;
     }
     // Exclude Alt Key
-    conf.query += getFilter(col.id, cell.data, me.altKey);
+    setFilter(col.id, cell.data, me.altKey);
   };
 
   const exFieldList = [
@@ -479,23 +478,29 @@
     "all",
   ];
 
-  const getFilter = (id, data, exclude) => {
+  const setFilter = (id, data, exclude) => {
     if (!data) {
-      return "";
+      return;
+    }
+    if (id === "_timestamp") {
+      conf.range.target = formatTime(data * 1, true);
+      conf.range.mode = "target";
+      conf.range.range = exclude ? 300 : -300;
+      showConf = true;
+      return;
+    }
+    if (conf.mode != "full") {
+      return;
     }
     if (exFieldList.includes(id)) {
-      return "";
+      return;
     }
     let op = "";
-    if (id == "timestamp") {
-      op = exclude ? "<=" : ">=";
-      const time = formatTime(data * 1, true);
-      return ` +time:${op}"${time}"`;
-    }
     switch (getFieldType(id)) {
       case "number":
         op = exclude ? "<" : "=";
-        return ` ${id}:${op}${data}`;
+        conf.query += ` ${id}:${op}${data}`;
+        return;
       case "string":
         if (id == "clientip") {
           const a = data.split("(");
@@ -504,9 +509,10 @@
           }
         }
         op = exclude ? "-" : "+";
-        return ` ${op}${id}:${data}`;
+        conf.query += ` ${op}${id}:${data}`;
+        return;
     }
-    return "";
+    return;
   };
 
   const copyLog = (cells, tm) => {
