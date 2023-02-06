@@ -441,6 +441,7 @@
     );
   };
 
+
   const cellClick = (e) => {
     if (!e || !e.detail || e.detail.length < 4) {
       return;
@@ -704,7 +705,7 @@
       </div>
     {/if}
     {#if infoMsg != ""}
-      <div class="flash">
+      <div id="infoMsg" class="flash">
         {infoMsg}
         <button
           class="flash-close js-flash-close"
@@ -920,5 +921,11 @@
     width: 100%;
     height: 220px;
     margin: 5px auto;
+  }
+  #infoMsg {
+    position: absolute;
+    z-index: 100;
+    bottom: 20px;
+    right: 20px;
   }
 </style>
