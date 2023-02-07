@@ -427,6 +427,7 @@
 
   #quill {
     font-size: 14px;
+    font-family: monospace, serif;
   }
   .form-group-body textarea.testdata {
     height: 100px;
