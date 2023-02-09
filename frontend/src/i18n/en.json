@@ -437,7 +437,9 @@
     "LogFile": "Log File",
     "DeleteLogSource": "Delete log source",
     "LogFolder": "Log Folder",
-    "DeleteMsg": "Delete?"
+    "DeleteMsg": "Delete?",
+    "ShiftJISToUTF8": "Convert char encode from SHIFT-JIS to UTF-8",
+    "Convert": "Yes"
   },
   "Setting": {
     "Folder": "Folder",
@@ -494,7 +496,7 @@
     "TimeGrinderOverride": "Timestamp format",
     "TimeGrinderRegExp": "Timestamp extraction pattern",
     "TimeGrinderFormat": "Timestamp format",
-    "Auto": "automatic"
+    "Auto": "Automatic"
   },
   "Js": {
     "Error": "Error",

@@ -69,6 +69,7 @@
     Host: "",
     Channel: "",
     Auth: "",
+    ShiftJIS: true,
   };
   let logSources = [];
   let errorMsg = "";

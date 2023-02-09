@@ -437,7 +437,9 @@
     "LogFile": "ログファイル",
     "DeleteLogSource": "ログソース削除",
     "LogFolder": "ログフォルダー",
-    "DeleteMsg": "削除しますか？"
+    "DeleteMsg": "削除しますか？",
+    "ShiftJISToUTF8": "文字コードをSHIFT-JISからUTF-8に変換",
+    "Convert": "変換する"
   },
   "Setting": {
     "Folder": "フォルダー",
@@ -539,6 +541,6 @@
     "Median": "中央値",
     "Variant": "分散",
     "Regression": "回帰分析",
-    "3DSum": "３D集計"
+    "3DSum": "3D集計"
   }
 }

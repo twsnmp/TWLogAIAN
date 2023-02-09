@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/0xrawsec/golang-evtx/evtx"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
 )
 
 func (b *App) IsWindows() bool {
@@ -241,12 +243,20 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 		return nil
 	}
 	s := new(System)
+	tr := japanese.ShiftJIS.NewDecoder()
 	for _, l := range strings.Split(strings.ReplaceAll(string(out), "\n", ""), "</Event>") {
 		if b.stopProcess {
 			return nil
 		}
 		b.processStat.ReadLines++
-		l := strings.TrimSpace(l)
+		l = strings.TrimSpace(l)
+		if lf.LogSrc.ShiftJIS {
+			l, _, err = transform.String(tr, l)
+			if err != nil {
+				OutLog("shift-jis to utf8 error err=%v", err)
+				continue
+			}
+		}
 		leng := int64(len(l))
 		lf.Read += leng
 		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
@@ -258,7 +268,7 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 			continue
 		}
 		lsys := reSystem.FindString(l)
-		err := xml.Unmarshal([]byte(lsys), s)
+		err = xml.Unmarshal([]byte(lsys), s)
 		if err != nil {
 			OutLog("xml.Unmarshal err=%v", err)
 			continue

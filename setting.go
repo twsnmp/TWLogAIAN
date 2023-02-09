@@ -54,8 +54,9 @@ type LogSource struct {
 	Tag             string
 	Host            string
 	// for Windows
-	Channel string
-	Auth    string
+	Channel  string
+	Auth     string
+	ShiftJIS bool
 }
 type WindowSettings struct {
 	X     int

@@ -17,6 +17,7 @@ require (
 	github.com/xuri/excelize/v2 v2.6.1
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.4.0
+	golang.org/x/text v0.5.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -70,6 +71,5 @@ require (
 	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30 // indirect
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

@@ -290,31 +290,25 @@
           <h5>{$_('LogSource.AccessSetting')}</h5>
         </div>
         <div class="form-group-body">
-          <p>
-            <input
-              class="form-control ml-2"
-              type="text"
-              placeholder="{$_('LogSource.UserID')}"
-              bind:value={logSource.User}
-            />
-          </p>
-          <p>
-            <input
-              class="form-control ml-2"
-              type="password"
-              placeholder="{$_('LogSource.Password')}"
-              bind:value={logSource.Password}
-            />
-          </p>
+          <input
+            class="form-control ml-2"
+            type="text"
+            placeholder="{$_('LogSource.UserID')}"
+            bind:value={logSource.User}
+          />
+          <input
+            class="form-control ml-2"
+            type="password"
+            placeholder="{$_('LogSource.Password')}"
+            bind:value={logSource.Password}
+          />
           {#if logSource.Type == "windows"}
-            <p>
-              <select class="form-select" bind:value={logSource.Channel}>
+              <select class="form-select" bind:value={logSource.Auth}>
                 <option value="">{$_('LogSource.Default')}</option>
                 <option value="Negotiate">Negotiate</option>
                 <option value="NTLM">NTLM</option>
                 <option value="Kerberos">Kerberos</option>
               </select>
-            </p>
           {/if}
         </div>
       </div>
@@ -389,6 +383,17 @@
               <option value="Security">{$_('LogSource.Security')}</option>
               <option value="Application">{$_('LogSource.Application')}</option>
             </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>{$_('LogSource.ShiftJISToUTF8')}</h5>
+          </div>
+          <div class="form-group-body">
+            <label class="p-1">
+              <input type="checkbox" bind:checked={logSource.ShiftJIS} />
+              {$_('LogSource.Convert')}
+            </label>
           </div>
         </div>
       {:else}
