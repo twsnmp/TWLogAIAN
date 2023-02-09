@@ -212,16 +212,18 @@ type System struct {
 func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 	end := time.Now()
 	start := end.Add(time.Hour * -1)
+	tz := time.Now().Format("MST")
 	if lf.LogSrc.Start != "" {
-		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.Start+" JST"); err == nil {
+		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.Start+" "+tz); err == nil {
 			start = t
 		}
 	}
 	if lf.LogSrc.End != "" {
-		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.End+" JST"); err == nil {
+		if t, err := time.Parse("2006-01-02T15:04 MST", lf.LogSrc.End+" "+tz); err == nil {
 			end = t
 		}
 	}
+	OutLog("tz=%s start=%v end=%v", tz, start, end)
 	lf.ETName = "Windows"
 	filter := fmt.Sprintf(`/q:*[System[TimeCreated[@SystemTime>='%s' and @SystemTime<='%s']]]`, start.UTC().Format("2006-01-02T15:04:05"), end.UTC().Format("2006-01-02T15:04:05"))
 	params := []string{"qe", lf.LogSrc.Channel, filter}
@@ -243,6 +245,7 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 		return nil
 	}
 	s := new(System)
+	st := time.Now()
 	tr := japanese.ShiftJIS.NewDecoder()
 	for _, l := range strings.Split(strings.ReplaceAll(string(out), "\n", ""), "</Event>") {
 		if b.stopProcess {
@@ -259,6 +262,7 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 		}
 		leng := int64(len(l))
 		lf.Read += leng
+		lf.Size += leng
 		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
 			b.processStat.SkipLines++
 			continue
@@ -304,6 +308,7 @@ func (b *App) readLogFromWinEventLog(lf *LogFile) error {
 		b.logCh <- &log
 		lf.Send += leng
 	}
+	lf.Duration = time.Since(st).String()
 	return nil
 }
 
