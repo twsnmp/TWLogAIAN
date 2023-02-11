@@ -303,6 +303,17 @@
       />
   </div>
 </div>
+<div class="container-lg clearfix">
+  <div class="col-2 float-left">{$_("SearchConf.HighlighMode")}</div>
+  <div class="col-6 float-left">
+    <select class="form-select" bind:value={conf.highlightMode}>
+      <option value="">{$_("SearchConf.None")}</option>
+      <option value="keyword">{$_("SearchConf.HighlighKeyword")}</option>
+      <option value="code">{$_("SearchConf.HighlighCode")}</option>
+    </select>
+  </div>
+  <div class="col-2 float-left" />
+</div>
 {#if conf.mode == "full"}
   {#if hasStringField}
     <div class="container-lg clearfix mt-1">

@@ -88,6 +88,7 @@
       range: "100",
     },
     extractor: "",
+    highlightMode: "",
   };
   let data = [];
   let columns = [];
@@ -123,7 +124,8 @@
   const setLogTable = () => {
     columns = getLogColums(
       logView,
-      logView == "ex_data" ? result.ExFields : result.Fields
+      logView == "ex_data" ? result.ExFields : result.Fields,
+      conf
     );
     data = getLogData(result, logView, filter);
     gridSearch = getGridSearch(logView);
@@ -915,7 +917,6 @@
   </div>
 {/if}
 <div id="clipboard" />
-
 <style>
   #chart {
     width: 100%;

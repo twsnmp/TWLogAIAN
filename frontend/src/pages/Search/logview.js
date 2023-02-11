@@ -1,7 +1,9 @@
 import * as echarts from "echarts";
-import { html, h } from "gridjs";
+import { html } from "gridjs";
 import { getFieldName } from "../../js/define";
 import { _,unwrapFunctionStore } from 'svelte-i18n';
+import highlightWords from 'highlight-words';
+import hljs from 'highlight.js';
 
 const $_ = unwrapFunctionStore(_);
  
@@ -23,6 +25,70 @@ const formatLevel = (level) => {
   }
   return html(`<div class="color-fg-default">${$_('Js.Normal')}</div>`);
 };
+
+let highlightMode = 0;
+let highlightQuery = ``;
+
+const makeKeywordQuery = (q) => {
+  q = q.trim();
+  if (q=== "") {
+    return "";
+  }
+  const a = q.trim().split(' ');
+  if(a.length === 1) {
+    return q;
+  }
+  let r = `/(`;
+  for (let i=0; i < a.length;i++) {
+    const s = a[i].trim();
+    if (s === "") {
+      continue
+    }
+    if(i != 0) {
+      r += '|';
+    }
+    r += s;
+  }
+  return r + `)/`
+}
+
+const setupHighlightConf = (conf) => {
+  switch (conf.highlightMode) {
+  case "keyword":
+    highlightQuery = makeKeywordQuery(conf.query);
+    highlightMode = highlightQuery != "" ? 1 : 0;
+    return;
+  case "code":
+    highlightMode = 2;
+    highlightQuery = ``;
+    return;
+  default:
+    highlightMode = 0;
+    highlightQuery = ``;
+  }
+};
+
+const formatHighlight = (s) => {
+  if (highlightMode === 1) {
+    const chunk = highlightWords({
+      text:s,
+      query: highlightQuery,
+    });
+    s = ""
+    for (const c of chunk) {
+      if(c.match) {
+        s += `<span class="highlight">${c.text}</span>`;
+      } else {
+        s += `<span>${c.text}</span>`;
+      }
+    }
+    return html(s);
+  }
+  if (highlightMode == 2) {
+    return html(hljs.highlightAuto(s).value);
+  }
+  return s;
+} 
 
 const columnsTimeOnly = () => {
   return  [
@@ -54,6 +120,7 @@ const columnsTimeOnly = () => {
     id: "all",
     name: $_('Js.Log'),
     width: "60%",
+    formatter: (cell) => formatHighlight(cell),
   },
   {
     id: "copy",
@@ -136,6 +203,7 @@ const columnsSyslog = () => {
     id: "message",
     name: $_("Js.Message"),
     width: "38%",
+    formatter: (cell) => formatHighlight(cell),
   },
   {
     id: "copy",
@@ -378,7 +446,8 @@ const makeDataColumns = (fields) => {
   return colums;
 };
 
-export const getLogColums = (view, fields) => {
+export const getLogColums = (view, fields,conf) => {
+  setupHighlightConf(conf);
   switch (view) {
     case "syslog":
       return columnsSyslog();

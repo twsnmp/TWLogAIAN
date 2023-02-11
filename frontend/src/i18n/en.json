@@ -354,7 +354,11 @@
     "Simple": "Simple",
     "Regexp": "Regular expressions",
     "FullTextSearch": "Full-text search",
-    "Sec": "seconds"
+    "Sec": "seconds",
+    "HighlighMode": "Highlight",
+    "HighlighKeyword": "Keyword",
+    "HighlighCode": "Auto",
+    "None": "None"
   },
   "EditExtractorType": {
     "InputPatMsg": "Please specify a pattern",

@@ -1,4 +1,5 @@
-.gridjs-head button, .gridjs-footer button {
+.gridjs-head button,
+.gridjs-footer button {
   cursor: pointer;
   background-color: transparent;
   background-image: none;
@@ -19,7 +20,7 @@
 }
 
 .gridjs-head::after {
-  content: '';
+  content: "";
   display: block;
   clear: both;
 }
@@ -56,7 +57,7 @@ input.gridjs-input {
 }
 
 .gridjs-pagination::after {
-  content: '';
+  content: "";
   display: block;
   clear: both;
 }
@@ -89,7 +90,6 @@ input.gridjs-input {
 .gridjs-pagination .gridjs-pages button:hover {
   box-shadow: 0 0 0 2px rgba(149, 189, 243, 0.5);
 }
-
 
 .gridjs-pagination .gridjs-pages button.gridjs-spread {
   cursor: default;
@@ -177,7 +177,6 @@ table.gridjs-table {
   table-layout: fixed;
 }
 
-
 .gridjs-search {
   float: left;
 }
@@ -185,7 +184,6 @@ table.gridjs-table {
 .gridjs-search-input {
   width: 250px;
 }
-
 
 .gridjs-td .gridjs-checkbox {
   display: block;
@@ -206,12 +204,16 @@ table.gridjs-table {
   background-color: #9bc2f7;
 }
 
-
 /* Table */
 .markdown-body table td {
   font-family: "Menlo", "Monaco", "Consolas", monospace;
   font-size: 12px;
   padding: 4px 9px;
+}
+
+.markdown-body table td span.highlight {
+  color: #a50026;
+  text-decoration: underline;
 }
 
 .markdown-body table th {
@@ -240,3 +242,25 @@ td .btn-sm {
   line-height: 16px;
 }
 
+/* highlight.js */
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-literal,
+.hljs-name,
+.hljs-section,
+.hljs-selector-tag,
+.hljs-strong,
+.hljs-title,
+.hljs-type {
+  font-weight: 700;
+  color: #a50026;
+}
+
+.hljs-number {
+  color: #4575b4;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}

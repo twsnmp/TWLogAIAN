@@ -354,7 +354,11 @@
     "Simple": "シンプル",
     "Regexp": "正規表現",
     "FullTextSearch": "全文検索",
-    "Sec": "秒"
+    "Sec": "秒",
+    "HighlighMode": "ハイライト表示",
+    "HighlighKeyword": "キーワード",
+    "HighlighCode": "自動",
+    "None": "しない"
   },
   "EditExtractorType": {
     "InputPatMsg": "パターンを指定してください",
