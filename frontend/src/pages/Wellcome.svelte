@@ -1,4 +1,5 @@
 <script>
+  import logo from "../assets/images/appicon.png"  
   import { MortarBoard16, PaperAirplane16, Sun16, Moon16,ThreeBars16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import { _,setLocale,getLocale } from '../i18n/i18n';
@@ -66,7 +67,7 @@
   </div>
   <div class="Box-body">
     <div class="mx-auto" style="max-width: 200px;">
-      <img id="logo" alt="TWLogAIAN Logo" src="./assets/images/appicon.png" />
+      <img id="logo" alt="TWLogAIAN Logo" src={logo} />
     </div>
     <hr />
     <p>
