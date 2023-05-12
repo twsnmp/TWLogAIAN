@@ -807,7 +807,7 @@ func (b *App) setExtractor() error {
 	if b.config.Extractor != "custom" {
 		et, ok := extractorTypes[b.config.Extractor]
 		if !ok {
-			return fmt.Errorf("invalid extractor type %s", b.processConf.Extractor)
+			return fmt.Errorf("invalid extractor type %v", b.processConf.Extractor)
 		}
 		b.config.GeoFields = et.IPFields
 		b.config.HostFields = et.IPFields

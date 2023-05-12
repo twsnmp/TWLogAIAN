@@ -36,3 +36,5 @@ dist
 tmp
 
 .DS_Store
+
+testdata/fuzz/

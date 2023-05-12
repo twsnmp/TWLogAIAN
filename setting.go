@@ -598,16 +598,18 @@ func findGrok(field, td string, groks []string, rmap map[string]string) {
 }
 
 func findSplunkPat(td string, rmap map[string]string) {
-	reg := regexp.MustCompile(`([a-zA-Z0-9_]+)=([^ ]+)`)
+	reg := regexp.MustCompile(`\s+([a-zA-Z_]+[a-zA-Z0-9_]+)=([^ ]+)`)
 	regNum := regexp.MustCompile(`\d+(\.\d+)?`)
+	td = " " + td
 	for _, m := range reg.FindAllStringSubmatch(td, -1) {
 		if len(m) > 2 {
+			k := fmt.Sprintf("%s=%s", m[1], m[2])
 			if regNum.MatchString(m[2]) {
-				rmap[m[0]] = fmt.Sprintf("%s=%%{NUMBER:%s}", m[1], m[1])
+				rmap[k] = fmt.Sprintf("%s=%%{NUMBER:%s}", m[1], m[1])
 			} else {
-				rmap[m[0]] = fmt.Sprintf("%s=%%{WORD:%s}", m[1], m[1])
+				rmap[k] = fmt.Sprintf("%s=%%{WORD:%s}", m[1], m[1])
 			}
-			OutLog("rmap %s -> %s", m[0], rmap[m[0]])
+			OutLog("rmap %s -> %s", k, rmap[k])
 		}
 	}
 }
