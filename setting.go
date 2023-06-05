@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -635,7 +634,7 @@ func (b *App) LoadKeyword() []string {
 		OutLog("LoadKeyword err=%v", err)
 		return ret
 	}
-	buf, err := ioutil.ReadFile(file)
+	buf, err := os.ReadFile(file)
 	if err != nil {
 		OutLog("LoadKeyword err=%v", err)
 		return ret

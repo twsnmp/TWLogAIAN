@@ -67,8 +67,6 @@ func (b *App) sshConnectToHost(lf *LogFile) (*ssh.Client, *ssh.Session, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	ssh.InsecureIgnoreHostKey()
-
 	svr := lf.LogSrc.Server
 	if !strings.Contains(svr, ":") {
 		svr += ":22"

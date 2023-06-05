@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -87,7 +87,7 @@ func (b *App) loadAppConfig() {
 	if conf == "" {
 		return
 	}
-	j, err := ioutil.ReadFile(conf)
+	j, err := os.ReadFile(conf)
 	if err != nil {
 		OutLog("loadAppConfig err=%v", err)
 		return
@@ -106,7 +106,7 @@ func (b *App) saveAppConfig() {
 		OutLog("saveAppConfig err=%v", err)
 		return
 	}
-	ioutil.WriteFile(conf, j, 0600)
+	os.WriteFile(conf, j, 0600)
 }
 
 // getConfigName : 設定ファイル名の取得
@@ -164,7 +164,7 @@ func (b *App) SendFeedBack(msg string) bool {
 		return false
 	}
 	defer resp.Body.Close()
-	r, err := ioutil.ReadAll(resp.Body)
+	r, err := io.ReadAll(resp.Body)
 	if err != nil {
 		OutLog("send feedback err=%v", err)
 		return false

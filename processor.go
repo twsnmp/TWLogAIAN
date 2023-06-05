@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"path"
@@ -429,7 +428,7 @@ func (b *App) readLogFromZIP(lf *LogFile) error {
 				OutLog("read evtx file in ZIP size over 1GB")
 				continue
 			}
-			buf, err := ioutil.ReadAll(file)
+			buf, err := io.ReadAll(file)
 			if err != nil {
 				OutLog("evtx in zip err =%v", err)
 				continue

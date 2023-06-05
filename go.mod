@@ -13,7 +13,7 @@ require (
 	github.com/twsnmp/golof v1.0.0
 	github.com/viant/afs v1.16.0
 	github.com/vjeantet/grok v1.0.1
-	github.com/wailsapp/wails/v2 v2.4.1
+	github.com/wailsapp/wails/v2 v2.5.1
 	github.com/xuri/excelize/v2 v2.6.1
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.4.0

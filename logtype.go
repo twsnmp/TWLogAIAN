@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -291,7 +291,7 @@ func (b *App) ExportLogTypes() string {
 	if err != nil {
 		return fmt.Sprintf("Can not export err=%v", err)
 	}
-	err = ioutil.WriteFile(file, d, 0660)
+	err = os.WriteFile(file, d, 0660)
 	if err != nil {
 		return fmt.Sprintf("Can not export err=%v", err)
 	}
@@ -332,7 +332,7 @@ func (b *App) ImportLogTypes() string {
 		OutLog("importLogTypes err=%v", err)
 		return err.Error()
 	}
-	d, err := ioutil.ReadFile(file)
+	d, err := os.ReadFile(file)
 	if err != nil {
 		OutLog("importLogTypes file=%v err=%v", file, err)
 		return err.Error()

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -72,7 +72,7 @@ func (b *App) loginToTWSNMP(lf *LogFile) (string, error) {
 	}
 	defer res.Body.Close()
 
-	r, err := ioutil.ReadAll(res.Body)
+	r, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
 	}
@@ -118,7 +118,7 @@ func (b *App) getLogFromTWSNMP(lf *LogFile, token string) error {
 	}
 	defer res.Body.Close()
 
-	r, err := ioutil.ReadAll(res.Body)
+	r, err := io.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}
