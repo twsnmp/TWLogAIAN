@@ -42,7 +42,7 @@
   import Memo from "../Report/Memo.svelte";
   import LogType from "../Setting/LogType.svelte";
   import EditExtractorType from "../Setting/EditExtractorType.svelte";
-  import { getTableLimit, loadFieldTypes, getFieldType } from "../../js/define";
+  import { loadFieldTypes, getFieldType } from "../../js/define";
   import numeral from "numeral";
   import AutoEncoder from "./AutoEncoder.svelte";
   import * as echarts from "echarts";
@@ -115,6 +115,7 @@
     LastTime: 0,
   };
   let pagination = false;
+  let perPage = "5";
   let logView = "";
   let gridSearch = true;
   let filter = {
@@ -132,7 +133,7 @@
     if (data.length > 10) {
       pagination = {
         page: 0,
-        limit: getTableLimit(),
+        limit: perPage * 1,
         enable: true,
       };
     } else {
@@ -414,11 +415,7 @@
 
   const onResize = () => {
     resizeLogChart();
-    if (pagination) {
-      pagination.limit = getTableLimit();
-    }
   };
-
  
   const handleUpdateQuery = (e) => {
     if (e && e.detail && e.detail.query) {
@@ -650,6 +647,10 @@
     page = "logType";
   };
 
+  const chnagePerPage = () => {
+    pagination.limit = perPage * 1;
+  }
+
 </script>
 
 <svelte:window on:resize={onResize} />
@@ -822,6 +823,18 @@
     {#if !busy}
       <div class="Box-footer text-right">
         {#if result && result.Hit > 0}
+          <!-- svelte-ignore a11y-no-onchange -->
+          <select
+            class="form-select mr-1"
+            bind:value={perPage}
+            on:change={chnagePerPage}
+          >
+            <option value="5">5Line/Pgae</option>
+            <option value="10">10Line/Pgae</option>
+            <option value="20">20Line/Pgae</option>
+            <option value="50">50Line/Pgae</option>
+            <option value="100">100Line/Pgae</option>
+          </select>
           <!-- svelte-ignore a11y-no-onchange -->
           <select
             class="form-select mr-1"
