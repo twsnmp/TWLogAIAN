@@ -829,11 +829,11 @@
             bind:value={perPage}
             on:change={chnagePerPage}
           >
-            <option value="5">5Line/Pgae</option>
-            <option value="10">10Line/Pgae</option>
-            <option value="20">20Line/Pgae</option>
-            <option value="50">50Line/Pgae</option>
-            <option value="100">100Line/Pgae</option>
+            <option value="5">{$_('5lpp')}</option>
+            <option value="10">{$_('10lpp')}</option>
+            <option value="20">{$_('20lpp')}</option>
+            <option value="50">{$_('50lpp')}</option>
+            <option value="100">{$_('100lpp')}</option>
           </select>
           <!-- svelte-ignore a11y-no-onchange -->
           <select

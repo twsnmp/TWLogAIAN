@@ -159,6 +159,16 @@ func (b *App) addLogToIndex() {
 	if len(b.indexer.logBuffer) < 1 {
 		return
 	}
+	storeKeyMap := map[string]bool{
+		"delta":            true,
+		"winEventID":       true,
+		"winEventRecordID": true,
+		"winChannel":       true,
+		"winProvider":      true,
+		"winLevel":         true,
+		"winComputer":      true,
+		"winUserID":        true,
+	}
 	batch_len := 0
 	batch := bluge.NewBatch()
 	for _, l := range b.indexer.logBuffer {
@@ -174,9 +184,13 @@ func (b *App) addLogToIndex() {
 		for k, i := range l.KeyValue {
 			switch v := i.(type) {
 			case string:
-				doc.AddField(bluge.NewTextField(k, v))
+				if _, ok := storeKeyMap[k]; ok {
+					doc.AddField(bluge.NewTextField(k, v).StoreValue())
+				} else {
+					doc.AddField(bluge.NewTextField(k, v))
+				}
 			case float64:
-				if k == "delta" {
+				if _, ok := storeKeyMap[k]; ok {
 					doc.AddField(bluge.NewNumericField(k, v).StoreValue())
 				} else {
 					doc.AddField(bluge.NewNumericField(k, v))
@@ -292,7 +306,7 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
-	if ret.View == "timeonly" {
+	if ret.View == "timeonly" || ret.View == "auto" {
 		if fields, err := reader.Fields(); err == nil {
 			for _, f := range fields {
 				if f == "winEventID" {
@@ -310,7 +324,7 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 		ret.ErrorMsg = err.Error()
 		return ret
 	}
-	OutLog("query=%#+v", query)
+	OutLog("view=%s,query=%#+v", ret.View, query)
 	req := bluge.NewTopNSearch(r.Limit, query).WithStandardAggregations().SortBy([]string{"time"})
 	dmi, err := reader.Search(b.ctx, req)
 	if err != nil {
@@ -355,10 +369,12 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 						if t, err := bluge.DecodeDateTime(value); err == nil {
 							l.Time = t.UnixNano()
 						}
-					case "delta":
+					case "delta", "winEventID", "winEventRecordID", "winLevel":
 						if f, err := bluge.DecodeNumericFloat64(value); err == nil {
-							l.KeyValue["delta"] = f
+							l.KeyValue[field] = f
 						}
+					case "winChannel", "winProvider", "winComputer", "winUserID":
+						l.KeyValue[field] = string(value)
 					}
 					return true
 				})

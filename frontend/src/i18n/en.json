@@ -546,5 +546,10 @@
     "Variant": "Variant",
     "Regression": "Regression",
     "3DSum": "3D Sum"
-  }
+  },
+  "5lpp": "5Lines/Page",
+  "10lpp": "10Lines/Page",
+  "20lpp": "20Lines/Page",
+  "50lpp": "50Lines/Page",
+  "100lpp": "100Lines/Page"
 }
