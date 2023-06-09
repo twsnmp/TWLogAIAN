@@ -52,7 +52,7 @@
   let gridLang = locale == "ja" ? jaJP : undefined;
 
   const dispatch = createEventDispatcher();
-  const excludeColMap = { copy: true, memo: true, extractor: true };
+  const excludeColMap = { copy: true, memo: true, extractor: true,search: true };
   let page = "";
   let showConf = false;
   let busy = false;
@@ -459,6 +459,9 @@
     } else if (col.id == "extractor") {
       showEditExtractorType(cell.data, me.metaKey);
       return;
+    } else if (col.id == "search") {
+      BrowserOpenURL("https://www.google.com/search?q=windows+event+id+"+cell.data);
+      return;
     }
     // Command + Click  to Filter
     if (!me.metaKey || !cell || !cell.data) {
@@ -476,6 +479,7 @@
     "memo",
     "extract",
     "all",
+    "search",
   ];
 
   const setFilter = (id, data, exclude) => {

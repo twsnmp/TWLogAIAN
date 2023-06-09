@@ -132,6 +132,11 @@ func (b *App) SetWorkDir(wd string) string {
 
 // openDB : データベースをオープンして設定を読み込む
 func (b *App) openDB(wd string) error {
+	// デバック時に二重オープンになる場合の対応
+	if b.db != nil {
+		b.db.Close()
+		b.db = nil
+	}
 	var err error
 	path := filepath.Join(wd, "twlogaian.db")
 	b.db, err = bbolt.Open(path, 0600, nil)
