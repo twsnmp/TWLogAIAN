@@ -311,7 +311,7 @@ const columnsAccessLog = () => {
 }
 
 const formatWinLevel = (level) => {
-  switch (level * 0) {
+  switch (level * 1) {
     case 1:
     case 2:
       return html(`<div class="color-fg-danger">${$_('Js.Error')}(${level})</div>`);
@@ -325,7 +325,7 @@ const columnsWindowsLog = () => {
   return  [
   {
     id: "level",
-    name: "Level",
+    name: $_("Js.Level"),
     width: "8%",
     formatter: (cell) => cell ? formatWinLevel(cell) : "",
   },
