@@ -270,8 +270,11 @@
     <select class="form-select" bind:value={conf.anomaly}>
       <option value="">{$_("SearchConf.NotDetect")}</option>
       <option value="iforest">Isolation Forest</option>
+{#if conf.limit <= 10000}
       <option value="lof">Local Outlier Factor</option>
       <option value="autoencoder">Auto Encoder</option>
+{/if}
+      <option value="sum">Sum</option>
     </select>
   </div>
   {#if conf.anomaly}
@@ -286,6 +289,7 @@
         <option value="oscmd">{$_("SearchConf.OSCmdInjection")}</option>
         <option value="dirt">{$_("SearchConf.DirTra")}</option>
         <option value="walu">{$_("SearchConf.AccessLogWalu")}</option>
+        <option value="tfidf">TF-IDF</option>
       </select>
     </div>
   {/if}

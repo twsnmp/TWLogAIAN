@@ -8,16 +8,17 @@ require (
 	github.com/blugelabs/bluge v0.2.2
 	github.com/blugelabs/query_string v0.3.0
 	github.com/codegaudi/go-iforest v0.0.1
-	github.com/gravwell/gravwell/v3 v3.8.16
+	github.com/gravwell/gravwell/v3 v3.8.20
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/twsnmp/golof v1.0.0
+	github.com/twsnmp/tfidf v1.1.0
 	github.com/viant/afs v1.16.0
 	github.com/vjeantet/grok v1.0.1
 	github.com/wailsapp/wails/v2 v2.5.1
 	github.com/xuri/excelize/v2 v2.6.1
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.4.0
-	golang.org/x/text v0.7.0
+	golang.org/x/text v0.8.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -42,6 +43,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/ikawaha/kagome v1.11.2 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/klauspost/compress v1.15.13 // indirect
 	github.com/labstack/echo/v4 v4.10.0 // indirect
@@ -68,7 +70,7 @@ require (
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
 	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30 // indirect
-	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

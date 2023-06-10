@@ -520,7 +520,7 @@ export const getLogLevel = (l) => {
       ? "error"
       : winLevel == 3 || winLevel == 101
       ? "warn"
-      : winLevel == 102 ? "low" :"normal";
+      : "normal";
   }
   const level = l.KeyValue.suverity_str || l.KeyValue.level || l.All;
   if (/(alert|error|crit|fatal|emerg|failure|err )/i.test(level)) {
@@ -611,6 +611,7 @@ export const getLogData = (r, view, filter) => {
     case "ex_data":
       return getExtractData(r, filter,r.ExFields);
     case "anomaly":
+      console.log("anomaly")
       return getTimeOnlyLogData(r, filter, "anomalyScore");
   }
   return getTimeOnlyLogData(r, filter);

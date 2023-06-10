@@ -862,7 +862,7 @@
               <option value="ex_data">{$_('LogView.ExtractDataOnSearch')}</option>
             {/if}
             {#if conf.anomaly != ""}
-              <option value="anomary">{$_('LogView.LogAnomaryScore')}</option>
+              <option value="anomaly">{$_('LogView.LogAnomaryScore')}</option>
             {/if}
           </select>
         {/if}

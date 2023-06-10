@@ -8,6 +8,8 @@ import (
 
 	go_iforest "github.com/codegaudi/go-iforest"
 	"github.com/twsnmp/golof/lof"
+	"github.com/twsnmp/tfidf"
+	"github.com/twsnmp/tfidf/seg"
 )
 
 var oscmdKeys = []string{
@@ -75,6 +77,16 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 				vectors = append(vectors, v)
 			}
 		}
+	case "tfidf":
+		OutLog("start tfidf")
+		lines := []string{}
+		for _, l := range sr.Logs {
+			lines = append(lines, l.All)
+		}
+		f := tfidf.NewTokenizer(seg.NewLogTokenizer(true))
+		f.AddDocs(lines...)
+		vectors = f.GetTFIDF(100, lines...)
+		OutLog("tfidf lines=%d docs=%d words=%d", len(lines), f.GetDocumentCount(), len(f.GetAllTerms()))
 	default:
 		OutLog("start make vector form number fields")
 		numKeys := []string{}
@@ -140,6 +152,15 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 		OutLog("LOF Calculate AnomalyScore")
 		for i, s := range samples {
 			sr.Logs[i].KeyValue["anomalyScore"] = lofGetter.GetLOF(s, "fast")
+		}
+	case "sum":
+		OutLog("start sum")
+		for i, v := range vectors {
+			sum := 0.0
+			for _, e := range v {
+				sum += e
+			}
+			sr.Logs[i].KeyValue["anomalyScore"] = sum
 		}
 	default:
 		OutLog("Other set vector")
