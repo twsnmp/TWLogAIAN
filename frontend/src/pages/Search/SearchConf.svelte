@@ -49,7 +49,7 @@
     if (!conf.number.field || !conf.number.oper || !conf.number.value) {
       return;
     }
-    const oper = conf.number.oper == "=" ? "=" : ":" + conf.number.oper;
+    const oper = conf.number.oper == "=" ? ":" : ":" + conf.number.oper;
     const q = " " + conf.number.field + oper + conf.number.value;
     dispatch("update", { query: q, add: true });
   };

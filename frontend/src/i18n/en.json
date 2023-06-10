@@ -545,7 +545,10 @@
     "Median": "Median",
     "Variant": "Variant",
     "Regression": "Regression",
-    "3DSum": "3D Sum"
+    "3DSum": "3D Sum",
+    "High": "High",
+    "Medium": "Medium",
+    "Low": "Low"
   },
   "5lpp": "5Lines/Page",
   "10lpp": "10Lines/Page",

@@ -317,6 +317,12 @@ const formatWinLevel = (level) => {
       return html(`<div class="color-fg-danger">${$_('Js.Error')}(${level})</div>`);
     case 3:
       return html(`<div class="color-fg-attention">${$_('Js.Warnning')}</div>`);
+    case 100:
+      return html(`<div class="color-fg-danger">${$_('Js.High')}</div>`);
+    case 101:
+      return html(`<div class="color-fg-attention">${$_('Js.Medium')}</div>`);
+    case 102:
+      return html(`<div class="color-fg-done">${$_('Js.Low')}</div>`);
   }
   return html(`<div class="color-fg-default">${$_('Js.Normal')}</div>`);
 };
@@ -327,7 +333,7 @@ const columnsWindowsLog = () => {
     id: "level",
     name: $_("Js.Level"),
     width: "8%",
-    formatter: (cell) => cell ? formatWinLevel(cell) : "",
+    formatter: (cell) => cell != undefined ? formatWinLevel(cell) : "",
   },
   {
     id: "_timestamp",
@@ -510,11 +516,11 @@ export const getLogLevel = (l) => {
 
   let winLevel = l.KeyValue.winLevel;
   if (winLevel != undefined) {
-    return winLevel == 1 || winLevel == 2
+    return winLevel == 1 || winLevel == 2 || winLevel == 100
       ? "error"
-      : winLevel == 3
+      : winLevel == 3 || winLevel == 101
       ? "warn"
-      : "normal";
+      : winLevel == 102 ? "low" :"normal";
   }
   const level = l.KeyValue.suverity_str || l.KeyValue.level || l.All;
   if (/(alert|error|crit|fatal|emerg|failure|err )/i.test(level)) {
