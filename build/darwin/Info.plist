@@ -10,11 +10,11 @@
 		<key>CFBundleIdentifier</key>
 		<string>jp.co.twise.TWLogAIAN</string>
 		<key>CFBundleVersion</key>
-		<string>1.9.0</string>
+		<string>1.10.0</string>
 		<key>CFBundleGetInfoString</key>
 		<string>AI Assisted Log Analysis Tool(https://lhx98.linkclub.jp/twise.co.jp/)</string>
 		<key>CFBundleShortVersionString</key>
-		<string>1.9.0</string>
+		<string>1.10.0</string>
 		<key>CFBundleIconFile</key>
 		<string>iconfile</string>
 		<key>LSMinimumSystemVersion</key>
