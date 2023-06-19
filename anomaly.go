@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/md5"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -130,7 +129,6 @@ func (b *App) setAnomalyScore(algo, vmode string, sr *SearchResult) {
 	switch algo {
 	case "iforest":
 		OutLog("start IForest")
-		rand.Seed(time.Now().UnixNano())
 		iforest, err := go_iforest.NewIForest(vectors, 1000, 256)
 		if err != nil {
 			OutLog("NewIForest err=%v", err)

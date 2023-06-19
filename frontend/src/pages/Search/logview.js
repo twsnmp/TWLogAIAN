@@ -426,7 +426,7 @@ const makeDataColumns = (fields) => {
     return a.id < b.id ? -1 : 1;
   });
   colums.unshift({
-    id: "time",
+    id: "_timestamp",
     name: $_("Js.Time"),
     formatter: (cell) =>
     cell ? 
@@ -458,6 +458,11 @@ const makeDataColumns = (fields) => {
       </button>`),
     },
   );
+  colums.push({
+    id: "all",
+    name: "all",
+    hidden: true,
+  });
   return colums;
 };
 
@@ -561,13 +566,14 @@ const getExtractData = (r, filter, fields) => {
         return;
       }
     }
-    const ent = { time: l.Time };
+    const ent = { _timestamp: l.Time };
     fields.forEach((k) => {
       if (k == "time" || k.startsWith("_") || k.endsWith("_geo")) {
         return;
       }
       ent[k] = l.KeyValue[k] || "";
     });
+    ent.all = l.All;
     d.push(ent);
   });
   return d;
