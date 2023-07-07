@@ -1,7 +1,7 @@
 ---
 marp: true
 paginate: true
-theme: twtheme
+theme: graph_paper
 header: はじめてのTWLogAIAN
 footer: Copyright (c) 2023 Masayuki Yamai
 title: はじめてのTWLogAIAN
