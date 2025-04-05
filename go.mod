@@ -10,6 +10,7 @@ require (
 	github.com/blugelabs/bluge v0.2.2
 	github.com/blugelabs/query_string v0.3.0
 	github.com/codegaudi/go-iforest v0.0.1
+	github.com/fatih/color v1.18.0
 	github.com/gravwell/gravwell/v3 v3.8.20
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/twsnmp/golof v1.0.0

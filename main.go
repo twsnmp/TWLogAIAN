@@ -84,6 +84,7 @@ func main() {
 				Icon:    icon,
 			},
 		},
+		Logger: NewColorLogger(),
 	})
 
 	if err != nil {

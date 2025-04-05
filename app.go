@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -196,10 +195,4 @@ func (b *App) SetDark(dark bool) {
 	}
 	b.appConfig.DarkMode = dark
 	b.saveAppConfig()
-}
-
-func OutLog(format string, v ...interface{}) {
-	if debug {
-		log.Printf(format, v...)
-	}
 }
