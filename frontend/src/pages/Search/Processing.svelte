@@ -10,40 +10,39 @@
   let errorMsg = "";
   let logFiles = [];
   let timer;
-  const getProcessInfo = () => {
-    GetProcessInfo().then((r) => {
-      if (r) {
-        logFiles = r.LogFiles
-        if (r.ErrorMsg) {
-          errorMsg = r.ErrorMsg;
-        }
-        if (r.IntLogFiles) {
-          r.IntLogFiles.forEach((lf) => {
-            logFiles.push(lf);
-          });
-        }
-        if (r.Done) {
-          dispatch("done", { page: "logview" });
-          return
-        }
-        timer = setTimeout(getProcessInfo,1000);
+
+  const getProcessInfo = async () => {
+    const r = await GetProcessInfo();
+    if (r) {
+      logFiles = r.LogFiles
+      if (r.ErrorMsg) {
+        errorMsg = r.ErrorMsg;
       }
-    });
+      if (r.IntLogFiles) {
+        r.IntLogFiles.forEach((lf) => {
+          logFiles.push(lf);
+        });
+      }
+      if (r.Done) {
+        dispatch("done", { page: "logview" });
+        return
+      }
+      timer = setTimeout(getProcessInfo,1000);
+    }
   };
 
   onMount(() => {
     getProcessInfo();
   });
 
-  const stop = () => {
-    Stop().then((r) => {
-      if (r === "") {
-        clearTimeout(timer);
-        dispatch("done", { page: "setting" });
-      } else {
-        errorMsg = r;
-      }
-    });
+  const stop = async () => {
+    const r = await Stop();
+    if (r === "") {
+      clearTimeout(timer);
+      dispatch("done", { page: "setting" });
+    } else {
+      errorMsg = r;
+    }
   };
 
 </script>

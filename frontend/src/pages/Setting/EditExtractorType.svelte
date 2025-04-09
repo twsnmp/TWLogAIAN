@@ -38,28 +38,27 @@
     dispatch("done", {});
   };
 
-  const save = () => {
-    SaveExtractorType(extractorType).then((r) => {
-      errorMsg = r;
-      if (r == "") {
-        if (fields) {
-          fields.forEach((key) => {
-            if (!isFieldValid(key)) {
-              SaveFieldType(
-                {
-                  Key: key,
-                  Name: _getFieldName(key),
-                  Type: _getFieldType(key),
-                  Unit: "",
-                  CanEdit: true,
-                }
-              );
-            }
-          });
-        }
-        dispatch("done", { save: true });
+  const save = async () => {
+    const r = await SaveExtractorType(extractorType);
+    errorMsg = r || "";
+    if (r == "") {
+      if (fields) {
+        fields.forEach((key) => {
+          if (!isFieldValid(key)) {
+            SaveFieldType(
+              {
+                Key: key,
+                Name: _getFieldName(key),
+                Type: _getFieldType(key),
+                Unit: "",
+                CanEdit: true,
+              }
+            );
+          }
+        });
       }
-    });
+      dispatch("done", { save: true });
+    }
   };
 
   const clearMsg = () => {
@@ -79,7 +78,7 @@
     return   getFieldType(k);
   }
 
-  const test = () => {
+  const test = async () => {
     if (extractorType.Grok == "") {
       errorMsg = $_('EditExtractorType.InputPatMsg');
       return;
@@ -88,7 +87,8 @@
       errorMsg = $_('EditExtractorType.InputTestDataMsg');
       return;
     }
-    TestGrok(extractorType.Grok, testLog).then((r) => {
+    const r = await TestGrok(extractorType.Grok, testLog);
+    if (r) {
       errorMsg = r.ErrorMsg;
       data = r.Data;
       columns = [];
@@ -97,15 +97,16 @@
       fields.forEach((e) => {
         columns.push(_getFieldName(e));
       });
-    });
+    }
   };
 
-  const auto = () => {
+  const auto = async () => {
     if (testLog == "") {
       errorMsg = $_('EditExtractorType.InputTestDataMsg');
       return;
     }
-    AutoGrok(testLog).then((r) => {
+    const r = await AutoGrok(testLog);
+    if (r) {
       errorMsg = r.ErrorMsg;
       if (r.Grok) {
         extractorType.Grok = r.Grok;
@@ -113,7 +114,7 @@
           quill.setText(r.Grok,"user");
         }
       }
-    });
+    }
   };
 
   const getGrokPat = (s) => {

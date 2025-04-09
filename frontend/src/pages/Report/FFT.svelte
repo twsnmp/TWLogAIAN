@@ -90,7 +90,7 @@
 
   let exportType = '';
   let saveBusy = false;
-  const exportReport = () => {
+  const exportReport = async () => {
     if (exportType == "") {
       return;
     }
@@ -116,10 +116,9 @@
       });
       exportData.Data.push(row);
     });
-    Export(exportType,exportData).then(()=>{
-      saveBusy = false;
-      exportType = "";
-    });
+    await Export(exportType,exportData);
+    saveBusy = false;
+    exportType = "";
   }
 
   const onResize = () => {

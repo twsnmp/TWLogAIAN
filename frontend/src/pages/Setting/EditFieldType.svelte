@@ -14,13 +14,12 @@
     dispatch("done", {});
   };
 
-  const save = () => {
-    SaveFieldType(fieldType).then((r) => {
-      errorMsg = r;
-      if (r == "") {
-        dispatch("done", {save:true});
-      }
-    });
+  const save = async () => {
+    const r = await SaveFieldType(fieldType);
+    errorMsg = r || "";
+    if (r == "") {
+      dispatch("done", {save:true});
+    }
   };
 
   const clearMsg = () => {

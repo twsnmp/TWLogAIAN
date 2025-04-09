@@ -27,22 +27,21 @@
   let errorMsg = "";
   let logFiles = [];
 
-  const getProcessInfo = () => {
-    GetProcessInfo().then((r) => {
-      if (r) {
-        if (r.LogFiles) {
-          logFiles = r.LogFiles
-        }
-        if (r.ErrorMsg) {
-          errorMsg = r.ErrorMsg;
-        }
-        readLines = r.ReadLines;
-        skipLines = r.SkipLines;
-        startTime = echarts.time.format(new Date(r.StartTime / (1000 * 1000)),"{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}");
-        endTime = echarts.time.format(new Date(r.EndTime / (1000 * 1000)),"{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}");
-        showChart(r.TimeLine,dark);
+  const getProcessInfo = async () => {
+    const r = await GetProcessInfo();
+    if (r) {
+      if (r.LogFiles) {
+        logFiles = r.LogFiles
       }
-    });
+      if (r.ErrorMsg) {
+        errorMsg = r.ErrorMsg;
+      }
+      readLines = r.ReadLines;
+      skipLines = r.SkipLines;
+      startTime = echarts.time.format(new Date(r.StartTime / (1000 * 1000)),"{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}");
+      endTime = echarts.time.format(new Date(r.EndTime / (1000 * 1000)),"{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}.{SSS}");
+      showChart(r.TimeLine,dark);
+    }
   };
 
   const showChart =  async (timeLine,dark)  => {

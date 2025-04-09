@@ -77,21 +77,21 @@
   let page = "";
   let orgConfig;
   let hasIndex = false;
-
-  const getConfig = () => {
-    GetConfig().then((c) => {
-      if (!c.Extractor) {
+  let wait = true;
+  const getConfig = async () => {
+    const c = await GetConfig();
+    if (c) {
+      if (c && !c.Extractor) {
         c.Extractor = "auto"
       }
       config = c;
       orgConfig = c;
-    });
+    }
+    wait = false;
   };
 
-  const getHasIndex = () => {
-    HasIndex().then((r) => {
-      hasIndex = r;
-    });
+  const getHasIndex = async () => {
+    hasIndex = await HasIndex();
   };
 
   const getLSPath = (e) => {
@@ -129,69 +129,67 @@
   };
 
   let pagination = false;
-  const getLogSources = () => {
-    GetLogSources().then((ds) => {
-      data.length = 0;
-      if (ds) {
-        logSources = ds;
-        logSources.forEach((e) => {
-          const path = getLSPath(e);
-          data.push([e.No, e.Type, path, ""]);
-        });
-        if (ds.length > 5) {
-          pagination = {
-            limit: 5,
-            enable: true,
-          };
-        } else {
-          pagination = false;
-        }
+  const getLogSources = async () => {
+    const ds = await GetLogSources();
+    data.length = 0;
+    if (ds) {
+      logSources = ds;
+      logSources.forEach((e) => {
+        const path = getLSPath(e);
+        data.push([e.No, e.Type, path, ""]);
+      });
+      if (ds.length > 5) {
+        pagination = {
+          limit: 5,
+          enable: true,
+        };
       } else {
-        logSources = [];
+        pagination = false;
       }
-    });
+    } else {
+      logSources = [];
+    }
   };
 
   let extractorTypes = {};
   let extractorTypeList = [];
   let selectedExtractor;
 
-  const getExtractorTypes = () => {
-    GetExtractorTypes().then((r) => {
-      if (r) {
-        extractorTypes = r;
-        extractorTypeList = [];
-        for (let k in extractorTypes) {
-          extractorTypeList.push(extractorTypes[k]);
-          if(config.Extractor == k) {
-            selectedExtractor = extractorTypes[k];
-          }
-        }
-        extractorTypeList.sort((a, b) => a.Name > b.Name);
-        const autoExtractor = {
-          Key: "auto",
-          Name: $_('Setting.AutoTypeDetect'),
-        };
-        const timeonlyExtractor = {
-          Key: "timeonly",
-          Name: $_('Setting.TimeOnly'),
-        }
-        const csutomExtractor = {
-          Key: "custom",
-          Name: $_('Setting.CustomLogType'),
-        }
-        extractorTypeList.unshift(autoExtractor);
-        extractorTypeList.unshift(timeonlyExtractor);
-        extractorTypeList.push(csutomExtractor);
-        if (config.Extractor == "auto") {
-          selectedExtractor = autoExtractor;
-        } else if (config.Extractor == "timeonly") {
-          selectedExtractor = timeonlyExtractor;
-        } else if (config.Extractor == "custom") {
-          selectedExtractor = customExtractor;
+  const getExtractorTypes = async () => {
+    const r = await GetExtractorTypes();
+    if (r) {
+      extractorTypes = r;
+      extractorTypeList = [];
+      for (let k in extractorTypes) {
+        extractorTypeList.push(extractorTypes[k]);
+        if(config.Extractor == k) {
+          selectedExtractor = extractorTypes[k];
         }
       }
-    });
+      extractorTypeList.sort((a, b) => a.Name > b.Name);
+      const autoExtractor = {
+        Key: "auto",
+        Name: $_('Setting.AutoTypeDetect'),
+      };
+      const timeonlyExtractor = {
+        Key: "timeonly",
+        Name: $_('Setting.TimeOnly'),
+      }
+      const csutomExtractor = {
+        Key: "custom",
+        Name: $_('Setting.CustomLogType'),
+      }
+      extractorTypeList.unshift(autoExtractor);
+      extractorTypeList.unshift(timeonlyExtractor);
+      extractorTypeList.push(csutomExtractor);
+      if (config.Extractor == "auto") {
+        selectedExtractor = autoExtractor;
+      } else if (config.Extractor == "timeonly") {
+        selectedExtractor = timeonlyExtractor;
+      } else if (config.Extractor == "custom") {
+        selectedExtractor = customExtractor;
+      }
+    }
   };
 
   onMount(() => {
@@ -227,17 +225,16 @@
     page = "logSource";
   };
 
-  const deleteLogSource = (sno) => {
+  const deleteLogSource = async (sno) => {
     const no = sno * 1;
-    DeleteLogSource(no,$_('Setting.DeleteLogSourceTitle'),$_('Setting.DeleteMsg')).then((e) => {
-      if (e == "No") {
-        return;
-      }
-      errorMsg = e;
-      if (e == "") {
-        getLogSources();
-      }
-    });
+    const e = await DeleteLogSource(no,$_('Setting.DeleteLogSourceTitle'),$_('Setting.DeleteMsg'));
+    if (e == "No") {
+      return;
+    }
+    errorMsg = e;
+    if (e == "") {
+      getLogSources();
+    }
   };
 
   const formatLogSourceType = (t) => {
@@ -319,55 +316,48 @@
     },
   ];
   let busy = false;
-  const start = () => {
+  const start = async () => {
     busy = true;
-    Start(config, false).then((e) => {
-      busy = false;
-      if (e && e != "") {
-        errorMsg = e;
-      } else {
-        dispatch("done", { page: "processing" });
-      }
-    });
+    const e = await Start(config, false);
+    busy = false;
+    errorMsg = e;
+    if ( e == "") {
+      dispatch("done", { page: "processing" });
+    }
   };
 
-  const clear = () => {
-    ClearIndex($_('Setting.ClearIndexTitle'),$_('Setting.DeleteMsg')).then((e) => {
-      if (e && e != "") {
-        if (e == "No") {
-          return;
-        }
-        errorMsg = e;
-      } else {
-        hasIndex = false;
+  const clear = async () => {
+    const e = await ClearIndex($_('Setting.ClearIndexTitle'),$_('Setting.DeleteMsg'));
+    if (e && e != "") {
+      if (e == "No") {
+        return;
       }
-    });
+      errorMsg = e;
+    } else {
+      hasIndex = false;
+    }
   };
 
-  const search = () => {
+  const search = async () => {
     busy = true;
-    Start(config, true).then((e) => {
-      busy = false;
-      if (e && e != "") {
-        errorMsg = e;
-      } else {
-        dispatch("done", { page: "logview" });
-      }
-    });
+    const e = await Start(config, true);
+    busy = false;
+    if (e && e != "") {
+      errorMsg = e;
+    } else {
+      dispatch("done", { page: "logview" });
+    }
   };
 
-  const selectGeoIPDB = () => {
-    SelectFile("geoip",$_('Setting.IPGeoDB')).then((f) => {
-      config.GeoIPDB = f;
-    });
+  const selectGeoIPDB = async () => {
+    config.GeoIPDB = await SelectFile("geoip",$_('Setting.IPGeoDB'));
   };
 
-  const cancel = () => {
-    CloseWorkDir($_('Setting.StopTitle'),$_('Setting.CloseMsg')).then((r) => {
-      if (r == "") {
-        dispatch("done", { page: "wellcome" });
-      }
-    });
+  const cancel = async () => {
+    const r = await CloseWorkDir($_('Setting.StopTitle'),$_('Setting.CloseMsg'));
+    if (r == "") {
+      dispatch("done", { page: "wellcome" });
+    }
   };
 
   const clearMsg = () => {
@@ -419,6 +409,13 @@
           class="AnimatedEllipsis"
         />
       </div>
+    {:else if wait}
+    <div class="Box-header">
+      <h3 class="Box-title">{$_('Setting.Title')}</h3>
+    </div>
+    <div class="flash mt-2">
+      <span class="AnimatedEllipsis"/>
+    </div>
     {:else}
       <div class="Box-header">
         <h3 class="Box-title">{$_('Setting.Title')}</h3>

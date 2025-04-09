@@ -1,6 +1,6 @@
 <script>
   import { X16, FileDirectory16, Check16 } from "svelte-octicons";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher,onMount } from "svelte";
   import { _ } from '../../i18n/i18n';
   import {GetLastWorkDirs,SetWorkDir,SelectFile} from '../../../wailsjs/go/main/App';
 
@@ -9,34 +9,36 @@
   let ErrorMsg = "";
   let lastWorkDirs = [];
   let selLast = "";
-
-  GetLastWorkDirs().then((wds) => {
-    lastWorkDirs = wds;
+ 
+  onMount(async () => {
+    const wds = await GetLastWorkDirs();
+    lastWorkDirs = wds || [];
     if (lastWorkDirs.length > 0 && workdir == "") {
       workdir = lastWorkDirs[0];
     }
   });
-  const setWorkDir = () => {
+
+  const setWorkDir = async () => {
     if (!workdir) {
       ErrorMsg = $_('WorkDir.SelectWorkDirMsg');
       return;
     }
-    SetWorkDir(workdir).then((r) => {
-      if (r === "") {
-        dispatch("done", { page: "setting" });
-      } else {
-        ErrorMsg = r;
-      }
-    });
+    const r = await SetWorkDir(workdir);
+    if (r === "") {
+      dispatch("done", { page: "setting" });
+    } else {
+      ErrorMsg = r || "";
+    }
   };
-  const selectWorkDir = () => {
-    SelectFile("work",$_('WorkDir.WorkDir')).then((d) => {
-      workdir = d;
-    });
+
+  const selectWorkDir = async () => {
+    workdir = await SelectFile("work",$_('WorkDir.WorkDir'));
   };
+
   const cancel = () => {
     dispatch("done", { page: "wellcome" });
   };
+
   const checkSelectWorkDir = () => {
     if (selLast != "") {
       workdir = selLast;

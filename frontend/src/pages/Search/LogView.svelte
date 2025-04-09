@@ -47,6 +47,7 @@
   import AutoEncoder from "./AutoEncoder.svelte";
   import * as echarts from "echarts";
   import { _,getLocale } from '../../i18n/i18n';
+  import { copyText } from "svelte-copy";
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -228,14 +229,7 @@
     }
     searchInfo = r;
   }
-  GetIndexInfo().then((r) => {
-    if (r) {
-      indexInfo = r;
-      setSearchInfo();
-    }
-  });
-
-  const search = () => {
+  const search = async () => {
     data.length = 0;
     aecdata = [];
     anomalyTime = "";
@@ -253,83 +247,82 @@
       Limit: conf.limit * 1 > 100 ? conf.limit * 1 : 1000,
     }
     busy = true;
-    SearchLog(request).then((r) => {
-      busy = false;
-      if (r) {
-        result = r;
-        if (logView == "") {
-          logView = r.View == "auto" ? "timeonly" : r.View;
-        }
-        if (lastExtractor != conf.extractor && r.ExFields.length > 0) {
-          logView = "ex_data";
-        }
-        lastExtractor = conf.extractor;
-        if (logView == "ex_data" && r.ExFields.length < 1) {
-          logView = r.View;
-        }
-        if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "") {
-          conf.history = conf.history.filter((h) => h != conf.query);
-          conf.history.push(conf.query);
-        }
-        if (conf.anomaly == "autoencoder") {
-          busy = true;
-          showAutoencoder = true;
-          aeStart = new Date();
-          return;
-        } else if (conf.anomaly != "") {
-          anomalyTime = (r.AnomalyDur / 1000.0).toFixed(3) + "s";
-        }
-        errorMsg = r.ErrorMsg;
-        setLogTable();
-        updateChart();
-        setSearchInfo();
+    const r = await SearchLog(request);
+    busy = false;
+    if (r) {
+      result = r;
+      if (logView == "") {
+        logView = r.View == "auto" ? "timeonly" : r.View;
       }
-    });
+      if (lastExtractor != conf.extractor && r.ExFields.length > 0) {
+        logView = "ex_data";
+      }
+      lastExtractor = conf.extractor;
+      if (logView == "ex_data" && r.ExFields.length < 1) {
+        logView = r.View;
+      }
+      if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "") {
+        conf.history = conf.history.filter((h) => h != conf.query);
+        conf.history.push(conf.query);
+      }
+      if (conf.anomaly == "autoencoder") {
+        busy = true;
+        showAutoencoder = true;
+        aeStart = new Date();
+        return;
+      } else if (conf.anomaly != "") {
+        anomalyTime = (r.AnomalyDur / 1000.0).toFixed(3) + "s";
+      }
+      errorMsg = r.ErrorMsg;
+      setLogTable();
+      updateChart();
+      setSearchInfo();
+    }
   };
 
   let extractorTypes = {};
   let extractorTypeList = [];
 
-  onMount(() => {
+  onMount(async () => {
+    const ii = await GetIndexInfo();
+    if (ii) {
+      indexInfo = ii;
+      setSearchInfo();
+    }
     loadFieldTypes();
     getExtractorTypes();
-    GetDark().then((v) => {
-      dark = v;
-      updateChart();
-    });
-    GetHistory().then((r) => {
-      if (r) {
-        conf.history = r;
-      }
-    });
+    dark = await GetDark();
+    updateChart();    
+    const h = await GetHistory();
+    if (h) {
+      conf.history = h;
+    }
   });
 
-  const getExtractorTypes = () => {
-    GetExtractorTypes().then((r) => {
-      if (r) {
-        extractorTypes = r;
-        extractorTypeList = [];
-        for (let k in extractorTypes) {
-          extractorTypeList.push(extractorTypes[k]);
-        }
-        extractorTypeList.sort((a, b) => a.Name > b.Name);
-        extractorTypeList.unshift(
-          {
-            Key: "",
-            Name: $_("SearchConf.NotUse"),
-          }
-        )
+  const getExtractorTypes = async () => {
+   const r = await GetExtractorTypes();
+    if (r) {
+      extractorTypes = r;
+      extractorTypeList = [];
+      for (let k in extractorTypes) {
+        extractorTypeList.push(extractorTypes[k]);
       }
-    });
+      extractorTypeList.sort((a, b) => a.Name > b.Name);
+      extractorTypeList.unshift(
+        {
+          Key: "",
+          Name: $_("SearchConf.NotUse"),
+        }
+      )
+    }
   };
 
-  const end = () => {
-    SaveHistory(conf.history);
-    CloseWorkDir($_('Setting.StopTitle'),$_('Setting.CloseMsg')).then((r) => {
-      if (r == "") {
-        dispatch("done", { page: "wellcome" });
-      }
-    });
+  const end = async () => {
+    await SaveHistory(conf.history);
+    const r = await CloseWorkDir($_('Setting.StopTitle'),$_('Setting.CloseMsg'));
+    if (r == "") {
+      dispatch("done", { page: "wellcome" });
+    }
   };
 
   const back = () => {
@@ -366,7 +359,7 @@
 
   let exportType = "";
   let saveBusy = false;
-  const exportLogs = () => {
+  const exportLogs = async () => {
     if (exportType == "") {
       return;
     }
@@ -407,10 +400,9 @@
       }
       exportData.Data.push(row);
     });
-    Export(exportType, exportData).then(() => {
-      saveBusy = false;
-      exportType = "";
-    });
+    await Export(exportType, exportData);
+    saveBusy = false;
+    exportType = "";
   };
 
   const onResize = () => {
@@ -540,21 +532,12 @@
     copy(tm ? timeStamp : list.join("\t"));
   };
 
-  const copy = (text) => {
-    if (!navigator.clipboard || !navigator.clipboard) {
-      errorMsg = $_('LogView.CantCopy');
-    }
-    navigator.clipboard.writeText(text).then(
-      () => {
-        infoMsg = $_('LogView.Copied');
-        setTimeout(() => {
-          infoMsg = "";
-        }, 2000);
-      },
-      () => {
-        errorMsg = $_('LogView.CopyError');
-      }
-    );
+  const copy = async (text) => {
+    await copyText(text);
+    infoMsg = $_('LogView.Copied');
+    setTimeout(() => {
+      infoMsg = "";
+    }, 2000);
   };
 
   const memoLog = (cells) => {

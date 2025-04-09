@@ -4,6 +4,7 @@
   import * as echarts from "echarts";
   import { _ } from '../../i18n/i18n';
   import {GetMemos,SetMemo,DeleteMemo} from '../../../wailsjs/go/main/App';
+  import { copyText } from "svelte-copy";
 
   let memos = [];
   let editMode = false;
@@ -15,10 +16,9 @@
   }
   const dispatch = createEventDispatcher();
 
-  const updateMemo = () => {
-    GetMemos().then((r)=>{
-      memos = r || [];
-    });
+  const updateMemo = async () => {
+    const r =  await GetMemos();
+    memos = r || [];
   }
 
   const editMemo = (i) => {
@@ -28,22 +28,20 @@
     }
   }
 
-  const saveMemo = () => {
-    SetMemo(memo).then(()=>{
-      updateMemo();
-      editMode = false;
-    })
+  const saveMemo = async () => {
+    await SetMemo(memo);
+    updateMemo();
+    editMode = false;
   }
 
   const formatTime = (t) => {
     return echarts.time.format(new Date(t / (1000*1000)), "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}")
   }
 
-  const deleteMemo = (i) => {
+  const deleteMemo = async (i) => {
     if (i >= 0 && i < memos.length) {
-      DeleteMemo(memos[i]).then(()=>{
-        updateMemo()
-      })
+      await DeleteMemo(memos[i]);
+      updateMemo()
     }
   }
 
@@ -52,24 +50,17 @@
   });
   let infoMsg = "";
   let errorMsg = "";
-  const copy = () => {
-    let copyText = "";
+  const copy = async () => {
+    let text = "";
     memos.forEach((e)=> {
-      copyText += formatTime(e.Time) + " " + getTypeName(e.Type) + " " + e.Memo
+      text += formatTime(e.Time) + " " + getTypeName(e.Type) + " " + e.Memo
          + " " + e.Diff + "\n" + e.Log + "\n\n";
     });
-    if (!navigator.clipboard || !navigator.clipboard) {
-      errorMsg = $_('Memo.CantCopy');
-      return;
-    } 
-    navigator.clipboard.writeText(copyText).then(() => {
-      infoMsg = $_('Memo.Copied')
-      setTimeout(() => {
+    await copyText(text);
+    infoMsg = $_('Memo.Copied')
+    setTimeout(() => {
         infoMsg = "";
-      }, 2000);
-    }, () => {
-      errorMsg = $_('Memo.CopyError');
-    });
+    }, 2000);
   };
 
   const clearMsg = () => {

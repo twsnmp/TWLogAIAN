@@ -13,17 +13,16 @@
   const close = () => {
     dispatch("done", { page: "wellcome" });
   };
-  const sendFeedBack = () => {
+  const sendFeedBack = async () => {
     feedbackWait = true;
-    SendFeedBack(feedbackMsg).then((r) => {
-      feedbackWait = false;
-      if (r) {
-        feedbackSent = true;
-        feedbackMsg = "";
-      } else {
-        feedbackErr = true;
-      }
-    });
+    const r = await SendFeedBack(feedbackMsg);
+    feedbackWait = false;
+    if (r) {
+      feedbackSent = true;
+      feedbackMsg = "";
+    } else {
+      feedbackErr = true;
+    }
   };
   const clearMsg = () => {
     feedbackSent = false;

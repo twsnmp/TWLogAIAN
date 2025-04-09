@@ -77,19 +77,19 @@
     conf.history.length = 0;
   };
 
-  const loadKeyword = () => {
-    LoadKeyword().then((r) => {
-      if (r) {
-        r.forEach((k) => {
-          const q =
-            conf.keyword.field == ""
-              ? " " + conf.keyword.mode + k
-              : " " + conf.keyword.mode + conf.keyword.field + ":" + k;
-          dispatch("update", { query: q, add: true });
-        });
-      }
-    });
+  const loadKeyword = async () => {
+    const r = await LoadKeyword();
+    if (r) {
+      r.forEach((k) => {
+        const q =
+          conf.keyword.field == ""
+            ? " " + conf.keyword.mode + k
+            : " " + conf.keyword.mode + conf.keyword.field + ":" + k;
+        dispatch("update", { query: q, add: true });
+      });
+    }
   };
+
 </script>
 
 {#if conf.history.length > 0}

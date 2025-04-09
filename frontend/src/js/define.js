@@ -2,12 +2,8 @@ import {GetFieldTypes} from '../../wailsjs/go/main/App';
 
 let fieldTypes = {};
 
-export const loadFieldTypes = () => {
-  GetFieldTypes().then((r) =>{
-    if (r) {
-      fieldTypes = r;
-    }
-  });
+export const loadFieldTypes = async () => {
+  fieldTypes = await GetFieldTypes();
 }
 
 export const getFieldName = (f) => {

@@ -14,30 +14,24 @@
 
   let windows = false;
 
-  IsWindows().then((r) => {
-    windows = r;
+  onMount(async () => {
+    windows = await IsWindows();
   });
-
+ 
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   let editMode = logSource && logSource.No > 0;
 
-  const selectLogFolder = () => {
-    SelectFile("logdir",$_('LogSource.LogFolder'),).then((f) => {
-      logSource.Path = f;
-    });
+  const selectLogFolder = async () => {
+    logSource.Path = await SelectFile("logdir",$_('LogSource.LogFolder'),) || "";
   };
 
-  const selectLogFile = () => {
-    SelectFile("logfile",$_('LogSource.LogFile')).then((f) => {
-      logSource.Path = f;
-    });
+  const selectLogFile = async () => {
+    logSource.Path = await SelectFile("logfile",$_('LogSource.LogFile')) || "";
   };
 
-  const selectSSHKey = () => {
-    SelectFile("sshkey",$_('LogSource.SSHKeyFile')).then((f) => {
-      logSource.SSHKey = f;
-    });
+  const selectSSHKey = async () => {
+    logSource.SSHKey = await SelectFile("sshkey",$_('LogSource.SSHKeyFile'));
   };
 
   const cancel = () => {
@@ -48,22 +42,20 @@
     errorMsg = "";
   };
 
-  const save = () => {
-    UpdateLogSource(logSource).then((e) => {
-      errorMsg = e;
-      if (e == "") {
-        dispatch("done", { update: true });
-      }
-    });
+  const save = async () => {
+    const e = await UpdateLogSource(logSource);
+    errorMsg = e || "";
+    if (e == "") {
+      dispatch("done", { update: true });
+    }
   };
 
-  const del = () => {
-    DeleteLogSource(logSource.No,$_('LogSource.DeleteLogSource'),$_('LogSource.DeleteMsg')).then((e) => {
-      errorMsg = e;
-      if (e == "") {
-        dispatch("done", { update: true });
-      }
-    });
+  const del = async () => {
+    const e = await DeleteLogSource(logSource.No,$_('LogSource.DeleteLogSource'),$_('LogSource.DeleteMsg'));
+    errorMsg = e || "";
+    if (e == "") {
+      dispatch("done", { update: true });
+    }
   };
 </script>
 

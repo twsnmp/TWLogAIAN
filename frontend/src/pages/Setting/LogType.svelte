@@ -50,65 +50,58 @@
     getExtractorTypes();
   });
 
-  const getExtractorTypes = () => {
-    GetExtractorTypes().then((r) => {
-      if (r) {
-        extractorTypes = r;
-        extractorTypeList = [];
-        for(let k in extractorTypes) {
-          const e = extractorTypes[k];
-          extractorTypeList.push([e.Key,e.Name,"",""]);
-        };
-      }
-    });
+  const getExtractorTypes = async () => {
+    const r = await GetExtractorTypes();
+    if (r) {
+      extractorTypes = r;
+      extractorTypeList = [];
+      for(let k in extractorTypes) {
+        const e = extractorTypes[k];
+        extractorTypeList.push([e.Key,e.Name,"",""]);
+      };
+    }
   };
 
-  const getFieldTypes = () => {
-    GetFieldTypes().then((r) =>{
-      if (r) {
-        fieldTypes = r;
-        fieldTypeList = [];
-        for(let k in fieldTypes) {
-          const e = fieldTypes[k];
-          fieldTypeList.push([e.Key,e.Name,e.Type,e.Unit,"",""]);
-        };
-      }
-    });
+  const getFieldTypes = async () => {
+    const r = await GetFieldTypes();
+    if (r) {
+      fieldTypes = r;
+      fieldTypeList = [];
+      for(let k in fieldTypes) {
+        const e = fieldTypes[k];
+        fieldTypeList.push([e.Key,e.Name,e.Type,e.Unit,"",""]);
+      };
+    }
   }
 
-  const importLogTypes = () => {
-    ImportLogTypes().then((r) => {
-      extractorTypeErrorMsg = r;
-      if (r == "") {
-        getExtractorTypes();
-        getFieldTypes();
-      }
-    });
+  const importLogTypes = async () => {
+    const r = await ImportLogTypes();
+    extractorTypeErrorMsg = r || "";
+    if (r == "") {
+      getExtractorTypes();
+      getFieldTypes();
+    }
   };
 
-  const exportLogTypes = () => {
-    ExportLogTypes().then((r) => {
-      extractorTypeErrorMsg = r;
-    });
+  const exportLogTypes = async () => {
+    extractorTypeErrorMsg = await ExportLogTypes() || "";
   };
 
-  const deleteExtractorType = (key) => {
-    DeleteExtractorType(key,$_('LogType.DeleteExtractType'),$_('LogType.DeleteMsg')).then((r) => {
-      extractorTypeErrorMsg = r;
-      if (r == "") {
-        getExtractorTypes();
-        getFieldTypes();
-      }
-    });
+  const deleteExtractorType = async (key) => {
+    const r = await DeleteExtractorType(key,$_('LogType.DeleteExtractType'),$_('LogType.DeleteMsg'));
+    extractorTypeErrorMsg = r || "";
+    if (r == "") {
+      getExtractorTypes();
+      getFieldTypes();
+    }
   };
 
-  const deleteFieldType = (key) => {
-    DeleteFieldType(key,$_('LogType.DeleteFieldType'),$_('LogType.DeleteMsg')).then((r) => {
-      fieldTypeErrorMsg = r;
-      if (r == "") {
-        getFieldTypes();
-      }
-    });
+  const deleteFieldType = async (key) => {
+    const r = await DeleteFieldType(key,$_('LogType.DeleteFieldType'),$_('LogType.DeleteMsg'));
+    fieldTypeErrorMsg = r || "";
+    if (r == "") {
+      getFieldTypes();
+    }
   };
  
   let extractorType = {};

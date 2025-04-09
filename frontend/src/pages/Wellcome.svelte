@@ -1,16 +1,14 @@
 <script>
   import logo from "../assets/images/appicon.png"  
   import { MortarBoard16, PaperAirplane16, Sun16, Moon16,ThreeBars16 } from "svelte-octicons";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher,onMount } from "svelte";
   import { _,setLocale,getLocale } from '../i18n/i18n';
   import {GetVersion,GetDark,SetDark} from '../../wailsjs/go/main/App';
   import { BrowserOpenURL } from "../../wailsjs/runtime/runtime.js";
 
   const dispatch = createEventDispatcher();
   let version = "1.0.0(xxxxx)";
-  GetVersion().then((v) => {
-    version = v;
-  });
+
   const feedback = () => {
     dispatch("done", { page: "feedback" });
   };
@@ -19,11 +17,16 @@
   };
 
   let dark = true;
-  GetDark().then((v) => {
-    if (!v) {
+  
+  onMount(async () => {
+    version = await GetVersion();
+    const v = await GetDark();
+    if (dark != v) {
+      dark = v;
       toggleDark()
     }
   });
+
   const toggleDark = () => {
     dark = !dark;
     SetDark(dark)
