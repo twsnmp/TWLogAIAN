@@ -264,3 +264,23 @@ td .btn-sm {
 .hljs-emphasis {
   font-style: italic;
 }
+
+.hljs-ip {
+  color: #4575b4;
+}
+
+.hljs-mac {
+  color: #227535;
+}
+
+.hljs-email {
+  color: #d0d000;
+}
+
+.hljs-url {
+  color: #8500b9;
+}
+
+.hljs-kv {
+  color: #e50010;
+}

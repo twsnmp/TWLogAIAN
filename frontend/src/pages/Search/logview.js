@@ -3,7 +3,7 @@ import { html } from "gridjs";
 import { getFieldName } from "../../js/define";
 import { _,unwrapFunctionStore } from 'svelte-i18n';
 import highlightWords from 'highlight-words';
-import hljs from 'highlight.js';
+import hljs from 'highlight.js/lib/core';
 
 const $_ = unwrapFunctionStore(_);
  
@@ -60,13 +60,40 @@ const setupHighlightConf = (conf) => {
     return;
   case "code":
     highlightMode = 2;
-    highlightQuery = ``;
+    highlightQuery = conf.query;
+    hljs.registerLanguage('log', logHighlight);
     return;
   default:
     highlightMode = 0;
     highlightQuery = ``;
   }
 };
+
+const logHighlight = () => { return {
+  keywords: highlightQuery,
+  contains: [
+    {
+      scope: 'ip',
+      begin: /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/,
+    },
+    {
+      scope: 'mac',
+      begin: /[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}/,
+    },
+    {
+      scope: 'email',
+      begin: /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9_.+-]+/,
+    },
+    {
+      scope: 'url',
+      begin: /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9_.+-]+/,
+    },
+    {
+      scope: 'kv',
+      begin: /\w+=\w+[ ,]?/,
+    },
+  ],
+}};
 
 const formatHighlight = (s) => {
   if (highlightMode === 1) {
@@ -85,7 +112,7 @@ const formatHighlight = (s) => {
     return html(s);
   }
   if (highlightMode == 2) {
-    return html(hljs.highlightAuto(s).value);
+    return html(hljs.highlight(s,{language:"log"}).value);
   }
   return s;
 } 
