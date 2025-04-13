@@ -117,7 +117,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="{$_('Time3D.X')}"
       bind:value={xField}
       on:change="{updateTime3DChart}"
     >
@@ -132,7 +131,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="{$_('Time3D.Z')}"
       bind:value={zField}
       on:change="{updateTime3DChart}"
     >
@@ -144,7 +142,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="{$_('Time3D.Color')}"
       bind:value={colorField}
       on:change="{updateTime3DChart}"
     >

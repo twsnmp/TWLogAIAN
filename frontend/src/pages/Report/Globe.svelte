@@ -130,7 +130,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="{$_('Globe.StartItem')}"
       bind:value={srcField}
       on:change="{updateGlobe}"
     >
@@ -142,7 +141,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="{$_('Globe.EndItem')}"
       bind:value={dstField}
       on:change="{updateGlobe}"
     >
@@ -154,7 +152,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="{$_('Globe.NumberItem')}"
       bind:value={numField}
       on:change="{updateGlobe}"
     >

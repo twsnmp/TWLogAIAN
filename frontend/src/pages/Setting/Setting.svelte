@@ -426,7 +426,6 @@
           <button
             class="flash-close js-flash-close"
             type="button"
-            aria-label="Close"
             on:click={clearMsg}
           >
             <X16 />
@@ -439,7 +438,6 @@
           <button
             class="flash-close js-flash-close"
             type="button"
-            aria-label="Close"
             on:click={clearMsg}
           >
             <X16 />
@@ -482,7 +480,6 @@
               type="text"
               style="width: 100%;"
               placeholder="{$_('Setting.Filter')}"
-              aria-label="{$_('Setting.Filter')}"
               bind:value={config.Filter}
             />
           </div>
@@ -515,7 +512,6 @@
             <!-- svelte-ignore a11y-no-onchange -->
             <select
               class="form-select"
-              aria-label="{$_('Setting.TimeGrinderOverride')}"
               bind:value={config.TimeGrinderOverride}
             >
               <option value="">{$_('Setting.Auto')}</option>
@@ -555,7 +551,6 @@
                 class="form-control"
                 type="text"
                 placeholder="{$_('Setting.TimeGrinderRegExp')}"
-                aria-label="{$_('Setting.TimeGrinderRegExp')}"
                 style="width: 45%;"
                 bind:value={config.TimeGrinderRegExp}
               />
@@ -563,7 +558,6 @@
                 class="form-control"
                 type="text"
                 placeholder="{$_('Setting.TimeGrinderFormat')}"
-                aria-label="{$_('Setting.TimeGrinderFormat')}"
                 style="width: 45%;"
                 bind:value={config.TimeGrinderFormat}
               />
@@ -604,7 +598,6 @@
                 class="form-control input-block"
                 type="text"
                 placeholder="{$_('Setting.GrokPat')}"
-                aria-label="{$_('Setting.GrokPat')}"
                 style="width: 100%;"
                 bind:value={config.Grok}
               />
@@ -684,7 +677,6 @@
                   class="form-control"
                   type="text"
                   placeholder="{$_('Setting.GeoIPDB')}"
-                  aria-label="{$_('Setting.GeoIPDB')}"
                   bind:value={config.GeoIPDB}
                 />
                 <span class="input-group-button">

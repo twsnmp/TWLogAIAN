@@ -137,7 +137,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="{$_('FFT.SumItem')}"
       bind:value={selected}
       on:change={updateFFT}
     >
@@ -153,7 +152,6 @@
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         class="form-select ml-2"
-        aria-label="{$_('FFT.DisplayItem')}"
         bind:value={key}
         on:change={updateFFTChart}
       >
@@ -165,7 +163,6 @@
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         class="form-select ml-2"
-        aria-label="{$_('FFT.CharMode')}"
         bind:value={fftType}
         on:change={updateFFTChart}
       >

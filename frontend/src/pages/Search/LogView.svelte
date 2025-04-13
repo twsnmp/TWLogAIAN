@@ -16,10 +16,8 @@
     Search16,
     TriangleDown16,
     TriangleUp16,
-    Check16,
     Trash16,
     Reply16,
-    Checklist16,
     Question16,
   } from "svelte-octicons";
   import SerachConf from "./SearchConf.svelte";
@@ -48,6 +46,9 @@
   import * as echarts from "echarts";
   import { _,getLocale } from '../../i18n/i18n';
   import { copyText } from "svelte-copy";
+  import ConfigAI from "../AI/ConfigAI.svelte";
+  import ExportAI from "../AI/ExportAI.svelte";
+  import AskAI from "../AI/AskAI.svelte";
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -363,6 +364,11 @@
     if (exportType == "") {
       return;
     }
+    if (exportType == "exportAI") {
+      page = "exportAI";
+      exportType = "";
+      return;
+    }
     saveBusy = true;
     const exportData = {
       Header: [],
@@ -447,6 +453,9 @@
       return;
     } else if (col.id == "memo") {
       memoLog(row._cells);
+      return;
+    } else if (col.id == "ai") {
+      askAIAboutLog(row._cells);
       return;
     } else if (col.id == "extractor") {
       showEditExtractorType(cell.data, me.metaKey);
@@ -564,9 +573,24 @@
     memo(timeStamp, list.join("\t"));
   };
 
-  const memo = (time, text) => {
+  let askAILog = "";
+  const askAIAboutLog = (cells) => {
+    askAILog = "";
+    if (cells.length < columns.length) {
+      return;
+    }
+    for (let i = 0; i < cells.length; i++) {
+      if (columns[i].id == "all") {
+        askAILog = cells[i].data
+        break
+      }
+    }
+    page =  "askAI";
+  }
+
+  const memo = async (time, text) => {
     infoMsg = $_('LogView.MemoMsg');
-    AddMemo({
+    await AddMemo({
       Time: time,
       Log: text,
     });
@@ -630,8 +654,11 @@
     updateChart();
   };
 
-  const showLogTypePage = () => {
-    page = "logType";
+  let setting = "";
+  
+  const showSetting = () => {
+    page = setting;
+    setting = "";
   };
 
   const chnagePerPage = () => {
@@ -675,6 +702,12 @@
   />
 {:else if page == "logType"}
   <LogType on:done={handleDone} />
+{:else if page == "configAI"}
+  <ConfigAI on:done={handleDone} />
+{:else if page == "exportAI"}
+  <ExportAI on:done={handleDone} logs={result.Logs} />
+{:else if page == "askAI"}
+  <AskAI on:done={handleDone} log={askAILog} />
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
     <div class="Box-header d-flex flex-items-center">
@@ -687,7 +720,6 @@
         <button
           class="flash-close js-flash-close"
           type="button"
-          aria-label="Close"
           on:click={clearMsg}
         >
           <X16 />
@@ -700,7 +732,6 @@
         <button
           class="flash-close js-flash-close"
           type="button"
-          aria-label="Close"
           on:click={clearMsg}
         >
           <X16 />
@@ -714,7 +745,6 @@
             class="form-control input-block"
             type="text"
             placeholder="{$_('LogView.SearchText')}"
-            aria-label="{$_('LogView.SearchText')}"
             bind:value={conf.query}
           />
         </div>
@@ -862,6 +892,9 @@
             {#if result && result.Hit > 0 && result.Fields.length > 0}
               <option value="csv">CSV</option>
               <option value="excel">Excel</option>
+              {#if  result.Hit < 1000 }
+                <option value="exportAI">AI</option>
+              {/if}
             {/if}
           </select>
         {/if}
@@ -873,6 +906,7 @@
             on:change={showReport}
           >
             <option value="">{$_('LogView.ReportMenu')}</option>
+            <option value="result">{$_('LogView.ResultBtn')}</option>
             <option value="memo">{$_('LogView.MemoMenu')}</option>
             <option value="ranking">{$_('LogView.RankingMenu')}</option>
             <option value="time">{$_('LogView.TimeMenu')}</option>
@@ -886,24 +920,16 @@
             <option value="heatmap">{$_('LogView.HeatmapMenu')}</option>
           </select>
         {/if}
-        <button
-          class="btn btn-outline mr-1"
-          type="button"
-          on:click={showLogTypePage}
+        <!-- svelte-ignore a11y-no-onchange -->
+        <select
+          class="form-select mr-1"
+          bind:value={setting}
+          on:change={showSetting}
         >
-          <Checklist16 />
-          {$_('LogView.LogDefBtn')}
-        </button>
-        <button
-          class="btn  btn-outline mr-1"
-          type="button"
-          on:click={() => {
-            page = "result";
-          }}
-        >
-          <Check16 />
-          {$_('LogView.ResultBtn')}
-        </button>
+          <option value="">{$_('LogView.Settings')}</option>
+          <option value="logType">{$_('LogView.LogDefBtn')}</option>
+          <option value="configAI">{$_('LogView.AIConfig')}</option>
+        </select>
         <button class="btn  btn-secondary mr-1" type="button" on:click={back}>
           <Reply16 />
           {$_('LogView.BackBtn')}

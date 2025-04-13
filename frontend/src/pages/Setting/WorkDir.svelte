@@ -59,7 +59,6 @@
       <button
         class="flash-close js-flash-close"
         type="button"
-        aria-label="Close"
         on:click={clearMsg}
       >
         <X16 />
@@ -72,7 +71,6 @@
         class="form-control"
         type="text"
         placeholder="{$_('WorkDir.WorkDir')}"
-        aria-label="{$_('WorkDir.WorkDir')}"
         bind:value={workdir}
       />
       <span class="input-group-button">
@@ -86,7 +84,6 @@
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         class="form-select"
-        aria-label="{$_('WorkDir.History')}"
         bind:value={selLast}
         on:change={checkSelectWorkDir}
       >

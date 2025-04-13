@@ -38,7 +38,6 @@
       <button
         class="flash-close js-flash-close"
         type="button"
-        aria-label="Close"
         on:click={clearMsg}
       >
         <X16 />
@@ -84,7 +83,6 @@
       <div class="form-group-body">
         <select
         class="form-select"
-        aria-label="{$_('EditFieldType.TypeOfData')}"
         bind:value={fieldType.Type}
       >
         <option value="string">{$_('EditFieldType.String')}</option>

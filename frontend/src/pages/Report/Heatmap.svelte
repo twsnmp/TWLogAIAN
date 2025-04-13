@@ -105,7 +105,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="{$_('Heatmap.SumItem')}"
       bind:value={field}
       on:change="{updateHeatmap}"
     >

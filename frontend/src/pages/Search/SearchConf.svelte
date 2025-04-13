@@ -100,7 +100,6 @@
       <select
         style="width: 80%;"
         class="form-select"
-        aria-label={$_("SearchConf.History")}
         bind:value={history}
         on:change={setHistory}
       >
@@ -150,7 +149,6 @@
         type="text"
         style="width: 98%;"
         placeholder={$_("SearchConf.TargetDateTime")}
-        aria-label={$_("SearchConf.TargetDateTime")}
         bind:value={conf.range.target}
       />
     </div>
@@ -174,7 +172,6 @@
         class="form-control input-sm"
         type="datetime-local"
         placeholder={$_("SearchConf.Start")}
-        aria-label={$_("SearchConf.Start")}
         bind:value={conf.range.start}
       />
       -
@@ -182,7 +179,6 @@
         class="form-control input-sm"
         type="datetime-local"
         placeholder={$_("SearchConf.End")}
-        aria-label={$_("SearchConf.End")}
         bind:value={conf.range.end}
       />
     </div>
@@ -207,7 +203,6 @@
     <div class="col-8 float-left">
       <select
         class="form-select"
-        aria-label={$_("SearchConf.Item")}
         bind:value={conf.geo.field}
       >
         {#each geoFields as f}
@@ -221,7 +216,6 @@
         step="0.01"
         style="width: 80px;"
         placeholder={$_("SearchConf.Lat")}
-        aria-label={$_("SearchConf.Lat")}
         bind:value={conf.geo.lat}
       />
       ,
@@ -231,7 +225,6 @@
         step="0.01"
         style="width: 80px;"
         placeholder={$_("SearchConf.Long")}
-        aria-label={$_("SearchConf.Long")}
         bind:value={conf.geo.long}
       />
       {$_("SearchConf.From")}
@@ -241,7 +234,6 @@
         step="5"
         style="width: 80px;"
         placeholder={$_("SearchConf.Dist")}
-        aria-label={$_("SearchConf.Dist")}
         bind:value={conf.geo.range}
       />
       {$_("SearchConf.KMRange")}
@@ -325,7 +317,6 @@
       <div class="col-8 float-left">
         <select
           class="form-select"
-          aria-label={$_("SearchConf.Item")}
           bind:value={conf.keyword.field}
         >
           <option value="">{$_("SearchConf.All")}</option>
@@ -341,7 +332,6 @@
           type="text"
           style="width: 150px;"
           placeholder={$_("SearchConf.Keyword")}
-          aria-label={$_("SearchConf.Keyword")}
           bind:value={conf.keyword.key}
         />
         {$_("SearchConf.Is")}
@@ -366,7 +356,6 @@
       <div class="col-8 float-left">
         <select
           class="form-select"
-          aria-label={$_("SearchConf.Item")}
           bind:value={conf.number.field}
         >
           {#each fields as f}
@@ -387,7 +376,6 @@
           type="text"
           style="width: 100px;"
           placeholder="{$_('SearchConf.Number')}"
-          aria-label={$_("SearchConf.Number")}
           bind:value={conf.number.value}
         />
       </div>

@@ -125,7 +125,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="{$_('Graph.StartItem')}"
       bind:value={srcField}
       on:change="{updateGraph}"
     >
@@ -137,7 +136,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="{$_('Graph.EndItem')}"
       bind:value={dstField}
       on:change="{updateGraph}"
     >
@@ -149,7 +147,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="{$_('Graph.NumberItem')}"
       bind:value={numField}
       on:change="{updateGraph}"
     >
@@ -161,7 +158,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="{$_('Graph.DisplayMode')}"
       bind:value={graphType}
       on:change="{updateGraph}"
     >

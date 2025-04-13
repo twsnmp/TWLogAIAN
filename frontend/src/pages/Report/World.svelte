@@ -135,7 +135,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="{$_('World.LocInfoItem')}"
       bind:value={geoField}
       on:change="{updateWorldMap}"
     >
@@ -147,7 +146,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select ml-2"
-      aria-label="{$_('World.NumberValue')}"
       bind:value={numField}
       on:change="{updateWorldMap}"
     >

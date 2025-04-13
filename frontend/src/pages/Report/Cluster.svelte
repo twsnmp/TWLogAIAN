@@ -115,7 +115,6 @@
     <h3 class="Box-title overflow-hidden flex-auto">{$_('Cluster.Title')}</h3>
     <select
       class="form-select"
-      aria-label="{$_('Cluster.XIterm')}"
       bind:value={xField}
       on:change="{updateCluster}"
     >
@@ -126,7 +125,6 @@
     </select>
     <select
       class="form-select"
-      aria-label="{$_('Cluster.YItem')}"
       bind:value={yField}
       on:change="{updateCluster}"
     >
@@ -137,7 +135,6 @@
     </select>
     <select
       class="form-select ml-2"
-      aria-label="{$_('Cluster.NumberOfCluster')}"
       bind:value={cluster}
       on:change="{updateCluster}"
     >

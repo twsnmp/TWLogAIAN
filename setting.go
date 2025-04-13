@@ -158,7 +158,7 @@ func (b *App) openDB(wd string) error {
 
 // initDB : DBにバケットを作る
 func (b *App) initDB() error {
-	buckets := []string{"settings", "result"}
+	buckets := []string{"settings", "result", "ai"}
 	return b.db.Update(func(tx *bbolt.Tx) error {
 		for _, b := range buckets {
 			_, err := tx.CreateBucketIfNotExists([]byte(b))

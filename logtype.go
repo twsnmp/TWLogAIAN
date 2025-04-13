@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 	"gopkg.in/yaml.v2"
@@ -296,24 +295,6 @@ func (b *App) ExportLogTypes() string {
 		return fmt.Sprintf("Can not export err=%v", err)
 	}
 	return ""
-}
-
-func (b *App) getIPFields() string {
-	m := make(map[string]bool)
-	u := []string{}
-	for _, ip := range b.processConf.HostFields {
-		if !m[ip] {
-			m[ip] = true
-			u = append(u, ip)
-		}
-	}
-	for _, ip := range b.processConf.GeoFields {
-		if !m[ip] {
-			m[ip] = true
-			u = append(u, ip)
-		}
-	}
-	return strings.Join(u, ",")
 }
 
 // ImportLogTypes : ログタイプ定義のインポート

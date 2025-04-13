@@ -96,7 +96,6 @@
     <button
       class="flash-close js-flash-close"
       type="button"
-      aria-label="Close"
       on:click={clearMsg}
     >
       <X16 />
@@ -109,7 +108,6 @@
     <button
       class="flash-close js-flash-close"
       type="button"
-      aria-label="Close"
       on:click={clearMsg}
     >
       <X16 />

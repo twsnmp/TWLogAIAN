@@ -116,7 +116,6 @@
     <!-- svelte-ignore a11y-no-onchange -->
     <select
       class="form-select"
-      aria-label="{$_('Ranking.Item')}"
       bind:value={selected}
       on:change={updateRanking}
     >
