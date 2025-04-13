@@ -7,7 +7,7 @@
     Trash16,
     FileBadge16,
   } from "svelte-octicons";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher,onMount } from "svelte";
   import { _ } from '../../i18n/i18n';
   import {IsWindows,SelectFile,UpdateLogSource,DeleteLogSource} from '../../../wailsjs/go/main/App';
   export let logSource;

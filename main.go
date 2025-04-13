@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 
@@ -34,8 +35,10 @@ func main() {
 	}
 	mainMenu := menu.NewMenu()
 	mainMenu.Append(menu.AppMenu())
-	fileMenu := mainMenu.AddSubmenu("File")
-	fileMenu.AddText("&New", keys.CmdOrCtrl("n"), newWindow)
+	if runtime.GOOS == "windows" {
+		fileMenu := mainMenu.AddSubmenu("File")
+		fileMenu.AddText("&New", keys.CmdOrCtrl("n"), newWindow)
+	}
 	mainMenu.Append(menu.EditMenu())
 	// Create application with options
 	err := wails.Run(&options.App{
