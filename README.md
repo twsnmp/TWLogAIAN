@@ -144,6 +144,7 @@ v1.7.0 (2023/1/15) English support, improved log search function
 v1.8.0 (2/5/2023) Improved Grok pattern editing and selection, improved timestamp processing
 v1.9.0 (2/12/2023) Improved Windows event log processing, highlighting
 v1.10.0 (2023/6/12) Improved Windows event log processing, abnormality detection using TFIDF
+v1.11.0(2025/4/14) LLM,RAG
 
 v1.0.0(2022/3/2) 最初のリリース
 v1.1.0(2022/3/14) 外部連携
@@ -156,6 +157,7 @@ v1.7.0(2023/1/15) 英語対応、ログ検索機能の改善
 v1.8.0(2023/2/5) Grokパターン編集と選択の改善、タイムスタンプ処理の改善
 v1.9.0(2023/2/12) Windowsイベントログ処理の改善、ハイライト表示
 v1.10.0(2023/6/12) Windowsイベントログ処理の改善、TFIDFによる異常検知
+v1.11.0(2025/4/14) LLM,RAG対応
 
 ## Build
 
