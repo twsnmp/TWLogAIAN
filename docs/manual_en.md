@@ -734,3 +734,69 @@ fieldtypes:
 ```
 
 `extractortypes` is the definition of the log.`key` is the value that the definition identifies.`name` is a name for humans, and `grok` is the pattern.This is the variable name that `tilefield` recognizes as a timestamp, and `ipfileds` uses as IP addresses for hostname search and location search.The variable name that `macfields` uses to search for vendor names from the MAC address.`fieldtypes` is the definition of the variable.`key` is the variable name.`name` is the name for a human, and `type` is the type of the variable.Specify a number (`number`) or a string (`string`).`unit` is the unit that is displayed in the graph.
+
+
+## AI-connected
+
+The AI ​​integration is structured as shown in the following diagram.
+![](./images/ai.drawio.svg)
+
+Setup ollama
+
+https://ollama.com
+
+adn weaviate
+
+https://weaviate.io/developers/weaviate/quickstart/local
+
+
+The TWLogAIAN side uses AI in the following steps:
+
+- AI integration settings
+- Export logs to AI with classification and explanation
+- Ask AI about logs
+
+### AI Connection Settings
+
+Displays from "Settings" - "AI Link Settings" on the log display screen.
+
+![](./images/2025-04-13_06-19-40.png)
+
+|Item|Content|
+|---|---|
+|Weaviate URL|Weaviate server URL|
+|Synchronization|Load Weaviate Server Settings|
+|Ollama URL|Ollama Server URL|
+|Class name|Setting name|
+|Vectorization Model|Models to be used for vectorization|
+|Generated AI Model|Models to be used for Generated AI|
+
+
+### Export logs to AI
+
+After searching the log, go to "Export" - "AI" menu
+Export the log.Only if the log search results are less than 1000
+You can export it.
+The export screen is
+
+![](./images/2025-04-13_06-26-48.png)
+
+
+|Item|Content|
+|---|---|
+|Export destination|AI link settings for export destination|
+|Classification|Specify log classification|
+|Explanation|Write description about the log|
+
+### Ask AI
+
+The <AI> button appears in the list of time-only logs.
+Click to
+
+![](./images/2025-04-13_06-30-44.png)
+
+
+Select the AI ​​you want to ask, enter a question, and click <Question>
+
+![](./images/2025-04-13_06-34-08.png)
+
