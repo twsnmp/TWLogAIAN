@@ -25,7 +25,7 @@
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showLogChart, resizeLogChart, getLogChartImage } from "./logchart";
   import { getLogData, getLogColums, getGridSearch } from "./logview";
-  import Grid from "gridjs-svelte";
+  import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import Ranking from "../Report/Ranking.svelte";
   import Time3D from "../Report/Time3D.svelte";
@@ -298,6 +298,7 @@
     if (h) {
       conf.history = h;
     }
+    search();
   });
 
   const getExtractorTypes = async () => {

@@ -1,7 +1,7 @@
 <script>
   import { X16, Plus16, Check16 } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
-  import Grid from "gridjs-svelte";
+  import Grid from "../../components/Grid.svelte";
   import { h, html } from "gridjs";
   import { onMount } from "svelte";
   import jaJP from "../../js/gridjsJaJP";

@@ -4,7 +4,7 @@
 
   import highlightWords from "highlight-words";
   import { X16, Check16, StarFill16, Reply16, Plus16,EyeClosed16,Eye16,TriangleDown16,TriangleUp16 } from "svelte-octicons";
-  import Grid from "gridjs-svelte";
+  import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { createEventDispatcher } from "svelte";
   import {

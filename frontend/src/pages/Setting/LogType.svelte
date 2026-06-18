@@ -6,7 +6,7 @@
     Upload16,
   } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
-  import Grid from "gridjs-svelte";
+  import Grid from "../../components/Grid.svelte";
   import { h, html } from "gridjs";
   import EditExtractorType from "./EditExtractorType.svelte";
   import EditFieldType from "./EditFieldType.svelte";

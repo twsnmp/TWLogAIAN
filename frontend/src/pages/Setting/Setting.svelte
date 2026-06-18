@@ -9,12 +9,9 @@
     Search16,
   } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
-  import Grid from "gridjs-svelte";
-  import { h, html } from "gridjs";
   import LogSource from "./LogSource.svelte";
   import LogType from "./LogType.svelte";
   import { onMount } from "svelte";
-  import jaJP from "../../js/gridjsJaJP";
   import { loadFieldTypes } from "../../js/define";
   import { _,getLocale } from '../../i18n/i18n';
   import {
@@ -28,10 +25,8 @@
     SelectFile,
     CloseWorkDir,
   } from '../../../wailsjs/go/main/App';
-  import AutoComplete from "simple-svelte-autocomplete";
 
   let locale = getLocale();
-  let gridLang = locale == "ja" ? jaJP : undefined;
 
   const dispatch = createEventDispatcher();
   const data = [];
@@ -81,8 +76,11 @@
   const getConfig = async () => {
     const c = await GetConfig();
     if (c) {
-      if (c && !c.Extractor) {
-        c.Extractor = "auto"
+      if (c.extractor && !c.Extractor) {
+        c.Extractor = c.extractor;
+      }
+      if (!c.Extractor) {
+        c.Extractor = "auto";
       }
       config = c;
       orgConfig = c;
@@ -128,24 +126,10 @@
     return e.Path;
   };
 
-  let pagination = false;
   const getLogSources = async () => {
     const ds = await GetLogSources();
-    data.length = 0;
     if (ds) {
       logSources = ds;
-      logSources.forEach((e) => {
-        const path = getLSPath(e);
-        data.push([e.No, e.Type, path, ""]);
-      });
-      if (ds.length > 5) {
-        pagination = {
-          limit: 5,
-          enable: true,
-        };
-      } else {
-        pagination = false;
-      }
     } else {
       logSources = [];
     }
@@ -153,7 +137,6 @@
 
   let extractorTypes = {};
   let extractorTypeList = [];
-  let selectedExtractor;
 
   const getExtractorTypes = async () => {
     const r = await GetExtractorTypes();
@@ -162,9 +145,6 @@
       extractorTypeList = [];
       for (let k in extractorTypes) {
         extractorTypeList.push(extractorTypes[k]);
-        if(config.Extractor == k) {
-          selectedExtractor = extractorTypes[k];
-        }
       }
       extractorTypeList.sort((a, b) => a.Name > b.Name);
       const autoExtractor = {
@@ -182,13 +162,6 @@
       extractorTypeList.unshift(autoExtractor);
       extractorTypeList.unshift(timeonlyExtractor);
       extractorTypeList.push(csutomExtractor);
-      if (config.Extractor == "auto") {
-        selectedExtractor = autoExtractor;
-      } else if (config.Extractor == "timeonly") {
-        selectedExtractor = timeonlyExtractor;
-      } else if (config.Extractor == "custom") {
-        selectedExtractor = customExtractor;
-      }
     }
   };
 
@@ -459,7 +432,36 @@
             </h5>
           </div>
           <div class="form-group-body markdown-body mt-3">
-            <Grid {data} {pagination} {columns} language={gridLang} />
+            <table class="width-full text-left" style="border-collapse: collapse; margin-bottom: 15px;">
+              <thead>
+                <tr class="border-bottom">
+                  <th class="p-2" style="width: 10%;">No</th>
+                  <th class="p-2" style="width: 20%;">{$_('Setting.Type')}</th>
+                  <th class="p-2" style="width: 50%;">{$_('Setting.Path')}</th>
+                  <th class="p-2" style="width: 10%;">{$_('Setting.Edit')}</th>
+                  <th class="p-2" style="width: 10%;">{$_('Setting.Delete')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each logSources as e}
+                  <tr class="border-bottom">
+                    <td class="p-2">{e.No}</td>
+                    <td class="p-2">{formatLogSourceType(e.Type)}</td>
+                    <td class="p-2">{getLSPath(e)}</td>
+                    <td class="p-2">
+                      <button class="btn btn-sm" type="button" on:click={() => editLogSource(e.No)}>
+                        <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
+                      </button>
+                    </td>
+                    <td class="p-2">
+                      <button class="btn btn-sm btn-danger" type="button" on:click={() => deleteLogSource(e.No)}>
+                        <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M6.5 1.75a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3V1.75zm4.5 0V3h2.25a.75.75 0 010 1.5H2.75a.75.75 0 010-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75zM4.496 6.675a.75.75 0 10-1.492.15l.66 6.6A1.75 1.75 0 005.405 15h5.19c.9 0 1.652-.681 1.741-1.576l.66-6.6a.75.75 0 00-1.492-.149l-.66 6.6a.25.25 0 01-.249.225h-5.19a.25.25 0 01-.249-.225l-.66-6.6z"></path></svg>
+                      </button>
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
             <label class="p-1">
               <input type="checkbox" bind:checked={config.Recursive} />
               {$_('Setting.RecTGZ')}
@@ -489,15 +491,15 @@
             <h5 class="pb-1">{$_('Setting.LogType')}</h5>
           </div>
           <div class="form-group-body">
-            <AutoComplete
-              items="{extractorTypeList}"
-              bind:value="{config.Extractor}"
-              labelFieldName="Name"
-              valueFieldName="Key"
-              onChange="{changeExtractor}"
-              inputClassName="form-control"
-              bind:selectedItem="{selectedExtractor}"
-            />
+            <select
+              class="form-select"
+              bind:value={config.Extractor}
+              on:change={changeExtractor}
+            >
+              {#each extractorTypeList as item}
+                <option value={item.Key}>{item.Name}</option>
+              {/each}
+            </select>
             <label class="p-1">
               <input type="checkbox" bind:checked={config.Strict} />
                 {$_('Setting.StrictPatCheck')}
@@ -588,7 +590,7 @@
             </label>
           </div>
         </div>
-        {#if config.Extractor == "custom" || config.Extractor == "auto" || config.Extractor.startsWith("EXT")}
+        {#if config?.Extractor == "custom" || config?.Extractor == "auto" || (config?.Extractor || "").startsWith("EXT")}
           <div class="form-group">
             <div class="form-group-header">
               <h5 class="pb-1">{$_('Setting.ExtractPat')}</h5>

@@ -3,7 +3,7 @@
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { getRanking, showRankingChart, resizeRankingChart,getRankingChartImage } from "./ranking";
-  import Grid from "gridjs-svelte";
+  import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _,getLocale } from '../../i18n/i18n';
   import {Export} from '../../../wailsjs/go/main/App';
