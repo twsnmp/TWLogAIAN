@@ -709,8 +709,9 @@
   <ExportAI on:done={handleDone} logs={result.Logs} />
 {:else if page == "askAI"}
   <AskAI on:done={handleDone} log={askAILog} />
-{:else}
-  <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+{/if}
+
+<div class="Box mx-auto Box--condensed" class:d-none={page != ""} style="max-width: 99%;">
     <div class="Box-header d-flex flex-items-center">
       <h3 class="Box-title overflow-hidden flex-auto">{$_('LogView.Title')}</h3>
       <span class="f6">{searchInfo}</span>
@@ -942,7 +943,6 @@
       </div>
     {/if}
   </div>
-{/if}
 <div id="clipboard" />
 <style>
   #chart {
