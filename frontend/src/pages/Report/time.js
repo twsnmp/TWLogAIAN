@@ -55,6 +55,10 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
   if (chart) {
     chart.dispose();
   }
+  const validLogs = (logs || []).filter(l => l && l.Time > 946684800000000000);
+  if (validLogs.length === 0) {
+    return [];
+  }
   chart = echarts.init(document.getElementById(div), dark ? "dark" : null);
   const option = {
     title: {
@@ -170,7 +174,7 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
     let tS = -1;
     const values = [];
     const dt = chartType == "1h" ? 3600 * 1000 : 60 * 1000;
-    logs.forEach((l) => {
+    validLogs.forEach((l) => {
       const t = new Date(l.Time / (1000 * 1000));
       let tC = Math.floor(t.getTime() / dt);
       if (tS != tC) {
@@ -179,9 +183,23 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
             tS++;
             data.push(setChartData(option.series,new Date(tS * dt),values));
             values.length = 0;
-            while( tS < tC) {
-              tS++;
-              setChartData(option.series,new Date(tS * dt),[0,0,0,0]);
+            if (tC - tS > 100) {
+              for (let i = 0; i < 5 && tS < tC; i++) {
+                tS++;
+                setChartData(option.series,new Date(tS * dt),[0,0,0,0]);
+              }
+              if (tS < tC - 5) {
+                tS = tC - 5;
+              }
+              while( tS < tC) {
+                tS++;
+                setChartData(option.series,new Date(tS * dt),[0,0,0,0]);
+              }
+            } else {
+              while( tS < tC) {
+                tS++;
+                setChartData(option.series,new Date(tS * dt),[0,0,0,0]);
+              }
             }
           }
         }
@@ -204,11 +222,11 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
       },
       data: [],
     }
-    logs.forEach((l) => {
+    validLogs.forEach((l) => {
       const t = new Date(l.Time / (1000 * 1000));
       option.series[0].data.push([t, l.KeyValue[field] || 0.0]);
     });
-    const reg = calcRegression(logs, field, chartType);
+    const reg = calcRegression(validLogs, field, chartType);
     option.legend.data.push($_('Js.Regression') +'('+ reg.expression +")");
     option.series.push({
         name: $_('Js.Regression') +'('+ reg.expression +")",
@@ -238,7 +256,7 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
       });
       data = reg.points;
   } else {
-    logs.forEach((l) => {
+    validLogs.forEach((l) => {
       const t = new Date(l.Time / (1000 * 1000));
       const name = echarts.time.format(t, "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}");
       option.series[0].data.push({

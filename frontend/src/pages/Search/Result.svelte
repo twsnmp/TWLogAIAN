@@ -75,7 +75,7 @@
       </div>
     {/if}
     <div class="Box-row">
-      <div id="chart" />
+      <div id="chart"></div>
     </div>
     <div class="Box-row" style="display: flex;">
       <div class="markdown-body log" style="flex: 1;">

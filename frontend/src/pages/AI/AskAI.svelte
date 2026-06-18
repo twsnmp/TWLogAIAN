@@ -61,7 +61,7 @@
       <h3 class="Box-title pb-2">{$_('AI.AskAI')}</h3>
       <div class="flash mt-2">
         {$_('AI.AIThinking')}
-        <span class="AnimatedEllipsis" />
+        <span class="AnimatedEllipsis"></span>
       </div>
     </div>
   </div>
@@ -138,7 +138,7 @@
             style="width: 100%;"
             placeholder={$_('AI.QContent')}
             bind:value={prompt}
-          />
+          ></textarea>
         </div>
       </div>
       <div class="form-group">
@@ -151,7 +151,7 @@
             style="width: 100%;"
             placeholder={$_('AI.Log')}
             bind:value={log}
-          />
+          ></textarea>
         </div>
       </div>
       <div class="Box-footer text-right">

@@ -66,6 +66,9 @@ const makeHistogramChart = (div, field, dark) => {
 
 export const showHistogramChart = (div, logs, field, dark) => {
   makeHistogramChart(div,field,dark)
+  if (!logs || logs.length === 0) {
+    return;
+  }
   const data = []
   logs.forEach((l) => {
     data.push(l.KeyValue[field] || 0.0);

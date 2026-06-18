@@ -13,7 +13,11 @@ let chart;
 export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
   const m = new Map()
   const colors = []
-  logs.forEach((l) => {
+  const validLogs = (logs || []).filter(l => l && l.Time > 946684800000000000);
+  if (validLogs.length === 0) {
+    return [];
+  }
+  validLogs.forEach((l) => {
     const t = new Date(l.Time / (1000 *1000))
     const x = l.KeyValue[xField] || $_("Js.Unknown");
     const z = l.KeyValue[zField] ? l.KeyValue[zField]  * 1 : 0.0;

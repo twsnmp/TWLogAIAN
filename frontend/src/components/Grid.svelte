@@ -113,4 +113,4 @@
   });
 </script>
 
-<article bind:this={node} />
+<article bind:this={node}></article>

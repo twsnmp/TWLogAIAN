@@ -109,7 +109,7 @@
         {/each}
       </select>
     </div>
-    <div class="col-2 float-left" />
+    <div class="col-2 float-left"></div>
     <button class="btn btn-danger" type="button" on:click={clear}>
       <Trash16 />
     </button>
@@ -125,7 +125,7 @@
       <option value="full">{$_("SearchConf.FullTextSearch")}</option>
     </select>
   </div>
-  <div class="col-2 float-left" />
+  <div class="col-2 float-left"></div>
 </div>
 
 <div class="container-lg clearfix">
@@ -137,7 +137,7 @@
       <option value="range">{$_("SearchConf.StartEndTime")}</option>
     </select>
   </div>
-  <div class="col-2 float-left" />
+  <div class="col-2 float-left"></div>
 </div>
 
 {#if conf.range.mode == "target"}
@@ -182,7 +182,7 @@
         bind:value={conf.range.end}
       />
     </div>
-    <div class="col-2 float-left" />
+    <div class="col-2 float-left"></div>
   </div>
 {/if}
 {#if geoFields.length > 0}
@@ -194,7 +194,7 @@
         <option value="centor">{$_("SearchConf.DistFromCentor")}</option>
       </select>
     </div>
-    <div class="col-2 float-left" />
+    <div class="col-2 float-left"></div>
   </div>
 {/if}
 {#if geoFields.length > 0 && conf.geo.mode != ""}
@@ -238,7 +238,7 @@
       />
       {$_("SearchConf.KMRange")}
     </div>
-    <div class="col-2 float-left" />
+    <div class="col-2 float-left"></div>
   </div>
 {/if}
 <div class="container-lg clearfix mt-1">
@@ -308,7 +308,7 @@
       <option value="code">{$_("SearchConf.HighlighCode")}</option>
     </select>
   </div>
-  <div class="col-2 float-left" />
+  <div class="col-2 float-left"></div>
 </div>
 {#if conf.mode == "full"}
   {#if hasStringField}

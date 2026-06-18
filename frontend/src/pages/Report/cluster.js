@@ -59,6 +59,9 @@ const makeClusterChart = (div, xField, yField,dark) => {
 
 export const showClusterChart = (div, logs, xField, yField, cluster, dark) => {
   makeClusterChart(div,xField,yField,dark)
+  if (!logs || logs.length === 0) {
+    return;
+  }
   const data = []
   logs.forEach((l) => {
     data.push([ l.KeyValue[xField] || 0.0, l.KeyValue[yField] || 0.0 ])

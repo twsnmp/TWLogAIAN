@@ -338,10 +338,13 @@
   };
   let report = "";
 
-  const handleDone = (e) => {
+  const handleDone = async (e) => {
     page = "";
     report = "";
-    updateChart();
+    await tick();
+    setTimeout(() => {
+      resizeLogChart();
+    }, 50);
   };
 
   const showReport = () => {
@@ -798,7 +801,7 @@
           {:else}
             <button class="btn btn-primary ml-2" aria-disabled="true">
               <Search16 />
-              <span>{$_('LogView.Searching')}</span><span class="AnimatedEllipsis" />
+              <span>{$_('LogView.Searching')}</span><span class="AnimatedEllipsis"></span>
             </button>
           {/if}
         </div>
@@ -825,7 +828,7 @@
       </div>
     {/if}
     <div class="Box-row">
-      <div id="chart" />
+      <div id="chart"></div>
     </div>
     <div class="Box-row markdown-body log">
       <Grid
@@ -883,7 +886,7 @@
         {/if}
         <!-- svelte-ignore a11y-no-onchange -->
         {#if saveBusy}
-          <span>{$_('LogView.Saving')}</span><span class="AnimatedEllipsis" />
+          <span>{$_('LogView.Saving')}</span><span class="AnimatedEllipsis"></span>
         {:else}
           <select
             class="form-select mr-1"
@@ -943,7 +946,7 @@
       </div>
     {/if}
   </div>
-<div id="clipboard" />
+<div id="clipboard"></div>
 <style>
   #chart {
     width: 100%;

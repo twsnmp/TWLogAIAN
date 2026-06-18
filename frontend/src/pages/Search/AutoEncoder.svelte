@@ -141,7 +141,7 @@
 
 </script>
 
-<div id="trainChart" />
+<div id="trainChart"></div>
 
 <style>
   #trainChart {

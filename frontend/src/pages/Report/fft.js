@@ -9,6 +9,9 @@ const $_ = unwrapFunctionStore(_);
 
 
 const doFFT = (signal, sampleRate) => {
+  if (!signal || signal.length < 2) {
+    return [];
+  }
   const np2 = 1 << (31 - Math.clz32(signal.length))
   while (signal.length !== np2) {
     signal.shift()
@@ -27,9 +30,13 @@ const doFFT = (signal, sampleRate) => {
 export const getFFTMap = (logs, field) => {
   const m = new Map()
   m.set('Total', { Name: $_('Js.Total'), Count: 0, Data: [] })
+  const validLogs = (logs || []).filter(l => l && l.Time > 946684800000000000);
+  if (validLogs.length === 0) {
+    return m;
+  }
   let st = Infinity;
   let lt = 0;
-  logs.forEach((l) => {
+  validLogs.forEach((l) => {
     const k = l.KeyValue[field] || $_("Js.Unknown");
     const e = m.get(k);
     if (!e) {
@@ -55,7 +62,7 @@ export const getFFTMap = (logs, field) => {
     sampleSec = 60;
   }
   let cts
-  logs.forEach((l) => {
+  validLogs.forEach((l) => {
     if (!cts) {
       cts = Math.floor(l.Time / (1000 * 1000 * 1000 * sampleSec))
       m.get('Total').Count++
@@ -69,10 +76,14 @@ export const getFFTMap = (logs, field) => {
         e.Count = 0
       })
       cts++
-      for (; cts < newCts; cts++) {
-        m.forEach((e) => {
-          e.Data.push(0)
-        })
+      if (newCts - cts > 100) {
+        cts = newCts;
+      } else {
+        for (; cts < newCts; cts++) {
+          m.forEach((e) => {
+            e.Data.push(0)
+          })
+        }
       }
     }
     m.get('Total').Count++

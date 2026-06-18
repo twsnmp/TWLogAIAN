@@ -36,7 +36,7 @@
   </div>
   {#if feedbackWait}
     <div class="flash">
-      {$_('Feedback.SendMsg')}<span class="AnimatedEllipsis" />
+      {$_('Feedback.SendMsg')}<span class="AnimatedEllipsis"></span>
     </div>
   {:else if feedbackErr}
     <div class="flash flash-error">
@@ -71,7 +71,7 @@
           class="form-control"
           id="feedbackMsg"
           bind:value={feedbackMsg}
-        />
+        ></textarea>
       </div>
     </div>
   </div>

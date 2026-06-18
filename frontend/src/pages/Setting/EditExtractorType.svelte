@@ -355,7 +355,7 @@
           <h5>{$_('EditExtractorType.TestData')}</h5>
         </div>
         <div class="form-group-body">
-          <textarea class="form-control testdata" bind:value={testLog} />
+          <textarea class="form-control testdata" bind:value={testLog}></textarea>
         </div>
       </div>
     </div>

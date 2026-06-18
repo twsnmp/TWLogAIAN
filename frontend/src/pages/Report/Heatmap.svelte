@@ -137,7 +137,7 @@
     {/if}
   </div>
   <div class="Box-row">
-    <div id="chart" />
+    <div id="chart"></div>
   </div>
   <div class="Box-row markdown-body log">
     <Grid {data} sort search {pagination} {columns} language={gridLang} />

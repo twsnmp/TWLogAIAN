@@ -363,7 +363,7 @@
       <h3 class="Box-title pb-2">{$_('LogView.AIConfig')}</h3>
       <div class="flash mt-2">
         {$_('AI.Processing')}
-        <span class="AnimatedEllipsis" />
+        <span class="AnimatedEllipsis"></span>
       </div>
     </div>
   </div>

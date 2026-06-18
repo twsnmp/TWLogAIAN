@@ -52,7 +52,7 @@
       <h3 class="Box-title pb-2">{$_('AI.Export')}</h3>
       <div class="flash mt-2">
         {$_('AI.Exporting')}
-        <span class="AnimatedEllipsis" />
+        <span class="AnimatedEllipsis"></span>
       </div>
     </div>
   </div>
@@ -112,7 +112,7 @@
             style="width: 100%;"
             placeholder={$_('AI.LogDescrMsg')}
             bind:value={aiExport.Descr}
-          />
+          ></textarea>
         </div>
       </div>
     </div>

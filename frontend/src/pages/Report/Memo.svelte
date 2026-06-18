@@ -191,4 +191,4 @@
     </button>
   </div>
 </div>
-<div id="memoCopy" />
+<div id="memoCopy"></div>
