@@ -505,7 +505,13 @@
     "TimeGrinderOverride": "Timestamp format",
     "TimeGrinderRegExp": "Timestamp extraction pattern",
     "TimeGrinderFormat": "Timestamp format",
-    "Auto": "Automatic"
+    "Auto": "Automatic",
+    "LLMSetting": "AI (LLM) Settings",
+    "LLMProvider": "LLM Provider",
+    "LLMBaseURL": "Base URL",
+    "LLMAPIKey": "API Key",
+    "LLMModel": "Model Name",
+    "LLMNone": "None"
   },
   "Js": {
     "Error": "Error",

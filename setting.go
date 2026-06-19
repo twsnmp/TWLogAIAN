@@ -35,6 +35,11 @@ type Config struct {
 	TimeGrinderOverride string
 	TimeGrinderRegExp   string
 	TimeGrinderFormat   string
+	// LLM Settings
+	LLMProvider string
+	LLMBaseURL  string
+	LLMAPIKey   string
+	LLMModel    string
 }
 
 type LogSource struct {

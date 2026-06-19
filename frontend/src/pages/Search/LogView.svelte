@@ -45,6 +45,7 @@
   import * as echarts from "echarts";
   import { _,getLocale } from '../../i18n/i18n';
   import { copyText } from "svelte-copy";
+  import AskAI from "../AI/AskAI.svelte";
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -454,6 +455,9 @@
     } else if (col.id == "memo") {
       memoLog(row._cells);
       return;
+    } else if (col.id == "ai") {
+      askAIAboutLog(row._cells);
+      return;
     } else if (col.id == "extractor") {
       showEditExtractorType(cell.data, me.metaKey);
       return;
@@ -570,6 +574,21 @@
     memo(timeStamp, list.join("\t"));
   };
 
+  let askAILog = "";
+  const askAIAboutLog = (cells) => {
+    askAILog = "";
+    if (cells.length < columns.length) {
+      return;
+    }
+    for (let i = 0; i < cells.length; i++) {
+      if (columns[i].id == "all") {
+        askAILog = cells[i].data;
+        break;
+      }
+    }
+    page = "askAI";
+  };
+
   const memo = async (time, text) => {
     infoMsg = $_('LogView.MemoMsg');
     await AddMemo({
@@ -675,6 +694,8 @@
     {testLog}
     on:done={handleEditExtractorDone}
   />
+{:else if page == "askAI"}
+  <AskAI on:done={handleDone} log={askAILog} />
 {/if}
 
 <div class="Box mx-auto Box--condensed" class:d-none={page != ""} style="max-width: 99%;">

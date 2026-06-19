@@ -47,6 +47,10 @@
     SampleLog: "",
     ForceUTC: false,
     Strict: false,
+    LLMProvider: "none",
+    LLMBaseURL: "",
+    LLMAPIKey: "",
+    LLMModel: "",
   };
   let logSource = {
     No: 0,
@@ -687,6 +691,63 @@
                   </button>
                 </span>
               </div>
+            </div>
+          </div>
+        {/if}
+        <hr class="mt-3 mb-3" />
+        <h4>{$_('Setting.LLMSetting')}</h4>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5 class="pb-1">{$_('Setting.LLMProvider')}</h5>
+          </div>
+          <div class="form-group-body">
+            <select class="form-select" bind:value={config.LLMProvider}>
+              <option value="none">{$_('Setting.LLMNone')}</option>
+              <option value="gemini">Google AI (Gemini)</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="ollama">Ollama (ローカルLLM)</option>
+            </select>
+          </div>
+        </div>
+        {#if config.LLMProvider != "none"}
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5 class="pb-1">{$_('Setting.LLMBaseURL')}</h5>
+            </div>
+            <div class="form-group-body">
+              <input
+                class="form-control"
+                type="text"
+                bind:value={config.LLMBaseURL}
+                placeholder="ベースURLを入力 (空欄でデフォルト)"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5 class="pb-1">{$_('Setting.LLMAPIKey')}</h5>
+            </div>
+            <div class="form-group-body">
+              <input
+                class="form-control"
+                type="password"
+                bind:value={config.LLMAPIKey}
+                placeholder="APIキーを入力"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-group-header">
+              <h5 class="pb-1">{$_('Setting.LLMModel')}</h5>
+            </div>
+            <div class="form-group-body">
+              <input
+                class="form-control"
+                type="text"
+                bind:value={config.LLMModel}
+                placeholder="モデル名を入力"
+              />
             </div>
           </div>
         {/if}

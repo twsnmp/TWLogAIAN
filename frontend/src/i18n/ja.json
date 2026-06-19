@@ -505,7 +505,13 @@
     "Auto": "自動",
     "TimeGrinderOverride": "タイムスタンプ形式",
     "TimeGrinderRegExp": "タイムスタンプ抽出パターン",
-    "TimeGrinderFormat": "タイムスタンプ形式"
+    "TimeGrinderFormat": "タイムスタンプ形式",
+    "LLMSetting": "AI (LLM) 連携設定",
+    "LLMProvider": "プロバイダー",
+    "LLMBaseURL": "ベースURL",
+    "LLMAPIKey": "APIキー",
+    "LLMModel": "モデル名",
+    "LLMNone": "なし"
   },
   "Js": {
     "Level": "レベル",
