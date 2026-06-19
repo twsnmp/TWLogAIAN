@@ -30,7 +30,6 @@
     "highlight.js": "^11.7.0",
     "numeral": "^2.0.6",
     "p5-svelte": "^2.2.2",
-    "quill": "^2.0.3",
     "seedrandom": "^3.0.5",
     "sirv-cli": "^1.0.0",
     "svelte-i18n": "^3.6.0",

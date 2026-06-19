@@ -1,8 +1,6 @@
 <script>
-  import Quill from "quill";
-  import "quill/dist/quill.bubble.css";
+  import GrokEditor from "../../components/GrokEditor.svelte";
 
-  import highlightWords from "highlight-words";
   import { X16, Check16, StarFill16, Reply16, Plus16,EyeClosed16,Eye16,TriangleDown16,TriangleUp16 } from "svelte-octicons";
   import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
@@ -32,7 +30,7 @@
   let columns = [];
   const dispatch = createEventDispatcher();
   let errorMsg = "";
-  let quill;
+  let grokEditor;
 
   const back = () => {
     dispatch("done", {});
@@ -110,9 +108,6 @@
       errorMsg = r.ErrorMsg;
       if (r.Grok) {
         extractorType.Grok = r.Grok;
-        if (quill) {
-          quill.setText(r.Grok,"user");
-        }
       }
     }
   };
@@ -148,46 +143,21 @@
   };
 
   const replaceGrok = (w) => {
-    if(!quill) {
+    if(!grokEditor) {
       return;
     }
-    const range = quill.getSelection();
-    if (!range || range.length === 0) {
+    const selection = grokEditor.getSelection();
+    if (!selection || selection.text === "") {
       return;
     }
-    const text = quill.getText(range.index, range.length);
-    if (text == "") {
-      return;
-    }
-    const r = w ? getGrokPat(text) : '.+';
-    extractorType.Grok = extractorType.Grok.substring(0,range.index) + r + extractorType.Grok.substring(range.index + range.length);
-    quill.setText(extractorType.Grok,"user");
+    const r = w ? getGrokPat(selection.text) : '.+';
+    grokEditor.replaceSelection(r);
   };
 
-  const getGrokColor = (c) => {
-    if (!c.match) {
-      return "";
-    }
-    if (c.text.includes("%{IP")) {
-      return "#1a7f37";
-    }
-    if (c.text.includes("%{MAC")) {
-      return "#8250df";
-    }
-    if (c.text.includes("%{INT") || c.text.includes("%{NUM") ) {
-      return "#6fdd8b";
-    }
-    if (c.text.includes("%{URL")) {
-      return "#bc4c00";
-    }
-    if (c.text.includes("%{")) {
-      return "#bf8722";
-    }
-    if (c.text.includes("s")) {
-      return "#0969da";
-    }
-    return "#cf222e";
-  };
+  function handleEditorAction(e) {
+    if (e.detail.type === 'grok') replaceGrok(true);
+    if (e.detail.type === 'wildcard') replaceGrok(false);
+  }
 
   let page = "";
   const addFT = true;
@@ -213,57 +183,6 @@
 
   onMount(() => {
     loadFieldTypes();
-    quill = new Quill('#quill', {
-      theme: 'bubble',
-      modules: {
-       toolbar: ['underline','strike'],
-        history: {
-          delay: 2000,
-          maxStack: 500,
-          userOnly: true,
-        },
-      }
-    });
-    if (!quill) {
-      return;
-    }
-    const toolbar = quill.getModule('toolbar');
-    if(toolbar) {
-      toolbar.addHandler('underline', (v) => { replaceGrok(true) });
-      toolbar.addHandler('strike', (v) => { replaceGrok(false) });
-    }
-    quill.on('text-change', (delta, oldDelta, source) => {
-      if(source == "api") {
-        return;
-      }
-      extractorType.Grok = quill.getText().trim();
-      if (extractorType.Grok.includes("\n")) {
-        extractorType.Grok = extractorType.Grok.replaceAll("\n","");
-        quill.setText(extractorType.Grok,"user");
-        return;
-      }
-      const chunk =  highlightWords({
-          text: extractorType.Grok,
-          query: /(%\{.+?\}|\.\+|\\s\+)/,
-      });
-      let i = 0;
-      quill.removeFormat(0,extractorType.Grok.length);
-      for (const c of chunk) {
-        const col = getGrokColor(c)
-        if (col != "") {
-          quill.formatText(i,c.text.length,"color",col)
-          if (c.text.startsWith("%{")) {
-            quill.formatText(i,c.text.length,"underline",true)
-          } else {
-            quill.formatText(i,c.text.length,"underline",false)
-          }
-        }
-        i += c.text.length;
-      }
-    });
-    quill.keyboard.addBinding({ key: 'S', metaKey: true }, (r,c) => {replaceGrok(false) });
-    quill.keyboard.addBinding({ key: 'W', metaKey: true }, (r,c) => {replaceGrok(true) });
-    quill.setText(extractorType.Grok,"user");
   });
 </script>
 
@@ -316,10 +235,25 @@
       </div>
       <div class="form-group">
         <div class="form-group-header">
-          <h5>{$_('EditExtractorType.ExtractPat')}
-          </h5>
+          <h5>{$_('EditExtractorType.ExtractPat')}</h5>
         </div>
-        <div id="quill" class="form-group-body mt-1">
+        <div class="form-group-body mt-1">
+          <GrokEditor
+            bind:this={grokEditor}
+            bind:value={extractorType.Grok}
+            on:action={handleEditorAction}
+          />
+          <div class="mt-2 btn-group-sm">
+            <button class="btn btn-sm btn-secondary" type="button" on:click={() => replaceGrok(true)}>
+              {$_('EditExtractorType.ConvertToGrok')}
+            </button>
+            <button class="btn btn-sm btn-secondary" type="button" on:click={() => replaceGrok(false)}>
+              {$_('EditExtractorType.ConvertToWildcard')}
+            </button>
+            <span class="note ml-2" style="font-size: 11px; color: #57606a;">
+              {$_('EditExtractorType.ShortcutHint')}
+            </span>
+          </div>
         </div>
       </div>
       <div class="form-group">
@@ -425,10 +359,6 @@
 
 <style>
 
-  #quill {
-    font-size: 14px;
-    font-family: monospace, serif;
-  }
   .form-group-body textarea.testdata {
     height: 100px;
     min-height: 100px;

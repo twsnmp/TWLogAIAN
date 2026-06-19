@@ -385,7 +385,10 @@
     "AutoPatGen": "Automatic extraction pattern generation",
     "Test": "Test",
     "CancelBtn": "Cancel",
-    "SaveBtn": "Save"
+    "SaveBtn": "Save",
+    "ConvertToGrok": "Convert to Grok",
+    "ConvertToWildcard": "Convert to Wildcard",
+    "ShortcutHint": "(or select text and press Cmd/Ctrl+W or Cmd/Ctrl+S)"
   },
   "EditFieldType": {
     "Title": "Edit field type",

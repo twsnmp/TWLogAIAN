@@ -385,7 +385,10 @@
     "TestData": "テストデータ",
     "TimeStampItem": "タイムスタンプ項目",
     "Type": "タイプ",
-    "ValueName": "値の名前"
+    "ValueName": "値の名前",
+    "ConvertToGrok": "Grokパターンに変換",
+    "ConvertToWildcard": "ワイルドカードに変換",
+    "ShortcutHint": "（またはテキストを選択して Cmd/Ctrl+W または Cmd/Ctrl+S）"
   },
   "EditFieldType": {
     "Title": "フィールドタイプ編集",
