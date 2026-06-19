@@ -79,9 +79,9 @@
       <a
         href="##"
         on:click={() => {
-          BrowserOpenURL("https://note.com/twsnmp/m/m9c88e79743b6");
+          BrowserOpenURL("https://twsnmp.github.io/TWLogAIAN/");
         }}
-      >Note</a><br />
+      >GitHub Pages</a><br />
       {$_('Wellcome.Line3')}<br />
       <a
         href="##"
