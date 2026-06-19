@@ -37,5 +37,8 @@
     "svelte-octicons": "^17.1.0",
     "world-map-geojson": "^1.0.2"
   },
-  "author": "twsnmp"
+  "author": "twsnmp",
+  "overrides": {
+    "esbuild": "^0.25.0"
+  }
 }
