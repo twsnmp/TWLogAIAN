@@ -64,7 +64,7 @@
     </div>
   </div>
 {:else if answer}
-  <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+  <div class="Box mx-auto Box--condensed" style="max-width: 99%; display: flex; flex-direction: column; max-height: calc(100vh - 40px);">
     <div class="Box-header">
       <h3 class="Box-title pb-2">{$_('AI.Answer')}</h3>
     </div>
@@ -80,7 +80,7 @@
         </button>
       </div>
     {/if}
-    <div class="Box-body">
+    <div class="Box-body" style="overflow-y: auto; flex: 1;">
       <pre style="text-wrap: wrap;">{answer}</pre>
     </div>
     <div class="Box-footer d-flex flex-justify-between">
@@ -99,7 +99,7 @@
     </div>
   </div>
 {:else}
-  <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+  <div class="Box mx-auto Box--condensed" style="max-width: 99%; display: flex; flex-direction: column; max-height: calc(100vh - 40px);">
     <div class="Box-header">
       <h3 class="Box-title">{$_('AI.AskAI')}</h3>
     </div>
@@ -115,7 +115,7 @@
         </button>
       </div>
     {/if}
-    <div class="Box-body">
+    <div class="Box-body" style="overflow-y: auto; flex: 1;">
       <div class="form-group">
         <div class="form-group-header">
           <h5 class="pb-1">{$_('AI.Quattion')}</h5>
@@ -142,19 +142,19 @@
           ></textarea>
         </div>
       </div>
-      <div class="Box-footer d-flex flex-justify-between">
-        <div>
-          <button class="btn btn-secondary" type="button" on:click={close}>
-            <X16 />
-            {$_('AI.Close')}
-          </button>
-        </div>
-        <div>
-          <button class="btn btn-primary" type="button" on:click={askAI}>
-            <Question16 />
-            {$_('AI.Ask')}
-          </button>
-        </div>
+    </div>
+    <div class="Box-footer d-flex flex-justify-between">
+      <div>
+        <button class="btn btn-secondary" type="button" on:click={close}>
+          <X16 />
+          {$_('AI.Close')}
+        </button>
+      </div>
+      <div>
+        <button class="btn btn-primary" type="button" on:click={askAI}>
+          <Question16 />
+          {$_('AI.Ask')}
+        </button>
       </div>
     </div>
   </div>

@@ -99,7 +99,7 @@
 </script>
 
 <svelte:window on:resize={onResize} />
-<div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+<div class="Box mx-auto Box--condensed" style="max-width: 99%; display: flex; flex-direction: column; max-height: calc(100vh - 40px);">
   <div class="Box-header d-flex flex-items-center">
     <h3 class="Box-title overflow-hidden flex-auto">{$_('Heatmap.Title')}</h3>
     <!-- svelte-ignore a11y-no-onchange -->
@@ -136,11 +136,13 @@
       </select>
     {/if}
   </div>
-  <div class="Box-row">
-    <div id="chart"></div>
-  </div>
-  <div class="Box-row markdown-body log">
-    <Grid {data} sort search {pagination} {columns} language={gridLang} />
+  <div style="overflow-y: auto; flex: 1;">
+    <div class="Box-row">
+      <div id="chart"></div>
+    </div>
+    <div class="Box-row markdown-body log">
+      <Grid {data} sort search {pagination} {columns} language={gridLang} />
+    </div>
   </div>
   <div class="Box-footer d-flex flex-justify-between">
     <div>
@@ -169,7 +171,7 @@
 <style>
   #chart {
     width: 100%;
-    height: 450px;
+    height: 300px;
     margin: 5px auto;
   }
 </style>

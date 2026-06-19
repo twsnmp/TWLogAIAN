@@ -86,7 +86,7 @@
 
 </script>
 
-<div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+<div class="Box mx-auto Box--condensed" style="max-width: 99%; display: flex; flex-direction: column; max-height: calc(100vh - 40px);">
   <div class="Box-header d-flex flex-items-center">
     <h3 class="Box-title overflow-hidden flex-auto">{$_('Memo.Title')}</h3>
   </div>
@@ -114,69 +114,71 @@
     </button>
   </div>
 {/if}
-{#if editMode}
-    <div class="Box-row">
-      <select
-        class="form-select"
-        bind:value={memo.Type}
-      >
-        <option value="">{$_('Memo.Deffault')}</option>
-        <option value="info">{$_('Memo.Info')}</option>
-        <option value="warn">{$_('Memo.Warn')}</option>
-        <option value="error">{$_('Memo.Error')}</option>
-      </select>
-      <input
-        class="form-control"
-        type="text"
-        placeholder="{$_('Memo.Memo')}"
-        bind:value={memo.Memo}
-      />
-      <button class="btn btn-secondary" type="button" on:click={() => {editMode = false}}>
-        <X16 />
-      </button>
-      <button class="btn btn-primary" type="button" on:click={saveMemo}>
-        <Check16 />
-      </button>
-    </div>
-  {/if}
-  <div class="Box-body">
-    {#each memos as { Time, Type, Memo, Log, Diff },i}
-      <div class="TimelineItem">
-        {#if Type == "error"}
-          <div class="TimelineItem-badge color-bg-danger-emphasis color-fg-on-emphasis">
-            <XCircle16 />
-          </div>
-        {:else if Type =="warn"}
-          <div class="TimelineItem-badge color-bg-attention-emphasis color-fg-on-emphasis">
-            <Stop16 />
-          </div>
-        {:else if Type =="info"}
-          <div class="TimelineItem-badge color-bg-accent-emphasis color-fg-on-emphasis">
-            <Info16 />
-          </div>
-        {:else}
-          <div class="TimelineItem-badge">
-            <Circle16 />
-          </div>
-         {/if}
-        <div class="TimelineItem-body">
-          <p class="h4">
-            {formatTime(Time)} {getTypeName(Type)}{Memo} | {Diff}
-          </p>
-          <p class="f6">
-            {Log}
-          </p>
-          <div>
-             <button class="btn btn-danger" type="button" on:click={() => deleteMemo(i)}>
-              <Trash16 />
-            </button>
-            <button class="btn btn-primary" type="button" on:click={() => editMemo(i) }>
-              <Pencil16 />
-            </button>
+  <div style="overflow-y: auto; flex: 1;">
+    {#if editMode}
+      <div class="Box-row">
+        <select
+          class="form-select"
+          bind:value={memo.Type}
+        >
+          <option value="">{$_('Memo.Deffault')}</option>
+          <option value="info">{$_('Memo.Info')}</option>
+          <option value="warn">{$_('Memo.Warn')}</option>
+          <option value="error">{$_('Memo.Error')}</option>
+        </select>
+        <input
+          class="form-control"
+          type="text"
+          placeholder="{$_('Memo.Memo')}"
+          bind:value={memo.Memo}
+        />
+        <button class="btn btn-secondary" type="button" on:click={() => {editMode = false}}>
+          <X16 />
+        </button>
+        <button class="btn btn-primary" type="button" on:click={saveMemo}>
+          <Check16 />
+        </button>
+      </div>
+    {/if}
+    <div class="Box-body">
+      {#each memos as { Time, Type, Memo, Log, Diff },i}
+        <div class="TimelineItem">
+          {#if Type == "error"}
+            <div class="TimelineItem-badge color-bg-danger-emphasis color-fg-on-emphasis">
+              <XCircle16 />
+            </div>
+          {:else if Type =="warn"}
+            <div class="TimelineItem-badge color-bg-attention-emphasis color-fg-on-emphasis">
+              <Stop16 />
+            </div>
+          {:else if Type =="info"}
+            <div class="TimelineItem-badge color-bg-accent-emphasis color-fg-on-emphasis">
+              <Info16 />
+            </div>
+          {:else}
+            <div class="TimelineItem-badge">
+              <Circle16 />
+            </div>
+           {/if}
+          <div class="TimelineItem-body">
+            <p class="h4">
+              {formatTime(Time)} {getTypeName(Type)}{Memo} | {Diff}
+            </p>
+            <p class="f6">
+              {Log}
+            </p>
+            <div>
+               <button class="btn btn-danger" type="button" on:click={() => deleteMemo(i)}>
+                <Trash16 />
+              </button>
+              <button class="btn btn-primary" type="button" on:click={() => editMemo(i) }>
+                <Pencil16 />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    {/each}
+      {/each}
+    </div>
   </div>
   <div class="Box-footer d-flex flex-justify-between">
     <div>
