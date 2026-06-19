@@ -21,7 +21,7 @@ This is an explanation of how to install and start using the convenient AI-assis
 
 You can load logs into a full-text search engine and search for them.It helps you analyze search results with machine learning (AI) and visualization.
 
-![](./images/2022-05-19_04-08-41.png)
+![](./images/en/block.svg)
 
 
 ## Install from Microsoft Store
@@ -36,7 +36,7 @@ Download and install TWLogAIAN.msi from
 
 [GitHUB Releases](https://github.com/twsnmp/TWLogAIAN/releases)
 
-![](./images/2022-05-19_04-26-38.png)
+![](./images/en/install_windows.png)
 
 
 ## Scoop
@@ -59,14 +59,14 @@ Install TWLogAIAN with
 [App Store](https://apps.apple.com/app/twlogaian/id1664596440)
 
 
-![](./images//2023-01-21_15-51-47.png)
+![](./images/en/install_macos_startup.png)
 
 
 ## Start TWLogAIAN
 
 If you are using Windows, start the menu from the Mac OS, launcher, etc., etc., etc., start it using any method you like.You should see the Welcome screen.
 
-![](./images/2023-01-21_15-56-31.png)
+![](./images/en/welcome_startup.png)
 
 
 ## Dark Mode
@@ -76,14 +76,14 @@ I like dark mode.
 I think people who are aiming to become White Hackers probably like dark mode.It seems that there are only white hackers in the cat world.
 By assistant cat
 
-![](./images/2023-01-21_15-57-05.png)
+![](./images/en/dark_mode_startup.png)
 
 
 ## Language switching
 
 You can switch the screen display to English in the menu at the top right.
 
-![](./images/2023-01-21_15-58-07.png)
+![](./images/en/language_switch_startup.png)
 
 
 # Analysis flow using TWLogAIAN
@@ -104,7 +104,7 @@ The general analysis process is
 
 Click the <Start> button to display the working folder selection screen.The working folder will create configuration files and full-text search engine indexes for analysis.Once the analysis is complete, delete the entire folder and it will disappear.You can destroy evidence.
 
-![](./images/2022-05-19_04-42-41.png)
+![](./images/en/select_workspace.png)
 
 
 ## Setting the log load location
@@ -113,34 +113,34 @@ Select the working folder to display the log analysis settings screen.
 First, set the location where the logs will be loaded.Set where the logs to be analyzed are located.You can add it at the beginning using the <+> button.
 In this example, the filenames in the specified folder start with access.
 
-![](./images/2022-05-19_04-45-22.png)
+![](./images/en/log_sources_list.png)
 
 
 ## Configuring log loading operations
 
 Once you have specified the location to load the target log, you will be setting the processing when loading.There are settings related to handling compressed files in compressed files, handling time when there is no time zone, setting to restrict the logs to be loaded with filters, setting to extract data from logs, setting to check host name and location information from information such as IP addresses, and setting to create indexes.
 
-![](./images/2023-01-21_16-05-19.png)
+![](./images/en/log_loading_config.png)
 
 ## Loading the log
 
 Click the <Create Index> button to start loading the log.The progress will be displayed while loading.
 
-![](./images/2023-01-21_16-37-31.png)
+![](./images/en/indexing_startup.png)
 
 
 ## Searching logs
 
 Once the log is loaded and the index creation is complete, the search screen will be displayed.For now, click the Search button to search.
 
-![](./images/2023-01-21_16-39-35.png)
+![](./images/en/log_search_startup.png)
 
 
 ## Processing results
 
 You can check the status of log loading using the <Processing Results> button.You can check the items of data extracted from the log and the times when there are many logs.
 
-![](./images/2023-01-22_05-50-35.png)
+![](./images/en/report_process_results_startup.png)
 
 
 ## Search criteria
@@ -149,14 +149,14 @@ You can also search by specifying search criteria.
 Time range, keywords, numerical range, location information, etc.
 There are also settings for abnormality detection and data extraction.
 
-![](./images/2023-01-21_16-42-25.png)
+![](./images/en/search_criteria_startup.png)
 
 
 ## Report
 
 You can also view reports by setting the settings to extract location information from time range, location information, and IP addresses.
 
-![](./images/2023-01-21_17-45-57.png)
+![](./images/en/report_location_startup.png)
 
  
 
