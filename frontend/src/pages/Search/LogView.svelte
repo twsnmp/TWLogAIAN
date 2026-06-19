@@ -827,93 +827,97 @@
       />
     </div>
     {#if !busy}
-      <div class="Box-footer text-right">
-        {#if result && result.Hit > 0}
+      <div class="Box-footer d-flex flex-justify-between">
+        <div>
+          <button class="btn btn-secondary mr-1" type="button" on:click={end}>
+            <X16 />
+            {$_('LogView.EndBtn')}
+          </button>
+          <button class="btn btn-secondary" type="button" on:click={back}>
+            <Reply16 />
+            {$_('LogView.BackBtn')}
+          </button>
+        </div>
+        <div>
+          {#if result && result.Hit > 0}
+            <!-- svelte-ignore a11y-no-onchange -->
+            <select
+              class="form-select mr-1"
+              bind:value={perPage}
+              on:change={chnagePerPage}
+            >
+              <option value="5">{$_('5lpp')}</option>
+              <option value="10">{$_('10lpp')}</option>
+              <option value="20">{$_('20lpp')}</option>
+              <option value="50">{$_('50lpp')}</option>
+              <option value="100">{$_('100lpp')}</option>
+            </select>
+            <!-- svelte-ignore a11y-no-onchange -->
+            <select
+              class="form-select mr-1"
+              bind:value={logView}
+              on:change={chnageLogView}
+            >
+              <option value="timeonly">{$_('LogView.TimeOnly')}</option>
+              {#if result.View == "syslog" || result.View == "auto"}
+                <option value="syslog">syslog</option>
+              {/if}
+              {#if result.View == "access" || result.View == "auto"}
+                <option value="access">{$_('LogView.AccessLog')}</option>
+              {/if}
+              {#if result.View == "windows" || result.View == "auto"}
+                <option value="windows">Windows</option>
+              {/if}
+              {#if result.Fields.length > 0}
+                <option value="data">{$_('LogView.ExtractData')}</option>
+              {/if}
+              {#if result.ExFields.length > 0}
+                <option value="ex_data">{$_('LogView.ExtractDataOnSearch')}</option>
+              {/if}
+              {#if conf.anomaly != ""}
+                <option value="anomaly">{$_('LogView.LogAnomaryScore')}</option>
+              {/if}
+            </select>
+          {/if}
           <!-- svelte-ignore a11y-no-onchange -->
-          <select
-            class="form-select mr-1"
-            bind:value={perPage}
-            on:change={chnagePerPage}
-          >
-            <option value="5">{$_('5lpp')}</option>
-            <option value="10">{$_('10lpp')}</option>
-            <option value="20">{$_('20lpp')}</option>
-            <option value="50">{$_('50lpp')}</option>
-            <option value="100">{$_('100lpp')}</option>
-          </select>
-          <!-- svelte-ignore a11y-no-onchange -->
-          <select
-            class="form-select mr-1"
-            bind:value={logView}
-            on:change={chnageLogView}
-          >
-            <option value="timeonly">{$_('LogView.TimeOnly')}</option>
-            {#if result.View == "syslog" || result.View == "auto"}
-              <option value="syslog">syslog</option>
-            {/if}
-            {#if result.View == "access" || result.View == "auto"}
-              <option value="access">{$_('LogView.AccessLog')}</option>
-            {/if}
-            {#if result.View == "windows" || result.View == "auto"}
-              <option value="windows">Windows</option>
-            {/if}
-            {#if result.Fields.length > 0}
-              <option value="data">{$_('LogView.ExtractData')}</option>
-            {/if}
-            {#if result.ExFields.length > 0}
-              <option value="ex_data">{$_('LogView.ExtractDataOnSearch')}</option>
-            {/if}
-            {#if conf.anomaly != ""}
-              <option value="anomaly">{$_('LogView.LogAnomaryScore')}</option>
-            {/if}
-          </select>
-        {/if}
-        <!-- svelte-ignore a11y-no-onchange -->
-        {#if saveBusy}
-          <span>{$_('LogView.Saving')}</span><span class="AnimatedEllipsis"></span>
-        {:else}
-          <select
-            class="form-select mr-1"
-            bind:value={exportType}
-            on:change={exportLogs}
-          >
-            <option value="">{$_('LogView.ExportMenu')}</option>
-            {#if result && result.Hit > 0 && result.Fields.length > 0}
-              <option value="csv">CSV</option>
-              <option value="excel">Excel</option>
-            {/if}
-          </select>
-        {/if}
-        {#if result && result.Hit > 0 && result.Fields.length > 0}
-          <!-- svelte-ignore a11y-no-onchange -->
-          <select
-            class="form-select mr-1"
-            bind:value={report}
-            on:change={showReport}
-          >
-            <option value="">{$_('LogView.ReportMenu')}</option>
-            <option value="result">{$_('LogView.ResultBtn')}</option>
-            <option value="memo">{$_('LogView.MemoMenu')}</option>
-            <option value="ranking">{$_('LogView.RankingMenu')}</option>
-            <option value="time">{$_('LogView.TimeMenu')}</option>
-            <option value="time3d">{$_('LogView.Time3DMenu')}</option>
-            <option value="cluster">{$_('LogView.ClusterMenu')}</option>
-            <option value="histogram">{$_('LogView.HistogramMenu')}</option>
-            <option value="fft">{$_('LogView.FFTMenu')}</option>
-            <option value="world">{$_('LogView.LocMenu')}</option>
-            <option value="graph">{$_('LogView.GraphMenu')}</option>
-            <option value="globe">{$_('LogView.GlobeMenu')}</option>
-            <option value="heatmap">{$_('LogView.HeatmapMenu')}</option>
-          </select>
-        {/if}
-        <button class="btn  btn-secondary mr-1" type="button" on:click={back}>
-          <Reply16 />
-          {$_('LogView.BackBtn')}
-        </button>
-        <button class="btn  btn-secondary" type="button" on:click={end}>
-          <X16 />
-          {$_('LogView.EndBtn')}
-        </button>
+          {#if saveBusy}
+            <span>{$_('LogView.Saving')}</span><span class="AnimatedEllipsis"></span>
+          {:else}
+            <select
+              class="form-select mr-1"
+              bind:value={exportType}
+              on:change={exportLogs}
+            >
+              <option value="">{$_('LogView.ExportMenu')}</option>
+              {#if result && result.Hit > 0 && result.Fields.length > 0}
+                <option value="csv">CSV</option>
+                <option value="excel">Excel</option>
+              {/if}
+            </select>
+          {/if}
+          {#if result && result.Hit > 0 && result.Fields.length > 0}
+            <!-- svelte-ignore a11y-no-onchange -->
+            <select
+              class="form-select"
+              bind:value={report}
+              on:change={showReport}
+            >
+              <option value="">{$_('LogView.ReportMenu')}</option>
+              <option value="result">{$_('LogView.ResultBtn')}</option>
+              <option value="memo">{$_('LogView.MemoMenu')}</option>
+              <option value="ranking">{$_('LogView.RankingMenu')}</option>
+              <option value="time">{$_('LogView.TimeMenu')}</option>
+              <option value="time3d">{$_('LogView.Time3DMenu')}</option>
+              <option value="cluster">{$_('LogView.ClusterMenu')}</option>
+              <option value="histogram">{$_('LogView.HistogramMenu')}</option>
+              <option value="fft">{$_('LogView.FFTMenu')}</option>
+              <option value="world">{$_('LogView.LocMenu')}</option>
+              <option value="graph">{$_('LogView.GraphMenu')}</option>
+              <option value="globe">{$_('LogView.GlobeMenu')}</option>
+              <option value="heatmap">{$_('LogView.HeatmapMenu')}</option>
+            </select>
+          {/if}
+        </div>
       </div>
     {/if}
   </div>

@@ -107,15 +107,19 @@
       <em><small>TWLogAIAN {version}© 2022 Masayuki Yamai</small></em>
     </div>
   </div>
-  <div class="Box-footer text-right">
-    <button class="btn btn-danger mr-1" type="button" on:click={feedback}>
-      <PaperAirplane16 />
-      {$_('Wellcome.Feedback')}
-    </button>
-    <button class="btn btn-primary" type="button" on:click={workdir}>
-      <MortarBoard16 />
-      {$_('Wellcome.Start')}
-    </button>
+  <div class="Box-footer d-flex flex-justify-between">
+    <div>
+      <button class="btn btn-danger" type="button" on:click={feedback}>
+        <PaperAirplane16 />
+        {$_('Wellcome.Feedback')}
+      </button>
+    </div>
+    <div>
+      <button class="btn btn-primary" type="button" on:click={workdir}>
+        <MortarBoard16 />
+        {$_('Wellcome.Start')}
+      </button>
+    </div>
   </div>
 </div>
 

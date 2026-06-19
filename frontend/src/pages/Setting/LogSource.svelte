@@ -405,25 +405,29 @@
       {/if}
     {/if}
   </div>
-  <div class="Box-footer text-right">
-    <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
-      <X16 />
-      {$_('LogSource.CancelBtn')}
-    </button>
-    {#if editMode}
-      <button class="btn btn-danger mr-1" type="button" on:click={del}>
-        <Trash16 />
-        {$_('LogSource.DeleteBtn')}
+  <div class="Box-footer d-flex flex-justify-between">
+    <div>
+      <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
+        <X16 />
+        {$_('LogSource.CancelBtn')}
       </button>
-    {/if}
-    <button class="btn btn-primary" type="button" on:click={save}>
-      <Check16 />
       {#if editMode}
-        {$_('LogSource.UpateBtn')}
-      {:else}
-        {$_('LogSource.AddBtn')}
+        <button class="btn btn-danger" type="button" on:click={del}>
+          <Trash16 />
+          {$_('LogSource.DeleteBtn')}
+        </button>
       {/if}
-    </button>
+    </div>
+    <div>
+      <button class="btn btn-primary" type="button" on:click={save}>
+        <Check16 />
+        {#if editMode}
+          {$_('LogSource.UpateBtn')}
+        {:else}
+          {$_('LogSource.AddBtn')}
+        {/if}
+      </button>
+    </div>
   </div>
 </div>
 

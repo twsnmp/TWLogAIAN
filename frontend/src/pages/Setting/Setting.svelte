@@ -476,315 +476,373 @@
             </label>
           </div>
         </div>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5 class="pb-1">{$_('Setting.Filter')}</h5>
-          </div>
-          <div class="form-group-body">
-            <input
-              class="form-control input-block"
-              type="text"
-              style="width: 100%;"
-              placeholder="{$_('Setting.Filter')}"
-              bind:value={config.Filter}
-            />
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5 class="pb-1">{$_('Setting.LogType')}</h5>
-          </div>
-          <div class="form-group-body">
-            <select
-              class="form-select"
-              bind:value={config.Extractor}
-              on:change={changeExtractor}
-            >
-              {#each extractorTypeList as item}
-                <option value={item.Key}>{item.Name}</option>
-              {/each}
-            </select>
-            <label class="p-1">
-              <input type="checkbox" bind:checked={config.Strict} />
-                {$_('Setting.StrictPatCheck')}
-              </label>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5 class="pb-1">{$_('Setting.TimeExtract')}</h5>
-          </div>
-          <div class="form-group-body">
-            <!-- svelte-ignore a11y-no-onchange -->
-            <select
-              class="form-select"
-              bind:value={config.TimeGrinderOverride}
-            >
-              <option value="">{$_('Setting.Auto')}</option>
-              <option value="AnsiC">AnsiC(Jan _2 15:04:05 2006)</option>
-              <option value="Unix">Unix(Jan _2 15:04:05 MST 2006)</option>
-              <option value="Ruby">Ruby(Jan _2 15:04:05 -0700 2006)</option>
-              <option value="RFC822">RFC822(02 Jan 06 15:04 MST)</option>
-              <option value="RFC822Z">RFC822Z(02 Jan 06 15:04 -0700)</option>
-              <option value="RFC850">RFC850(02-Jan-06 15:04:05 MST)</option>
-              <option value="RFC1123">RFC1123(02 Jan 2006 15:04:05 MST)</option>
-              <option value="RFC1123Z">RFC1123Z(02 Jan 2006 15:04:05 -0700)</option>
-              <option value="RFC3339">RFC3339(2006-01-02T15:04:05Z07:00)</option>
-              <option value="RFC3339Nano">RFC3339Nano(2006-01-02T15:04:05.999999999Z07:00)</option>
-              <option value="ZonelessRFC3339">ZonelessRFC3339(2006-01-02T15:04:05.999999999)</option>
-              <option value="Apache">Apache(_2/Jan/2006:15:04:05 -0700)</option>
-              <option value="ApacheNoTz">ApacheNoTz(_2/Jan/2006:15:04:05)</option>
-              <option value="NGINX">NGINX(2006/01/02 15:04:05)</option>
-              <option value="Syslog">Syslog(Jan _2 15:04:05)</option>
-              <option value="SyslogFile">SyslogFile(2006-01-02T15:04:05.999999999-07:00)</option>
-              <option value="SyslogFileTZ">SyslogFileTZ(2006-01-02T15:04:05.999999999-0700)</option>
-              <option value="DPKG">DPKG(2006-01-02 15:04:05)</option>
-              <option value="SyslogVariant">SyslogVariant(Jan 02 2006 15:04:05)</option>
-              <option value="UnpaddedDateTime">UnpaddedDateTime(2006-1-2 15:04:05)</option>
-              <option value="UnpaddedMilliDateTime">UnpaddedMilliDateTime(2006-1-2 15:04:05.999999999)</option>
-              <option value="UK">UK(02/01/2006 15:04:05,99999)</option>
-              <option value="Gravwell">Gravwell(1-2-2006 15:04:05.99999)</option>
-              <option value="Bind">Bind(02-Jan-2006 15:04:05.999)</option>
-              <option value="DirectAdmin">DirectAdmin(2006:01:02-15:04:05)</option>
-              <option value="custom01">Jan _2 15:04:05 2006</option>
-              <option value="custom02">2006/1/2 3:04:05</option>
-              <option value="custom00">{$_('Setting.CustomLogType')}</option>
-            </select>
-          </div>
-          {#if config.TimeGrinderOverride == "custom00"}
-            <div class="form-group-body">
-              <input
-                class="form-control"
-                type="text"
-                placeholder="{$_('Setting.TimeGrinderRegExp')}"
-                style="width: 45%;"
-                bind:value={config.TimeGrinderRegExp}
-              />
-              <input
-                class="form-control"
-                type="text"
-                placeholder="{$_('Setting.TimeGrinderFormat')}"
-                style="width: 45%;"
-                bind:value={config.TimeGrinderFormat}
-              />
-            </div>
-          {/if}
-        </div>
-
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5 class="pb-1">{$_('Setting.AddressInfo')}</h5>
-          </div>
-          <div class="form-group-body">
-            <label class="p-1">
-              <input type="checkbox" bind:checked={config.HostName} />
-              {$_('Setting.CheckHostName')}
-            </label>
-            <label class="p-1">
-              <input class="ml-2" type="checkbox" bind:checked={config.GeoIP} />
-              {$_('Setting.CheckIPLoc')}
-            </label>
-            <label class="p-1">
-              <input
-                class="ml-2"
-                type="checkbox"
-                bind:checked={config.VendorName}
-              />
-              {$_('Setting.CheckVendorName')}
-            </label>
-          </div>
-        </div>
-        {#if config?.Extractor == "custom" || config?.Extractor == "auto" || (config?.Extractor || "").startsWith("EXT")}
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5 class="pb-1">{$_('Setting.ExtractPat')}</h5>
-            </div>
-            <div class="form-group-body">
-              <input
-                class="form-control input-block"
-                type="text"
-                placeholder="{$_('Setting.GrokPat')}"
-                style="width: 100%;"
-                bind:value={config.Grok}
-              />
-            </div>
-          </div>
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5 class="pb-1">{$_('Setting.ExtractInfo')}</h5>
-            </div>
-            <div class="form-group-body">
-              <input
-                class="form-control"
-                type="text"
-                style="width: 15%;"
-                placeholder="{$_('Setting.TimeField')}"
-                bind:value={config.TimeField}
-              />
-              {#if config.HostName}
+        <div class="columns-container">
+          <div class="column">
+            <!-- Filter -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5 class="pb-1">{$_('Setting.Filter')}</h5>
+              </div>
+              <div class="form-group-body">
                 <input
-                  class="form-control"
+                  class="form-control input-block"
                   type="text"
-                  style="width: 25%;"
-                  placeholder="{$_('Setting.HostNameField')}"
-                  bind:value={config.HostFields}
+                  style="width: 100%;"
+                  placeholder="{$_('Setting.Filter')}"
+                  bind:value={config.Filter}
                 />
-              {/if}
-              {#if config.GeoIP}
-                <input
-                  class="form-control"
-                  type="text"
-                  placeholder="{$_('Setting.IPLocFiled')}"
-                  style="width: 25%;"
-                  bind:value={config.GeoFields}
-                />
-              {/if}
-              {#if config.VendorName}
-                <input
-                  class="form-control"
-                  type="text"
-                  placeholder="{$_('Setting.MacFiled')}"
-                  style="width: 20%;"
-                  bind:value={config.MACFields}
-                />
-              {/if}
-            </div>
-          </div>
-        {/if}
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5 class="pb-1">{$_('Setting.IndexerSetting')}</h5>
-          </div>
-          <div class="form-group-body">
-            <div class="form-checkbox">
-              <label>
-                <input
-                  type="checkbox"
-                  disabled={hasIndex}
-                  bind:checked={config.InMemory}
-                  aria-describedby="help-text-for-inmemory"
-                />
-                {$_('Setting.IndexInMemory')}
-              </label>
-              <p class="note" id="help-text-for-inmemory">
-                {$_('Setting.InMemoryMsg')}
-              </p>
-            </div>
-          </div>
-        </div>
-        {#if config.GeoIP}
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5 class="pb-1">{$_('Setting.GeoDB')}</h5>
-            </div>
-            <div class="form-group-body">
-              <div class="input-group">
-                <input
-                  class="form-control"
-                  type="text"
-                  placeholder="{$_('Setting.GeoIPDB')}"
-                  bind:value={config.GeoIPDB}
-                />
-                <span class="input-group-button">
-                  <button class="btn" type="button" on:click={selectGeoIPDB}>
-                    <File16 />
-                  </button>
-                </span>
               </div>
             </div>
+
+            <!-- Log Type -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5 class="pb-1">{$_('Setting.LogType')}</h5>
+              </div>
+              <div class="form-group-body">
+                <select
+                  class="form-select width-full"
+                  bind:value={config.Extractor}
+                  on:change={changeExtractor}
+                >
+                  {#each extractorTypeList as item}
+                    <option value={item.Key}>{item.Name}</option>
+                  {/each}
+                </select>
+                <label class="d-block mt-2 p-1">
+                  <input type="checkbox" bind:checked={config.Strict} />
+                  {$_('Setting.StrictPatCheck')}
+                </label>
+              </div>
+            </div>
+
+            <!-- Time Extract -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5 class="pb-1">{$_('Setting.TimeExtract')}</h5>
+              </div>
+              <div class="form-group-body">
+                <!-- svelte-ignore a11y-no-onchange -->
+                <select
+                  class="form-select width-full"
+                  bind:value={config.TimeGrinderOverride}
+                >
+                  <option value="">{$_('Setting.Auto')}</option>
+                  <option value="AnsiC">AnsiC(Jan _2 15:04:05 2006)</option>
+                  <option value="Unix">Unix(Jan _2 15:04:05 MST 2006)</option>
+                  <option value="Ruby">Ruby(Jan _2 15:04:05 -0700 2006)</option>
+                  <option value="RFC822">RFC822(02 Jan 06 15:04 MST)</option>
+                  <option value="RFC822Z">RFC822Z(02 Jan 06 15:04 -0700)</option>
+                  <option value="RFC850">RFC850(02-Jan-06 15:04:05 MST)</option>
+                  <option value="RFC1123">RFC1123(02 Jan 2006 15:04:05 MST)</option>
+                  <option value="RFC1123Z">RFC1123Z(02 Jan 2006 15:04:05 -0700)</option>
+                  <option value="RFC3339">RFC3339(2006-01-02T15:04:05Z07:00)</option>
+                  <option value="RFC3339Nano">RFC3339Nano(2006-01-02T15:04:05.999999999Z07:00)</option>
+                  <option value="ZonelessRFC3339">ZonelessRFC3339(2006-01-02T15:04:05.999999999)</option>
+                  <option value="Apache">Apache(_2/Jan/2006:15:04:05 -0700)</option>
+                  <option value="ApacheNoTz">ApacheNoTz(_2/Jan/2006:15:04:05)</option>
+                  <option value="NGINX">NGINX(2006/01/02 15:04:05)</option>
+                  <option value="Syslog">Syslog(Jan _2 15:04:05)</option>
+                  <option value="SyslogFile">SyslogFile(2006-01-02T15:04:05.999999999-07:00)</option>
+                  <option value="SyslogFileTZ">SyslogFileTZ(2006-01-02T15:04:05.999999999-0700)</option>
+                  <option value="DPKG">DPKG(2006-01-02 15:04:05)</option>
+                  <option value="SyslogVariant">SyslogVariant(Jan 02 2006 15:04:05)</option>
+                  <option value="UnpaddedDateTime">UnpaddedDateTime(2006-1-2 15:04:05)</option>
+                  <option value="UnpaddedMilliDateTime">UnpaddedMilliDateTime(2006-1-2 15:04:05.999999999)</option>
+                  <option value="UK">UK(02/01/2006 15:04:05,99999)</option>
+                  <option value="Gravwell">Gravwell(1-2-2006 15:04:05.99999)</option>
+                  <option value="Bind">Bind(02-Jan-2006 15:04:05.999)</option>
+                  <option value="DirectAdmin">DirectAdmin(2006:01:02-15:04:05)</option>
+                  <option value="custom01">Jan _2 15:04:05 2006</option>
+                  <option value="custom02">2006/1/2 3:04:05</option>
+                  <option value="custom00">{$_('Setting.CustomLogType')}</option>
+                </select>
+              </div>
+              {#if config.TimeGrinderOverride == "custom00"}
+                <div class="form-group-body d-flex mt-2" style="gap: 8px;">
+                  <input
+                    class="form-control"
+                    type="text"
+                    placeholder="{$_('Setting.TimeGrinderRegExp')}"
+                    style="flex: 1;"
+                    bind:value={config.TimeGrinderRegExp}
+                  />
+                  <input
+                    class="form-control"
+                    type="text"
+                    placeholder="{$_('Setting.TimeGrinderFormat')}"
+                    style="flex: 1;"
+                    bind:value={config.TimeGrinderFormat}
+                  />
+                </div>
+              {/if}
+            </div>
+
+            <!-- Extract Pattern and Extract Info (conditional) -->
+            {#if config?.Extractor == "custom" || config?.Extractor == "auto" || (config?.Extractor || "").startsWith("EXT")}
+              <div class="form-group">
+                <div class="form-group-header">
+                  <h5 class="pb-1">{$_('Setting.ExtractPat')}</h5>
+                </div>
+                <div class="form-group-body">
+                  <input
+                    class="form-control input-block"
+                    type="text"
+                    placeholder="{$_('Setting.GrokPat')}"
+                    style="width: 100%;"
+                    bind:value={config.Grok}
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-group-header">
+                  <h5 class="pb-1">{$_('Setting.ExtractInfo')}</h5>
+                </div>
+                <div class="form-group-body d-flex flex-wrap" style="gap: 8px;">
+                  <input
+                    class="form-control"
+                    type="text"
+                    style="flex: 1 1 120px;"
+                    placeholder="{$_('Setting.TimeField')}"
+                    bind:value={config.TimeField}
+                  />
+                  {#if config.HostName}
+                    <input
+                      class="form-control"
+                      type="text"
+                      style="flex: 1 1 120px;"
+                      placeholder="{$_('Setting.HostNameField')}"
+                      bind:value={config.HostFields}
+                    />
+                  {/if}
+                  {#if config.GeoIP}
+                    <input
+                      class="form-control"
+                      type="text"
+                      placeholder="{$_('Setting.IPLocFiled')}"
+                      style="flex: 1 1 120px;"
+                      bind:value={config.GeoFields}
+                    />
+                  {/if}
+                  {#if config.VendorName}
+                    <input
+                      class="form-control"
+                      type="text"
+                      placeholder="{$_('Setting.MacFiled')}"
+                      style="flex: 1 1 120px;"
+                      bind:value={config.MACFields}
+                    />
+                  {/if}
+                </div>
+              </div>
+            {/if}
           </div>
-        {/if}
-        <hr class="mt-3 mb-3" />
-        <h4>{$_('Setting.LLMSetting')}</h4>
-        <div class="form-group">
-          <div class="form-group-header">
-            <h5 class="pb-1">{$_('Setting.LLMProvider')}</h5>
-          </div>
-          <div class="form-group-body">
-            <select class="form-select" bind:value={config.LLMProvider}>
-              <option value="none">{$_('Setting.LLMNone')}</option>
-              <option value="gemini">Google AI (Gemini)</option>
-              <option value="openai">OpenAI</option>
-              <option value="anthropic">Anthropic (Claude)</option>
-              <option value="ollama">Ollama (ローカルLLM)</option>
-            </select>
+
+          <div class="column">
+            <!-- Address Info -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5 class="pb-1">{$_('Setting.AddressInfo')}</h5>
+              </div>
+              <div class="form-group-body">
+                <label class="d-block p-1">
+                  <input type="checkbox" bind:checked={config.HostName} />
+                  {$_('Setting.CheckHostName')}
+                </label>
+                <label class="d-block p-1">
+                  <input type="checkbox" bind:checked={config.GeoIP} />
+                  {$_('Setting.CheckIPLoc')}
+                </label>
+                <label class="d-block p-1">
+                  <input
+                    type="checkbox"
+                    bind:checked={config.VendorName}
+                  />
+                  {$_('Setting.CheckVendorName')}
+                </label>
+              </div>
+            </div>
+
+            <!-- GeoDB (conditional) -->
+            {#if config.GeoIP}
+              <div class="form-group">
+                <div class="form-group-header">
+                  <h5 class="pb-1">{$_('Setting.GeoDB')}</h5>
+                </div>
+                <div class="form-group-body">
+                  <div class="input-group">
+                    <input
+                      class="form-control"
+                      type="text"
+                      placeholder="{$_('Setting.GeoIPDB')}"
+                      bind:value={config.GeoIPDB}
+                    />
+                    <span class="input-group-button">
+                      <button class="btn" type="button" on:click={selectGeoIPDB}>
+                        <File16 />
+                      </button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {/if}
+
+            <!-- Indexer Setting -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5 class="pb-1">{$_('Setting.IndexerSetting')}</h5>
+              </div>
+              <div class="form-group-body">
+                <div class="form-checkbox">
+                  <label>
+                    <input
+                      type="checkbox"
+                      disabled={hasIndex}
+                      bind:checked={config.InMemory}
+                      aria-describedby="help-text-for-inmemory"
+                    />
+                    {$_('Setting.IndexInMemory')}
+                  </label>
+                  <p class="note" id="help-text-for-inmemory">
+                    {$_('Setting.InMemoryMsg')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- LLM Settings -->
+            <hr class="mt-2 mb-2" />
+            <h4 class="mb-2">{$_('Setting.LLMSetting')}</h4>
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5 class="pb-1">{$_('Setting.LLMProvider')}</h5>
+              </div>
+              <div class="form-group-body">
+                <select class="form-select width-full" bind:value={config.LLMProvider}>
+                  <option value="none">{$_('Setting.LLMNone')}</option>
+                  <option value="gemini">Google AI (Gemini)</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic (Claude)</option>
+                  <option value="ollama">Ollama (ローカルLLM)</option>
+                </select>
+              </div>
+            </div>
+            {#if config.LLMProvider != "none"}
+              <div class="form-group">
+                <div class="form-group-header">
+                  <h5 class="pb-1">{$_('Setting.LLMBaseURL')}</h5>
+                </div>
+                <div class="form-group-body">
+                  <input
+                    class="form-control"
+                    type="text"
+                    bind:value={config.LLMBaseURL}
+                    placeholder="ベースURLを入力 (空欄でデフォルト)"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-group-header">
+                  <h5 class="pb-1">{$_('Setting.LLMAPIKey')}</h5>
+                </div>
+                <div class="form-group-body">
+                  <input
+                    class="form-control"
+                    type="password"
+                    bind:value={config.LLMAPIKey}
+                    placeholder="APIキーを入力"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-group-header">
+                  <h5 class="pb-1">{$_('Setting.LLMModel')}</h5>
+                </div>
+                <div class="form-group-body">
+                  <input
+                    class="form-control"
+                    type="text"
+                    bind:value={config.LLMModel}
+                    placeholder="モデル名を入力"
+                  />
+                </div>
+              </div>
+            {/if}
           </div>
         </div>
-        {#if config.LLMProvider != "none"}
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5 class="pb-1">{$_('Setting.LLMBaseURL')}</h5>
-            </div>
-            <div class="form-group-body">
-              <input
-                class="form-control"
-                type="text"
-                bind:value={config.LLMBaseURL}
-                placeholder="ベースURLを入力 (空欄でデフォルト)"
-              />
-            </div>
-          </div>
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5 class="pb-1">{$_('Setting.LLMAPIKey')}</h5>
-            </div>
-            <div class="form-group-body">
-              <input
-                class="form-control"
-                type="password"
-                bind:value={config.LLMAPIKey}
-                placeholder="APIキーを入力"
-              />
-            </div>
-          </div>
-          <div class="form-group">
-            <div class="form-group-header">
-              <h5 class="pb-1">{$_('Setting.LLMModel')}</h5>
-            </div>
-            <div class="form-group-body">
-              <input
-                class="form-control"
-                type="text"
-                bind:value={config.LLMModel}
-                placeholder="モデル名を入力"
-              />
-            </div>
-          </div>
-        {/if}
       </div>
-      <div class="Box-footer text-right">
-        <button
-          class="btn btn-outline mr-1"
-          type="button"
-          on:click={showLogTypePage}
-        >
-          <Checklist16 />
-          {$_('Setting.LogDefBtn')}
-        </button>
-        <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
-          <X16 />
-          {$_('Setting.EndBtn')}
-        </button>
-        {#if hasIndex}
-          <button class="btn btn-danger mr-1" type="button" on:click={clear}>
-            <Trash16 />
-            {$_('Setting.DelteIndexBtn')}
+      <div class="Box-footer d-flex flex-justify-between">
+        <div>
+          <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
+            <X16 />
+            {$_('Setting.EndBtn')}
           </button>
-          <button class="btn btn-danger mr-1" type="button" on:click={start}>
-            <Check16 />
-            {$_('Setting.LoadMoreBtn')}
+          {#if hasIndex}
+            <button class="btn btn-danger" type="button" on:click={clear}>
+              <Trash16 />
+              {$_('Setting.DelteIndexBtn')}
+            </button>
+          {/if}
+        </div>
+        <div>
+          <button
+            class="btn btn-outline mr-1"
+            type="button"
+            on:click={showLogTypePage}
+          >
+            <Checklist16 />
+            {$_('Setting.LogDefBtn')}
           </button>
-          <button class="btn btn-primary mr-1" type="button" on:click={search}>
-            <Search16 />
-            {$_('Setting.ToSearch')}
-          </button>
-        {:else}
-          <button class="btn btn-primary" type="button" on:click={start}>
-            <Check16 />
-            {$_('Setting.StartBtn')}
-          </button>
-        {/if}
+          {#if hasIndex}
+            <button class="btn btn-danger mr-1" type="button" on:click={start}>
+              <Check16 />
+              {$_('Setting.LoadMoreBtn')}
+            </button>
+            <button class="btn btn-primary" type="button" on:click={search}>
+              <Search16 />
+              {$_('Setting.ToSearch')}
+            </button>
+          {:else}
+            <button class="btn btn-primary" type="button" on:click={start}>
+              <Check16 />
+              {$_('Setting.StartBtn')}
+            </button>
+          {/if}
+        </div>
       </div>
     {/if}
   </div>
 {/if}
+
+<style>
+  .columns-container {
+    display: flex;
+    gap: 24px;
+    margin-top: 15px;
+  }
+  .column {
+    flex: 1;
+    min-width: 0;
+  }
+  .form-group {
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+  .form-group-header {
+    margin-bottom: 4px;
+  }
+  table.width-full {
+    display: table !important;
+    width: 100% !important;
+    table-layout: fixed;
+  }
+  table.width-full td {
+    word-break: break-all;
+  }
+  @media (max-width: 768px) {
+    .columns-container {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+</style>

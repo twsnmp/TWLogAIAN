@@ -178,17 +178,21 @@
       </div>
     {/each}
   </div>
-  <div class="Box-footer text-right">
-    {#if memos.length > 0}
-      <button class="btn btn-secondary" type="button" on:click={copy}>
-        <Copy16 />
-        {$_('Memo.CopyBtn')}
+  <div class="Box-footer d-flex flex-justify-between">
+    <div>
+      <button class="btn btn-secondary" type="button" on:click={back}>
+        <X16 />
+        {$_('Memo.BackBtn')}
       </button>
-    {/if}
-    <button class="btn btn-secondary" type="button" on:click={back}>
-      <X16 />
-      {$_('Memo.BackBtn')}
-    </button>
+    </div>
+    <div>
+      {#if memos.length > 0}
+        <button class="btn btn-secondary" type="button" on:click={copy}>
+          <Copy16 />
+          {$_('Memo.CopyBtn')}
+        </button>
+      {/if}
+    </div>
   </div>
 </div>
 <div id="memoCopy"></div>

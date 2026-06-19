@@ -163,23 +163,27 @@
   <div class="Box-row markdown-body log">
     <Grid {data} sort search {pagination} {columns} language={gridLang} />
   </div>
-  <div class="Box-footer text-right">
-    {#if data.length > 0}
-      <!-- svelte-ignore a11y-no-onchange -->
-      {#if saveBusy}
-        <span>{$_('Time.Saving')}</span><span class="AnimatedEllipsis"></span>
-      {:else}
-        <select class="form-select" bind:value={exportType} on:change="{exportReport}">
-          <option value="">{$_('Time.ExportBtn')}</option>
-          <option value="csv">CSV</option>
-          <option value="excel">Excel</option>
-        </select>
+  <div class="Box-footer d-flex flex-justify-between">
+    <div>
+      <button class="btn btn-secondary" type="button" on:click={back}>
+        <X16 />
+        {$_('Time.BackBtn')}
+      </button>
+    </div>
+    <div>
+      {#if data.length > 0}
+        <!-- svelte-ignore a11y-no-onchange -->
+        {#if saveBusy}
+          <span>{$_('Time.Saving')}</span><span class="AnimatedEllipsis"></span>
+        {:else}
+          <select class="form-select" bind:value={exportType} on:change="{exportReport}">
+            <option value="">{$_('Time.ExportBtn')}</option>
+            <option value="csv">CSV</option>
+            <option value="excel">Excel</option>
+          </select>
+        {/if}
       {/if}
-    {/if}
-    <button class="btn btn-secondary" type="button" on:click={back}>
-      <X16 />
-      {$_('Time.BackBtn')}
-    </button>
+    </div>
   </div>
 </div>
 

@@ -83,15 +83,19 @@
     <div class="Box-body">
       <pre style="text-wrap: wrap;">{answer}</pre>
     </div>
-    <div class="Box-footer text-right">
-      <button class="btn btn-secondary mr-1" type="button" on:click={copy}>
-        <Copy16 />
-        {$_('AI.Copy')}
-      </button>
-      <button class="btn btn-secondary mr-1" type="button" on:click={close}>
-        <X16 />
-        {$_('AI.Close')}
-      </button>
+    <div class="Box-footer d-flex flex-justify-between">
+      <div>
+        <button class="btn btn-secondary" type="button" on:click={close}>
+          <X16 />
+          {$_('AI.Close')}
+        </button>
+      </div>
+      <div>
+        <button class="btn btn-secondary" type="button" on:click={copy}>
+          <Copy16 />
+          {$_('AI.Copy')}
+        </button>
+      </div>
     </div>
   </div>
 {:else}
@@ -138,15 +142,19 @@
           ></textarea>
         </div>
       </div>
-      <div class="Box-footer text-right">
-        <button class="btn btn-primary" type="button" on:click={askAI}>
-          <Question16 />
-          {$_('AI.Ask')}
-        </button>
-        <button class="btn btn-secondary mr-1" type="button" on:click={close}>
-          <X16 />
-          {$_('AI.Close')}
-        </button>
+      <div class="Box-footer d-flex flex-justify-between">
+        <div>
+          <button class="btn btn-secondary" type="button" on:click={close}>
+            <X16 />
+            {$_('AI.Close')}
+          </button>
+        </div>
+        <div>
+          <button class="btn btn-primary" type="button" on:click={askAI}>
+            <Question16 />
+            {$_('AI.Ask')}
+          </button>
+        </div>
       </div>
     </div>
   </div>

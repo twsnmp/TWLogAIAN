@@ -336,23 +336,27 @@
         <Grid {data} {columns} language={gridLang} />
       </div>
     {/if}
-    <div class="Box-footer text-right">
-      <button class="btn btn-danger mr-1" type="button" on:click={auto}>
-        <StarFill16 />
-        {$_('EditExtractorType.AutoPatGen')}
-      </button>
-      <button class="btn btn-primary" type="button" on:click={test}>
-        <Check16 />
-        {$_('EditExtractorType.Test')}
-      </button>
-      <button class="btn btn-secondary mr-1" type="button" on:click={back}>
-        <X16 />
-        {$_('EditExtractorType.CancelBtn')}
-      </button>
-      <button class="btn btn-primary mr-1" type="button" on:click={save}>
-        <X16 />
-        {$_('EditExtractorType.SaveBtn')}
-      </button>
+    <div class="Box-footer d-flex flex-justify-between">
+      <div>
+        <button class="btn btn-secondary" type="button" on:click={back}>
+          <X16 />
+          {$_('EditExtractorType.CancelBtn')}
+        </button>
+      </div>
+      <div>
+        <button class="btn btn-danger mr-1" type="button" on:click={auto}>
+          <StarFill16 />
+          {$_('EditExtractorType.AutoPatGen')}
+        </button>
+        <button class="btn btn-primary mr-1" type="button" on:click={test}>
+          <Check16 />
+          {$_('EditExtractorType.Test')}
+        </button>
+        <button class="btn btn-primary" type="button" on:click={save}>
+          <X16 />
+          {$_('EditExtractorType.SaveBtn')}
+        </button>
+      </div>
     </div>
   </div>
 {/if}

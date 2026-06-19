@@ -106,14 +106,18 @@
       </div>
     </div>
   </div>
-  <div class="Box-footer text-right">
-    <button class="btn btn-secondary mr-1" type="button" on:click={back}>
-      <X16 />
-      {$_('EditFieldType.CancelBtn')}
-    </button>
-    <button class="btn btn-primary mr-1" type="button" on:click={save}>
-      <X16 />
-      {$_('EditFieldType.SaveBtn')}
-    </button>
+  <div class="Box-footer d-flex flex-justify-between">
+    <div>
+      <button class="btn btn-secondary" type="button" on:click={back}>
+        <X16 />
+        {$_('EditFieldType.CancelBtn')}
+      </button>
+    </div>
+    <div>
+      <button class="btn btn-primary" type="button" on:click={save}>
+        <X16 />
+        {$_('EditFieldType.SaveBtn')}
+      </button>
+    </div>
   </div>
 </div>

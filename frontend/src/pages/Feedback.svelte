@@ -75,18 +75,22 @@
       </div>
     </div>
   </div>
-  <div class="Box-footer text-right">
+  <div class="Box-footer d-flex flex-justify-between">
     {#if !feedbackWait}
-      <button class="btn btn-secondary mr-1" type="button" on:click={close}>
-        <X16 />
-        {$_('Feedback.CancelBtn')}
-      </button>
-      {#if feedbackMsg != ""}
-        <button class="btn btn-primary" type="button" on:click={sendFeedBack}>
-          <PaperAirplane16 />
-          {$_('Feedback.SendBtn')}
+      <div>
+        <button class="btn btn-secondary" type="button" on:click={close}>
+          <X16 />
+          {$_('Feedback.CancelBtn')}
         </button>
-      {/if}
+      </div>
+      <div>
+        {#if feedbackMsg != ""}
+          <button class="btn btn-primary" type="button" on:click={sendFeedBack}>
+            <PaperAirplane16 />
+            {$_('Feedback.SendBtn')}
+          </button>
+        {/if}
+      </div>
     {/if}
   </div>
 </div>

@@ -94,14 +94,18 @@
       </select>
     {/if}
   </div>
-  <div class="Box-footer text-right">
-    <button class="btn btn-secondary mr-1" type="button" on:click={cancel}>
-      <X16 />
-      {$_('WorkDir.CancelBtn')}
-    </button>
-    <button class="btn btn-primary" type="button" on:click={setWorkDir}>
-      <Check16 />
-      {$_('WorkDir.SelectBtn')}
-    </button>
+  <div class="Box-footer d-flex flex-justify-between">
+    <div>
+      <button class="btn btn-secondary" type="button" on:click={cancel}>
+        <X16 />
+        {$_('WorkDir.CancelBtn')}
+      </button>
+    </div>
+    <div>
+      <button class="btn btn-primary" type="button" on:click={setWorkDir}>
+        <Check16 />
+        {$_('WorkDir.SelectBtn')}
+      </button>
+    </div>
   </div>
 </div>

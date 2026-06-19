@@ -170,7 +170,7 @@
         <AutoEncoder {dark} chartData={aecdata} />
       </div>
     {/if}
-    <div class="Box-footer text-right">
+    <div class="Box-footer text-left">
       <button class="btn" type="button" on:click={back}>
         <X16 />
         {$_('Result.BackBtn')}

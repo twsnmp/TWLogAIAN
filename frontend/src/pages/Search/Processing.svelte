@@ -84,7 +84,7 @@
         </tbody>
       </table>
     </div>
-    <div class="Box-footer text-right">
+    <div class="Box-footer text-left">
       <button class="btn btn-danger" type="button" on:click={stop}>
         <X16 />
         {$_('Processing.StopBtn')}

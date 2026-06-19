@@ -389,27 +389,31 @@
         />
       </div>
     </div>
-    <div class="Box-footer text-right">
-      <button
-      class="btn btn-outline mr-1"
-      type="button"
-      on:click={exportLogTypes}
-    >
-      <Download16 />
-      {$_('LogType.ExportBtn')}
-      </button>
-      <button
-      class="btn btn-outline mr-1"
-      type="button"
-      on:click={importLogTypes}
-    >
-      <Upload16 />
-      {$_('LogType.ImportBtn')}
-    </button>
-    <button class="btn btn-secondary mr-1" type="button" on:click={close}>
-        <X16 />
-        {$_('LogType.CloseBtn')}
-      </button>
+    <div class="Box-footer d-flex flex-justify-between">
+      <div>
+        <button class="btn btn-secondary" type="button" on:click={close}>
+          <X16 />
+          {$_('LogType.CloseBtn')}
+        </button>
+      </div>
+      <div>
+        <button
+          class="btn btn-outline mr-1"
+          type="button"
+          on:click={exportLogTypes}
+        >
+          <Download16 />
+          {$_('LogType.ExportBtn')}
+        </button>
+        <button
+          class="btn btn-outline"
+          type="button"
+          on:click={importLogTypes}
+        >
+          <Upload16 />
+          {$_('LogType.ImportBtn')}
+        </button>
+      </div>
     </div>
   </div>
 {/if}
