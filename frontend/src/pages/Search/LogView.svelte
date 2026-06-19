@@ -38,7 +38,6 @@
   import Globe from "../Report/Globe.svelte";
   import Heatmap from "../Report/Heatmap.svelte";
   import Memo from "../Report/Memo.svelte";
-  import LogType from "../Setting/LogType.svelte";
   import EditExtractorType from "../Setting/EditExtractorType.svelte";
   import { loadFieldTypes, getFieldType } from "../../js/define";
   import numeral from "numeral";
@@ -46,9 +45,6 @@
   import * as echarts from "echarts";
   import { _,getLocale } from '../../i18n/i18n';
   import { copyText } from "svelte-copy";
-  import ConfigAI from "../AI/ConfigAI.svelte";
-  import ExportAI from "../AI/ExportAI.svelte";
-  import AskAI from "../AI/AskAI.svelte";
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -458,9 +454,6 @@
     } else if (col.id == "memo") {
       memoLog(row._cells);
       return;
-    } else if (col.id == "ai") {
-      askAIAboutLog(row._cells);
-      return;
     } else if (col.id == "extractor") {
       showEditExtractorType(cell.data, me.metaKey);
       return;
@@ -577,21 +570,6 @@
     memo(timeStamp, list.join("\t"));
   };
 
-  let askAILog = "";
-  const askAIAboutLog = (cells) => {
-    askAILog = "";
-    if (cells.length < columns.length) {
-      return;
-    }
-    for (let i = 0; i < cells.length; i++) {
-      if (columns[i].id == "all") {
-        askAILog = cells[i].data
-        break
-      }
-    }
-    page =  "askAI";
-  }
-
   const memo = async (time, text) => {
     infoMsg = $_('LogView.MemoMsg');
     await AddMemo({
@@ -658,13 +636,6 @@
     updateChart();
   };
 
-  let setting = "";
-  
-  const showSetting = () => {
-    page = setting;
-    setting = "";
-  };
-
   const chnagePerPage = () => {
     pagination.limit = perPage * 1;
   }
@@ -704,14 +675,6 @@
     {testLog}
     on:done={handleEditExtractorDone}
   />
-{:else if page == "logType"}
-  <LogType on:done={handleDone} />
-{:else if page == "configAI"}
-  <ConfigAI on:done={handleDone} />
-{:else if page == "exportAI"}
-  <ExportAI on:done={handleDone} logs={result.Logs} />
-{:else if page == "askAI"}
-  <AskAI on:done={handleDone} log={askAILog} />
 {/if}
 
 <div class="Box mx-auto Box--condensed" class:d-none={page != ""} style="max-width: 99%;">
@@ -897,9 +860,6 @@
             {#if result && result.Hit > 0 && result.Fields.length > 0}
               <option value="csv">CSV</option>
               <option value="excel">Excel</option>
-              {#if  result.Hit < 1000 }
-                <option value="exportAI">AI</option>
-              {/if}
             {/if}
           </select>
         {/if}
@@ -925,16 +885,6 @@
             <option value="heatmap">{$_('LogView.HeatmapMenu')}</option>
           </select>
         {/if}
-        <!-- svelte-ignore a11y-no-onchange -->
-        <select
-          class="form-select mr-1"
-          bind:value={setting}
-          on:change={showSetting}
-        >
-          <option value="">{$_('LogView.Settings')}</option>
-          <option value="logType">{$_('LogView.LogDefBtn')}</option>
-          <option value="configAI">{$_('LogView.AIConfig')}</option>
-        </select>
         <button class="btn  btn-secondary mr-1" type="button" on:click={back}>
           <Reply16 />
           {$_('LogView.BackBtn')}
