@@ -9,6 +9,10 @@ AIアシスト付きのすごいログ分析ツール
 
 ![](./images/appicon.png){: width="256" }
 
+## ログ分析フローの解説
+
+![](./images/ja/log_analyzer.png)
+
 
 ## TWLogAIANを作っている理由
 
@@ -665,7 +669,7 @@ AIにログを説明付きでエクスポートすます。
 
 ### AI連携設定
 
-AI連携の設定します。
+ログの解説を依頼するLLM（Ollama, Gemini, OpenAI, Anthropic）との連携設定を行います。APIキーやモデル名、ローカルLLM（Ollamaなど）の場合は接続先のBase URLを指定します。RAG（検索拡張生成）機能は使用せず、選択したログとプロンプトが直接LLMに送信されます。
 
 
 

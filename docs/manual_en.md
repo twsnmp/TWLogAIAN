@@ -9,6 +9,10 @@ Amazing log analysis tool with AI assist
 
 ![](./images/appicon.png){: width="256" }
 
+## Log Analysis Flow
+
+![](./images/en/log_analyzer.png)
+
 
 ## Why we make TWLogAIAN
 
@@ -705,6 +709,10 @@ ip=192.168.1.1
 ```
 
 It incorporates ideas to automatically recognize patterns like this.
+
+### AI linkage settings
+
+Configure the connection settings with LLM (Ollama, Gemini, OpenAI, Anthropic) to request log explanations. You can specify the API key, model name, and base URL for local LLMs. RAG (Retrieval-Augmented Generation) is not used, and the selected log and prompt are sent directly to the LLM.
 
 ## Log definition
 
