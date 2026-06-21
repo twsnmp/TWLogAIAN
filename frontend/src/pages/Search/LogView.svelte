@@ -747,7 +747,11 @@
             class="btn  btn-secondary"
             type="button"
             on:click={() => {
-              BrowserOpenURL("https://note.com/twsnmp/n/n1e8665af0ce2");
+              BrowserOpenURL(
+                locale === "ja"
+                  ? "https://twsnmp.github.io/TWLogAIAN/search.html"
+                  : "https://twsnmp.github.io/TWLogAIAN/search_en.html"
+              );
             }}
           >
             <Question16 />
