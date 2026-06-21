@@ -61,6 +61,34 @@ AIアシスト付きのすごいログ分析ツール
 からインスール
 
 
+## Linux版
+
+[GitHub Releases](https://github.com/twsnmp/TWLogAIAN/releases) から `TWLogAIAN-linux-amd64.tar.gz` をダウンロードして、パッケージを展開して実行します。
+
+### インストール・実行手順
+
+1. ターミナルでダウンロードしたアーカイブを展開します。
+   ```bash
+   tar -zxvf TWLogAIAN-linux-amd64.tar.gz
+   ```
+2. 展開された実行ファイル `TWLogAIAN` を起動します。
+   ```bash
+   ./TWLogAIAN
+   ```
+
+### 注意事項
+- TWLogAIAN は GUI アプリケーションフレームワーク Wails を使用しているため、動作には **GTK3** と **WebKit2GTK (4.1)** が必要です。起動時にライブラリのエラーが発生する場合は、システムに応じて以下のコマンドを実行し、必要なパッケージをインストールしてください。
+  - **Ubuntu / Debian 系:**
+    ```bash
+    sudo apt update
+    sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0
+    ```
+  - **Arch Linux 系:**
+    ```bash
+    sudo pacman -S gtk3 webkit2gtk-4.1
+    ```
+
+
 ## TWLogAIANの起動
 
 Windowsの場合はスタートメニューからMac OSの場合はランチャーからなどお好きな方法で起動してください。ようこそ画面が表示されるはずです。

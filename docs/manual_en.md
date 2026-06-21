@@ -76,13 +76,42 @@ Available on the Mac App Store:
 https://apps.apple.com/app/twlogaian/id1664596440
 
 
+## Installation: Linux
+
+The Linux version can be downloaded from the GitHub Releases page:
+
+https://github.com/twsnmp/TWLogAIAN/releases
+
+1. Download the Linux (amd64) archive `TWLogAIAN-linux-amd64.tar.gz`.
+2. Extract the archive in a terminal:
+   ```bash
+   tar -zxvf TWLogAIAN-linux-amd64.tar.gz
+   ```
+3. Run the extracted `TWLogAIAN` binary:
+   ```bash
+   ./TWLogAIAN
+   ```
+
+### Notes & Troubleshooting
+TWLogAIAN uses the Wails framework, which requires **GTK3** and **WebKit2GTK (4.1)** at runtime. If the application fails to start due to missing libraries, install them via your distribution's package manager:
+- **Ubuntu / Debian-based:**
+  ```bash
+  sudo apt update
+  sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0
+  ```
+- **Arch Linux:**
+  ```bash
+  sudo pacman -S gtk3 webkit2gtk-4.1
+  ```
+
+
 ## Alternative Downloads
 
 You can find the latest installer releases at:
 
 https://github.com/twsnmp/TWLogAIAN/releases
 
-Download the Windows MSI installer (`TWLogAIAN.msi`) or the macOS PKG installer (`TWLogAIAN_dev.pkg`).
+Download the Windows MSI installer (`TWLogAIAN.msi`), the macOS PKG installer (`TWLogAIAN_dev.pkg`), or the Linux archive (`TWLogAIAN-linux-amd64.tar.gz`).
 
 
 ## Launching: Windows
@@ -93,6 +122,11 @@ On Windows, start the application from the Start menu.
 ## Launching: macOS
 
 On macOS, launch the application from the Launchpad or via your preferred method.
+
+
+## Launching: Linux
+
+Run the `TWLogAIAN` executable in the directory where it was extracted, or register it in your desktop environment's launcher to start it.
 
 
 ## Welcome Screen

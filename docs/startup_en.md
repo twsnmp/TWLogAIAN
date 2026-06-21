@@ -52,6 +52,36 @@ to install TWLogAIAN.
 Install from the [App Store](https://apps.apple.com/app/twlogaian/id1664596440).
 
 
+## Linux
+
+Download `TWLogAIAN-linux-amd64.tar.gz` from [GitHub Releases](https://github.com/twsnmp/TWLogAIAN/releases), extract the archive, and run the executable.
+
+### Installation & Execution Steps
+
+1. Open a terminal and extract the downloaded archive:
+   ```bash
+   tar -zxvf TWLogAIAN-linux-amd64.tar.gz
+   ```
+2. Run the extracted `TWLogAIAN` executable:
+   ```bash
+   ./TWLogAIAN
+   ```
+
+### Notes & Troubleshooting
+- TWLogAIAN uses the Wails framework, which requires **GTK3** and **WebKit2GTK (4.1)** at runtime. If the application fails to start due to missing libraries, install them using the package manager for your distribution:
+  - **Ubuntu / Debian-based:**
+    ```bash
+    sudo apt update
+    ```
+    ```bash
+    sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0
+    ```
+  - **Arch Linux:**
+    ```bash
+    sudo pacman -S gtk3 webkit2gtk-4.1
+    ```
+
+
 ## Starting TWLogAIAN
 
 Launch the application using your preferred method—such as the Start menu on Windows or the Launchpad on macOS. You should see the Welcome screen.
