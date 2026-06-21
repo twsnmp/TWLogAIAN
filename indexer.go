@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/blugelabs/bluge"
@@ -115,48 +116,63 @@ func (b *App) logIndexer() {
 	OutLog("start logindexer")
 	st := time.Now()
 	timer := time.NewTicker(time.Millisecond * 200)
+	defer timer.Stop()
+
 	b.indexer.logBuffer = []*LogEnt{}
 	bFirstLog := true
-	skip := 0
 	total := 0
+
+	var indexWg sync.WaitGroup
+	var logMapMu sync.Mutex
+	sem := make(chan struct{}, 4)
+
+	flushBatch := func(buf []*LogEnt) {
+		if len(buf) == 0 {
+			return
+		}
+		if bFirstLog {
+			bFirstLog = false
+			b.setFieldTypes(buf[0])
+		}
+		total += len(buf)
+		indexWg.Add(1)
+		go func(batchBuf []*LogEnt) {
+			defer indexWg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			b.addLogToIndex(batchBuf, &logMapMu)
+		}(buf)
+	}
+
 	for {
 		select {
 		case l, ok := <-b.logCh:
 			if !ok {
-				timer.Stop()
-				if bFirstLog && len(b.indexer.logBuffer) > 0 {
-					bFirstLog = false
-					b.setFieldTypes(b.indexer.logBuffer[0])
-				}
-				b.addLogToIndex()
-				b.indexer.logBuffer = []*LogEnt{}
+				flushBatch(b.indexer.logBuffer)
+				b.indexer.logBuffer = nil
+				indexWg.Wait()
 				b.processStat.Done = true
 				b.indexer.duration = time.Since(st)
-				OutLog("stop logindexer")
+				OutLog("stop logindexer, total indexed=%d", total)
 				return
 			}
 			b.indexer.logBuffer = append(b.indexer.logBuffer, l)
-		case <-timer.C:
-			if len(b.indexer.logBuffer) > 10000 {
-				if bFirstLog {
-					bFirstLog = false
-					b.setFieldTypes(b.indexer.logBuffer[0])
-				}
-				// Index作成
-				b.addLogToIndex()
-				total += len(b.indexer.logBuffer)
+			if len(b.indexer.logBuffer) >= 5000 {
+				flushBatch(b.indexer.logBuffer)
 				b.indexer.logBuffer = []*LogEnt{}
-				OutLog("total=%d skip=%d", total, skip)
-			} else {
-				skip++
+			}
+		case <-timer.C:
+			if len(b.indexer.logBuffer) > 0 {
+				flushBatch(b.indexer.logBuffer)
+				b.indexer.logBuffer = []*LogEnt{}
 			}
 		}
 	}
 }
 
-func (b *App) addLogToIndex() {
+func (b *App) addLogToIndex(buf []*LogEnt, logMapMu *sync.Mutex) {
 	st := time.Now()
-	if len(b.indexer.logBuffer) < 1 {
+	if len(buf) < 1 {
 		return
 	}
 	storeKeyMap := map[string]bool{
@@ -171,12 +187,14 @@ func (b *App) addLogToIndex() {
 	}
 	batch_len := 0
 	batch := bluge.NewBatch()
-	for _, l := range b.indexer.logBuffer {
+	for _, l := range buf {
 		doc := bluge.NewDocument(l.ID)
 		if b.config.InMemory {
 			doc.AddField(bluge.NewTextField("_all", l.All))
 			doc.AddField(bluge.NewDateTimeField("time", time.Unix(0, l.Time)))
+			logMapMu.Lock()
 			b.indexer.logMap[l.ID] = l
+			logMapMu.Unlock()
 		} else {
 			doc.AddField(bluge.NewTextField("_all", l.All).StoreValue())
 			doc.AddField(bluge.NewDateTimeField("time", time.Unix(0, l.Time)).StoreValue())

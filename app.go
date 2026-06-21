@@ -42,6 +42,7 @@ type App struct {
 	wg          *sync.WaitGroup
 	hostMap     map[string]string
 	geoMap      map[string]*GeoEnt
+	mapMu       sync.RWMutex
 	memos       []Memo
 	history     []string
 }

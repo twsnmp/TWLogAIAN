@@ -14,6 +14,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -529,8 +530,193 @@ func (b *App) openLogFile(lf *LogFile) (io.ReadCloser, error) {
 	return r, nil
 }
 
+type parseTask struct {
+	seqID  int
+	ln     int
+	line   string
+	lfPath string
+}
+
+type parseResult struct {
+	seqID    int
+	log      *LogEnt
+	ts       time.Time
+	parseOk  bool
+	parseErr error
+	skip     bool
+}
+
+func (b *App) parseWorker(taskCh <-chan parseTask, resultCh chan<- parseResult, grokPattern string) {
+	var localExtractor *grok.Grok
+	if grokPattern != "" {
+		config := grok.Config{
+			Patterns:          make(map[string]string),
+			NamedCapturesOnly: true,
+		}
+		config.Patterns["TWLOGAIAN"] = grokPattern
+		var err error
+		localExtractor, err = grok.NewWithConfig(&config)
+		if err != nil {
+			OutLog("worker failed to compile grok: %v", err)
+		}
+	}
+
+	localTimeGrinder, err := timegrinder.New(timegrinder.Config{
+		EnableLeftMostSeed: true,
+	})
+	if err == nil && localTimeGrinder != nil {
+		if !b.config.ForceUTC {
+			localTimeGrinder.SetLocalTime()
+		}
+		if p, err := timegrinder.NewUserProcessor("custom01", `[JFMASOND][anebriyunlgpctov]+\s+\d+\s+\d\d:\d\d:\d\d\s+\d\d\d\d`, "Jan _2 15:04:05 2006"); err == nil && p != nil {
+			localTimeGrinder.AddProcessor(p)
+		}
+		if p, err := timegrinder.NewUserProcessor("custom02", `\d\d\d\d/\d+/\d+\s+\d+:\d\d:\d\d`, "2006/1/2 3:04:05"); err == nil && p != nil {
+			localTimeGrinder.AddProcessor(p)
+		}
+		if b.config.TimeGrinderOverride != "" {
+			if b.config.TimeGrinderOverride == "custom00" &&
+				b.config.TimeGrinderRegExp != "" &&
+				b.config.TimeGrinderFormat != "" {
+				if p, err := timegrinder.NewUserProcessor("custom00", b.config.TimeGrinderRegExp, b.config.TimeGrinderFormat); err == nil && p != nil {
+					localTimeGrinder.AddProcessor(p)
+				}
+			}
+			localTimeGrinder.SetFormatOverride(b.config.TimeGrinderOverride)
+		}
+	}
+
+	for t := range taskCh {
+		log := LogEnt{
+			ID:       fmt.Sprintf("%s:%06d", t.lfPath, t.ln),
+			KeyValue: make(map[string]interface{}),
+			All:      t.line,
+		}
+		var ts time.Time
+		var parseOk bool
+		var parseErr error
+		var skip bool
+
+		if localExtractor != nil {
+			values, err := localExtractor.Parse("%{TWLOGAIAN}", t.line)
+			if err != nil {
+				skip = true
+			} else if b.config.Strict && len(values) < 1 {
+				skip = true
+			} else {
+				for k, v := range values {
+					if k == "TWLOGAIAN" {
+						continue
+					}
+					if fv, err := strconv.ParseFloat(v, 64); err == nil {
+						log.KeyValue[k] = fv
+					} else {
+						log.KeyValue[k] = v
+					}
+				}
+				if b.processConf.View == "syslog" {
+					if _, ok := log.KeyValue["tag"]; !ok {
+						program, _ := log.KeyValue["program"].(string)
+						pidStr := ""
+						if pid, ok := log.KeyValue["pid"]; ok && pid != "" && pid != nil {
+							switch pv := pid.(type) {
+							case float64:
+								pidStr = fmt.Sprintf("[%.0f]", pv)
+							default:
+								pidStr = fmt.Sprintf("[%v]", pv)
+							}
+						}
+						if program != "" || pidStr != "" {
+							log.KeyValue["tag"] = program + pidStr
+						}
+					}
+				}
+				if b.processConf.TimeField != "" {
+					tf := ""
+					tfi, ok := log.KeyValue[b.processConf.TimeField]
+					if !ok {
+						if b.config.Strict {
+							skip = true
+						} else {
+							tf = t.line
+						}
+					} else {
+						tf, ok = tfi.(string)
+						if !ok {
+							skip = true
+						}
+					}
+					if !skip {
+						ts, parseOk, parseErr = localTimeGrinder.Extract([]byte(tf))
+						if parseErr != nil || !parseOk {
+							skip = true
+						}
+					}
+				} else {
+					var ok bool
+					ts, ok, parseErr = localTimeGrinder.Extract([]byte(t.line))
+					if parseErr != nil || !ok {
+						skip = true
+					}
+				}
+				if !skip {
+					if b.config.GeoIP {
+						for _, f := range b.processConf.GeoFields {
+							if ip, ok := log.KeyValue[f]; ok {
+								if e := b.findGeo(ip.(string)); e != nil {
+									log.KeyValue[f+"_geo"] = e
+								}
+							}
+						}
+					}
+					if b.config.HostName {
+						for _, f := range b.processConf.HostFields {
+							if ip, ok := log.KeyValue[f]; ok {
+								if e := b.findHost(ip.(string)); e != "" {
+									log.KeyValue[f+"_host"] = e
+								}
+							}
+						}
+					}
+					if b.config.VendorName {
+						for _, f := range b.processConf.MACFields {
+							if ip, ok := log.KeyValue[f]; ok {
+								if e := b.findVendor(ip.(string)); e != "" {
+									log.KeyValue[f+"_vendor"] = e
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			var ok bool
+			ts, ok, parseErr = localTimeGrinder.Extract([]byte(t.line))
+			if parseErr != nil {
+				// handled sequentially in the collector
+			} else if ok {
+				parseOk = true
+			} else {
+				skip = true
+			}
+		}
+
+		resultCh <- parseResult{
+			seqID:    t.seqID,
+			log:      &log,
+			ts:       ts,
+			parseOk:  parseOk,
+			parseErr: parseErr,
+			skip:     skip,
+		}
+	}
+}
+
 func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 	b.setTimeGrinder()
+	if b.processStat.TimeLine == nil {
+		b.processStat.TimeLine = make(map[int64]int)
+	}
 	st := time.Now()
 	OutLog("start readOneLogFile path=%s", lf.Path)
 	scanner := bufio.NewScanner(reader)
@@ -541,169 +727,158 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		}
 	}
 	ln := 0
-	var lastTime int64
-	for scanner.Scan() {
-		if b.stopProcess {
-			return
+
+	numWorkers := runtime.NumCPU()
+	if numWorkers < 2 {
+		numWorkers = 2
+	}
+	if numWorkers > 8 {
+		numWorkers = 8
+	}
+
+	taskCh := make(chan parseTask, numWorkers*2)
+	resultCh := make(chan parseResult, numWorkers*2)
+	var workerWg sync.WaitGroup
+	workerWg.Add(1) // Represent the reader/initializer
+
+	grokPattern := ""
+	var startWorkersOnce sync.Once
+
+	startWorkers := func() {
+		if b.processConf.Extractor != nil {
+			if b.config.Extractor == "custom" {
+				grokPattern = b.config.Grok
+			} else if b.config.Extractor == "auto" {
+				for _, et := range extractorTypes {
+					if et.Name == lf.ETName {
+						grokPattern = et.Grok
+						break
+					}
+				}
+			} else {
+				if et, ok := extractorTypes[b.config.Extractor]; ok {
+					grokPattern = et.Grok
+				}
+			}
 		}
-		l := scanner.Text()
-		lf.Read += int64(len(l))
-		ln++
-		b.processStat.ReadLines++
-		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
-			b.processStat.SkipLines++
+		for i := 0; i < numWorkers; i++ {
+			workerWg.Add(1)
+			go func() {
+				defer workerWg.Done()
+				b.parseWorker(taskCh, resultCh, grokPattern)
+			}()
+		}
+	}
+
+	// Start reader goroutine
+	go func() {
+		defer workerWg.Done() // Decrement reader reference when done
+		defer close(taskCh)
+		seqID := 0
+		for scanner.Scan() {
+			if b.stopProcess {
+				return
+			}
+			l := scanner.Text()
+			lf.Read += int64(len(l))
+			ln++
+			b.processStat.ReadLines++
+			if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
+				b.processStat.SkipLines++
+				continue
+			}
+			if autoSetExtractor {
+				lf.ETName = b.autoSetExtractor(l)
+				autoSetExtractor = false
+			}
+
+			startWorkersOnce.Do(startWorkers)
+
+			taskCh <- parseTask{
+				seqID:  seqID,
+				ln:     ln,
+				line:   l,
+				lfPath: lf.Path,
+			}
+			seqID++
+		}
+	}()
+
+	// Close resultCh when workers (and the reader) are done
+	go func() {
+		workerWg.Wait()
+		close(resultCh)
+	}()
+
+	// Collector loop:
+	nextSeqID := 0
+	results := make(map[int]parseResult)
+	var lastTime int64
+
+	for {
+		if r, ok := results[nextSeqID]; ok {
+			delete(results, nextSeqID)
+			nextSeqID++
+
+			if r.skip {
+				b.processStat.SkipLines++
+				continue
+			}
+
+			delta := int64(0)
+			if b.processConf.Extractor != nil {
+				if lastTime > 0 {
+					delta = r.ts.UnixNano() - lastTime
+				}
+				lastTime = r.ts.UnixNano()
+			} else {
+				if r.parseErr != nil {
+					if lastTime < 1 {
+						b.processStat.SkipLines++
+						continue
+					}
+				} else if r.parseOk {
+					if lastTime > 0 {
+						delta = r.ts.UnixNano() - lastTime
+					}
+					lastTime = r.ts.UnixNano()
+				} else {
+					b.processStat.SkipLines++
+					continue
+				}
+			}
+
+			r.log.Time = lastTime
+			r.log.KeyValue["delta"] = float64(delta) / (1000.0 * 1000.0 * 1000.0)
+
+			timeH := r.log.Time / (1000 * 1000 * 1000 * 3600)
+			if _, ok := b.processStat.TimeLine[timeH]; !ok {
+				b.processStat.TimeLine[timeH] = 0
+			}
+			b.processStat.TimeLine[timeH]++
+			if r.log.Time < b.processStat.StartTime {
+				b.processStat.StartTime = r.log.Time
+			}
+			if r.log.Time > b.processStat.EndTime {
+				b.processStat.EndTime = r.log.Time
+			}
+
+			b.logCh <- r.log
+			lf.Send += int64(len(r.log.All))
 			continue
 		}
-		log := LogEnt{
-			ID:       fmt.Sprintf("%s:%06d", lf.Path, ln),
-			KeyValue: make(map[string]interface{}),
-			All:      l,
+
+		// Read from resultCh if not available in buffer
+		res, ok := <-resultCh
+		if !ok {
+			break
 		}
-		if autoSetExtractor {
-			// 初回だけ自動判定で抽出パターンをセットする
-			lf.ETName = b.autoSetExtractor(l)
-			autoSetExtractor = false
-		}
-		delta := int64(0)
-		if b.processConf.Extractor != nil {
-			values, err := b.processConf.Extractor.Parse("%{TWLOGAIAN}", l)
-			if err != nil {
-				OutLog("grok err=%v:%s", err, l)
-				b.processStat.SkipLines++
-				continue
-			}
-			if b.config.Strict && len(values) < 1 {
-				b.processStat.SkipLines++
-				continue
-			}
-			for k, v := range values {
-				if k == "TWLOGAIAN" {
-					continue
-				}
-				// 数値に変換可能な場合は数値として保存
-				if fv, err := strconv.ParseFloat(v, 64); err == nil {
-					log.KeyValue[k] = fv
-				} else {
-					log.KeyValue[k] = v
-				}
-			}
-			if b.processConf.View == "syslog" {
-				if _, ok := log.KeyValue["tag"]; !ok {
-					program, _ := log.KeyValue["program"].(string)
-					pidStr := ""
-					if pid, ok := log.KeyValue["pid"]; ok && pid != "" && pid != nil {
-						switch pv := pid.(type) {
-						case float64:
-							pidStr = fmt.Sprintf("[%.0f]", pv)
-						default:
-							pidStr = fmt.Sprintf("[%v]", pv)
-						}
-					}
-					if program != "" || pidStr != "" {
-						log.KeyValue["tag"] = program + pidStr
-					}
-				}
-			}
-			var ts time.Time
-			if b.processConf.TimeField != "" {
-				tf := ""
-				tfi, ok := log.KeyValue[b.processConf.TimeField]
-				if !ok {
-					if b.config.Strict {
-						OutLog("no time field '%s' %s", b.processConf.TimeField, l)
-						b.processStat.SkipLines++
-						continue
-					}
-					// 全体から日時を取得する
-					tf = l
-				} else {
-					tf, ok = tfi.(string)
-					if !ok {
-						b.processStat.SkipLines++
-						continue
-					}
-				}
-				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(tf))
-				if err != nil || !ok {
-					OutLog("time parse err=%v:%s", err, l)
-					b.processStat.SkipLines++
-					continue
-				}
-			} else {
-				// 日時のフィールドがない場合は全体から取得する
-				var ok bool
-				ts, ok, err = b.processConf.TimeGrinder.Extract([]byte(l))
-				if err != nil || !ok {
-					b.processStat.SkipLines++
-					continue
-				}
-			}
-			if b.config.GeoIP {
-				for _, f := range b.processConf.GeoFields {
-					if ip, ok := log.KeyValue[f]; ok {
-						if e := b.findGeo(ip.(string)); e != nil {
-							log.KeyValue[f+"_geo"] = e
-						}
-					}
-				}
-			}
-			if b.config.HostName {
-				for _, f := range b.processConf.HostFields {
-					if ip, ok := log.KeyValue[f]; ok {
-						if e := b.findHost(ip.(string)); e != "" {
-							log.KeyValue[f+"_host"] = e
-						}
-					}
-				}
-			}
-			if b.config.VendorName {
-				for _, f := range b.processConf.MACFields {
-					if ip, ok := log.KeyValue[f]; ok {
-						if e := b.findVendor(ip.(string)); e != "" {
-							log.KeyValue[f+"_vendor"] = e
-						}
-					}
-				}
-			}
-			if lastTime > 0 {
-				delta = ts.UnixNano() - lastTime
-			}
-			lastTime = ts.UnixNano()
-		} else {
-			ts, ok, err := b.processConf.TimeGrinder.Extract([]byte(l))
-			if err != nil {
-				// 複数行は同じタイムスタンプにする
-				if lastTime < 1 {
-					OutLog("failed to get time stamp err=%v:%s", err, l)
-					b.processStat.SkipLines++
-					continue
-				}
-			} else if ok {
-				if lastTime > 0 {
-					delta = ts.UnixNano() - lastTime
-				}
-				lastTime = ts.UnixNano()
-			} else {
-				OutLog("no time stamp: %s", l)
-				b.processStat.SkipLines++
-				continue
-			}
-		}
-		log.Time = lastTime
-		log.KeyValue["delta"] = float64(delta) / (1000.0 * 1000.0 * 1000.0)
-		timeH := log.Time / (1000 * 1000 * 1000 * 3600)
-		if _, ok := b.processStat.TimeLine[timeH]; !ok {
-			b.processStat.TimeLine[timeH] = 0
-		}
-		b.processStat.TimeLine[timeH]++
-		if log.Time < b.processStat.StartTime {
-			b.processStat.StartTime = log.Time
-		} else if log.Time > b.processStat.EndTime {
-			b.processStat.EndTime = log.Time
-		}
-		b.logCh <- &log
-		lf.Send += int64(len(l))
+		results[res.seqID] = res
 	}
+
+	// Drain any remaining results in the channel just in case of early return/stop
+	for range resultCh {}
+
 	if err := scanner.Err(); err != nil {
 		b.processStat.ErrorMsg = err.Error()
 	}
@@ -885,47 +1060,66 @@ func (b *App) setHostFields() {
 }
 
 func (b *App) findGeo(sip string) *GeoEnt {
+	b.mapMu.RLock()
 	if e, ok := b.geoMap[sip]; ok {
+		b.mapMu.RUnlock()
 		return e
 	}
+	b.mapMu.RUnlock()
+
 	ip := net.ParseIP(sip)
 	if ip == nil {
+		b.mapMu.Lock()
 		b.geoMap[sip] = &GeoEnt{
 			Lat:     0.0,
 			Long:    0.0,
 			Country: "",
 			City:    "",
 		}
-		return b.geoMap[sip]
+		e := b.geoMap[sip]
+		b.mapMu.Unlock()
+		return e
 	}
+	var geo *GeoEnt
 	if r, err := b.processConf.GeoIP.City(ip); err == nil {
-		b.geoMap[sip] = &GeoEnt{
+		geo = &GeoEnt{
 			Lat:     r.Location.Latitude,
 			Long:    r.Location.Longitude,
 			Country: r.Country.IsoCode,
 			City:    r.City.Names["en"],
 		}
 	} else {
-		b.geoMap[sip] = &GeoEnt{
+		geo = &GeoEnt{
 			Lat:     0.0,
 			Long:    0.0,
 			Country: "",
 			City:    "",
 		}
 	}
-	return b.geoMap[sip]
+	b.mapMu.Lock()
+	b.geoMap[sip] = geo
+	b.mapMu.Unlock()
+	return geo
 }
 
 func (b *App) findHost(ip string) string {
+	b.mapMu.RLock()
 	if h, ok := b.hostMap[ip]; ok {
+		b.mapMu.RUnlock()
 		return h
 	}
+	b.mapMu.RUnlock()
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
 	defer cancel()
+	var host string
 	if names, err := net.DefaultResolver.LookupAddr(ctx, ip); err == nil && len(names) > 0 {
-		b.hostMap[ip] = names[0]
+		host = names[0]
 	} else {
-		b.hostMap[ip] = ""
+		host = ""
 	}
-	return b.hostMap[ip]
+	b.mapMu.Lock()
+	b.hostMap[ip] = host
+	b.mapMu.Unlock()
+	return host
 }
