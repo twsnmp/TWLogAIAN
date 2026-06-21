@@ -26,9 +26,14 @@
       <stop offset="100%" stop-color="var(--ext-bg-end)"/>
     </linearGradient>
 
-    <!-- Shadow -->
+    <!-- Shadows -->
     <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
       <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06"/>
+    </filter>
+
+    <!-- Red Glow for Settings Highlight -->
+    <filter id="red-glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#ef4444" flood-opacity="0.85"/>
     </filter>
 
     <!-- Arrow markers -->
@@ -168,32 +173,32 @@
 
   <!-- Title -->
   <g transform="translate(40, 50)">
-    <text class="title" x="0" y="0">TWLogAIAN Architecture &amp; Data Flow</text>
-    <text class="subtitle" x="0" y="24">Overview of log ingestion, processing, storage, AI analysis, and visualization</text>
+    <text class="title" x="0" y="0">TWLogAIAN ソフトウェア構成 &amp; 処理フロー</text>
+    <text class="subtitle" x="0" y="24">ログの収集からAI分析・可視化までのアーキテクチャ概要 (設定対象箇所のハイライト)</text>
   </g>
 
   <!-- Log Sources Section -->
-  <text class="section-title" x="40" y="115">Log Sources</text>
+  <text class="section-title" x="40" y="115">ログソース (Log Sources)</text>
   <g id="log-sources">
     <!-- Local Files -->
     <rect class="box" x="40" y="130" width="105" height="70" rx="8" fill="url(#grad-src)" stroke="var(--src-border)"/>
-    <text class="box-text-title" x="92.5" y="157" fill="var(--src-text)" text-anchor="middle" dominant-baseline="middle">Local Files</text>
-    <text class="box-text-desc" x="92.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Log files &amp; folders</text>
+    <text class="box-text-title" x="92.5" y="157" fill="var(--src-text)" text-anchor="middle" dominant-baseline="middle">ローカルファイル</text>
+    <text class="box-text-desc" x="92.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Local Files</text>
 
     <!-- Remote Files -->
     <rect class="box" x="163" y="130" width="105" height="70" rx="8" fill="url(#grad-src)" stroke="var(--src-border)"/>
-    <text class="box-text-title" x="215.5" y="157" fill="var(--src-text)" text-anchor="middle" dominant-baseline="middle">Remote Files</text>
-    <text class="box-text-desc" x="215.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">via SCP / SFTP</text>
+    <text class="box-text-title" x="215.5" y="157" fill="var(--src-text)" text-anchor="middle" dominant-baseline="middle">リモートファイル</text>
+    <text class="box-text-desc" x="215.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">SCP / SFTP</text>
 
     <!-- TWSNMP FC -->
     <rect class="box" x="286" y="130" width="105" height="70" rx="8" fill="url(#grad-src)" stroke="var(--src-border)"/>
     <text class="box-text-title" x="338.5" y="157" fill="var(--src-text)" text-anchor="middle" dominant-baseline="middle">TWSNMP FC</text>
-    <text class="box-text-desc" x="338.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">API Integration</text>
+    <text class="box-text-desc" x="338.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">API連携</text>
 
     <!-- Docker / K8s -->
     <rect class="box" x="409" y="130" width="105" height="70" rx="8" fill="url(#grad-src)" stroke="var(--src-border)"/>
     <text class="box-text-title" x="461.5" y="157" fill="var(--src-text)" text-anchor="middle" dominant-baseline="middle">Docker / K8s</text>
-    <text class="box-text-desc" x="461.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Cmd execution/SSH</text>
+    <text class="box-text-desc" x="461.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">コマンド/SSH</text>
 
     <!-- Gravwell -->
     <rect class="box" x="532" y="130" width="105" height="70" rx="8" fill="url(#grad-src)" stroke="var(--src-border)"/>
@@ -202,40 +207,40 @@
 
     <!-- Windows Event -->
     <rect class="box" x="655" y="130" width="105" height="70" rx="8" fill="url(#grad-src)" stroke="var(--src-border)"/>
-    <text class="box-text-title" x="707.5" y="157" fill="var(--src-text)" text-anchor="middle" dominant-baseline="middle">Windows Events</text>
+    <text class="box-text-title" x="707.5" y="157" fill="var(--src-text)" text-anchor="middle" dominant-baseline="middle">Windowsイベント</text>
     <text class="box-text-desc" x="707.5" y="177" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Local / Remote</text>
   </g>
 
   <!-- Data Pipeline Section -->
-  <text class="section-title" x="40" y="235">Data Pipeline</text>
+  <text class="section-title" x="40" y="235">収集・解析パイプライン (Data Pipeline)</text>
 
   <!-- Arrow: Sources to Import -->
   <path class="arrow-line" d="M 400 200 L 400 245"/>
 
   <!-- 1. Import & Parse -->
   <rect class="box" x="220" y="245" width="360" height="75" rx="10" fill="url(#grad-pip)" stroke="var(--pip-border)"/>
-  <text class="box-text-title" x="400" y="272" fill="var(--pip-text)" text-anchor="middle" dominant-baseline="middle">1. Import &amp; Parse</text>
-  <text class="box-text-desc" x="400" y="295" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Read logs, detect encoding &amp; format, split into lines</text>
+  <text class="box-text-title" x="400" y="272" fill="var(--pip-text)" text-anchor="middle" dominant-baseline="middle">1. インポート &amp; パース (Import &amp; Parse)</text>
+  <text class="box-text-desc" x="400" y="295" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">ログの読込・文字コード変換・フォーマット自動認識・行分割</text>
 
   <!-- Arrow: Import to Extract -->
   <path class="arrow-line" d="M 400 320 L 400 355"/>
 
   <!-- 2. Extract & Enrich -->
   <rect class="box" x="220" y="355" width="360" height="85" rx="10" fill="url(#grad-pip)" stroke="var(--pip-border)"/>
-  <text class="box-text-title" x="400" y="382" fill="var(--pip-text)" text-anchor="middle" dominant-baseline="middle">2. Extract &amp; Enrich</text>
-  <text class="box-text-desc" x="400" y="407" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Extract key fields via Grok patterns / regular expressions</text>
-  <text class="box-text-desc" x="400" y="423" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Add GeoIP (Country/ASN) details &amp; resolve DNS names</text>
+  <text class="box-text-title" x="400" y="382" fill="var(--pip-text)" text-anchor="middle" dominant-baseline="middle">2. フィールド抽出 &amp; データ補強 (Extract &amp; Enrich)</text>
+  <text class="box-text-desc" x="400" y="407" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Grokパターン/正規表現による重要情報の抽出と型変換</text>
+  <text class="box-text-desc" x="400" y="423" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">IPから国/AS情報の付加・DNS名前解決によるエンリッチメント</text>
 
   <!-- External Enrichments (Right Side) -->
   <!-- DNS Server -->
   <rect class="box" x="620" y="345" width="140" height="45" rx="6" fill="url(#grad-ext)" stroke="var(--ext-border)"/>
-  <text class="box-text-title" x="690" y="367" fill="var(--ext-text)" text-anchor="middle" dominant-baseline="middle">DNS Server</text>
-  <text class="box-text-desc" x="690" y="382" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Name resolution queries</text>
+  <text class="box-text-title" x="690" y="367" fill="var(--ext-text)" text-anchor="middle" dominant-baseline="middle">DNS サーバー</text>
+  <text class="box-text-desc" x="690" y="382" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">名前解決の照会</text>
 
   <!-- GeoIP Database -->
   <rect class="box" x="620" y="405" width="140" height="45" rx="6" fill="url(#grad-ext)" stroke="var(--ext-border)"/>
-  <text class="box-text-title" x="690" y="427" fill="var(--ext-text)" text-anchor="middle" dominant-baseline="middle">GeoIP Database</text>
-  <text class="box-text-desc" x="690" y="442" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">IP location enrichment</text>
+  <text class="box-text-title" x="690" y="427" fill="var(--ext-text)" text-anchor="middle" dominant-baseline="middle">GeoIP DB</text>
+  <text class="box-text-desc" x="690" y="442" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">位置情報の付加</text>
 
   <!-- Arrows to External systems -->
   <path class="arrow-line" d="M 580 375 L 612 368"/>
@@ -246,41 +251,41 @@
 
   <!-- 3. Indexing -->
   <rect class="box" x="220" y="475" width="360" height="75" rx="10" fill="url(#grad-pip)" stroke="var(--pip-border)"/>
-  <text class="box-text-title" x="400" y="502" fill="var(--pip-text)" text-anchor="middle" dominant-baseline="middle">3. Indexing</text>
-  <text class="box-text-desc" x="400" y="525" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Generate full-text search indexes from extracted log fields</text>
+  <text class="box-text-title" x="400" y="502" fill="var(--pip-text)" text-anchor="middle" dominant-baseline="middle">3. インデックス作成 (Indexing)</text>
+  <text class="box-text-desc" x="400" y="525" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">抽出済みデータから高速検索用の全文検索インデックスを生成</text>
 
   <!-- Arrow: Indexing to Storage -->
   <path class="arrow-line" d="M 400 550 L 400 595"/>
 
   <!-- Storage Layer Section -->
-  <text class="section-title" x="40" y="590">Storage Layer</text>
+  <text class="section-title" x="40" y="590">保存層 (Storage Layer)</text>
   <rect x="180" y="605" width="440" height="120" rx="12" fill="none" stroke="var(--border)" stroke-dasharray="4 4" stroke-width="1.5"/>
   
   <!-- Bluge Search Index -->
   <rect class="box" x="200" y="625" width="180" height="80" rx="8" fill="url(#grad-sto)" stroke="var(--sto-border)"/>
-  <text class="box-text-title" x="290" y="650" fill="var(--sto-text)" text-anchor="middle" dominant-baseline="middle">Bluge Engine</text>
-  <text class="box-text-desc" x="290" y="672" fill="var(--sto-text)" text-anchor="middle" dominant-baseline="middle">Stores search index files</text>
+  <text class="box-text-title" x="290" y="650" fill="var(--sto-text)" text-anchor="middle" dominant-baseline="middle">Bluge 全文検索</text>
+  <text class="box-text-desc" x="290" y="672" fill="var(--sto-text)" text-anchor="middle" dominant-baseline="middle">検索用インデックスの保存</text>
   <text class="box-text-desc" x="290" y="688" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Search Index (blugelabs)</text>
 
   <!-- bbolt DB -->
   <rect class="box" x="420" y="625" width="180" height="80" rx="8" fill="url(#grad-sto)" stroke="var(--sto-border)"/>
   <text class="box-text-title" x="510" y="650" fill="var(--sto-text)" text-anchor="middle" dominant-baseline="middle">bbolt DB</text>
-  <text class="box-text-desc" x="510" y="672" fill="var(--sto-text)" text-anchor="middle" dominant-baseline="middle">Metadata &amp; configuration</text>
+  <text class="box-text-desc" x="510" y="672" fill="var(--sto-text)" text-anchor="middle" dominant-baseline="middle">メタデータ・システム設定</text>
   <text class="box-text-desc" x="510" y="688" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Metadata Store (etcd.io)</text>
 
   <!-- User Interface & Analysis Section -->
-  <text class="section-title" x="40" y="765">User Interface &amp; Analysis</text>
+  <text class="section-title" x="40" y="765">検索・可視化 &amp; AI分析 (User Interface &amp; Analysis)</text>
 
   <!-- Arrow: Storage to UI (Double-headed arrow representing bi-directional interaction) -->
   <path class="arrow-double" d="M 220 725 L 220 782"/>
 
   <!-- Search & Reports (Wails UI) -->
   <rect class="box" x="60" y="790" width="320" height="175" rx="12" fill="url(#grad-ui)" stroke="var(--ui-border)"/>
-  <text class="box-text-title" x="220" y="815" fill="var(--ui-text)" text-anchor="middle" dominant-baseline="middle">Search &amp; Reports</text>
-  <text class="box-text-desc" x="80" y="845" fill="var(--ui-text)" text-anchor="start" dominant-baseline="middle">✦ Flexible log query (full-text &amp; field filters)</text>
-  <text class="box-text-desc" x="80" y="865" fill="var(--ui-text)" text-anchor="start" dominant-baseline="middle">✦ Interactive reporting (charts, heatmaps, tables)</text>
-  <text class="box-text-desc" x="80" y="885" fill="var(--ui-text)" text-anchor="start" dominant-baseline="middle">✦ 3D globe visualization for network flow logs</text>
-  <text class="box-text-desc" x="80" y="905" fill="var(--ui-text)" text-anchor="start" dominant-baseline="middle">✦ Anomaly detection (anomaly scores via iForest)</text>
+  <text class="box-text-title" x="220" y="815" fill="var(--ui-text)" text-anchor="middle" dominant-baseline="middle">検索 &amp; レポート可視化</text>
+  <text class="box-text-desc" x="80" y="845" fill="var(--ui-text)" text-anchor="start" dominant-baseline="middle">✦ 柔軟なログ検索 (全文検索/条件フィルタ)</text>
+  <text class="box-text-desc" x="80" y="865" fill="var(--ui-text)" text-anchor="start" dominant-baseline="middle">✦ 多彩なレポート表示 (グラフ・時系列・ヒートマップ)</text>
+  <text class="box-text-desc" x="80" y="885" fill="var(--ui-text)" text-anchor="start" dominant-baseline="middle">✦ 3D地球儀によるログフローのビジュアライズ</text>
+  <text class="box-text-desc" x="80" y="905" fill="var(--ui-text)" text-anchor="start" dominant-baseline="middle">✦ 異常検知 (iForestによるアノマリスコア算出)</text>
   <text class="box-text-desc" x="220" y="940" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">Wails Frontend (HTML / JS / CSS)</text>
 
   <!-- Arrow: UI to AI (Double-headed arrow representing query and response) -->
@@ -288,9 +293,9 @@
 
   <!-- AI Assistant (LLM Integration) -->
   <rect class="box" x="420" y="790" width="320" height="175" rx="12" fill="url(#grad-ai)" stroke="var(--ai-border)"/>
-  <text class="box-text-title" x="580" y="815" fill="var(--ai-text)" text-anchor="middle" dominant-baseline="middle">AI Assistant</text>
-  <text class="box-text-desc" x="440" y="845" fill="var(--ai-text)" text-anchor="start" dominant-baseline="middle">✦ Automated log explanation using LLMs</text>
-  <text class="box-text-desc" x="440" y="868" fill="var(--ai-text)" text-anchor="start" dominant-baseline="middle">✦ Multi-provider integration &amp; model selection:</text>
+  <text class="box-text-title" x="580" y="815" fill="var(--ai-text)" text-anchor="middle" dominant-baseline="middle">AI アシスタント</text>
+  <text class="box-text-desc" x="440" y="845" fill="var(--ai-text)" text-anchor="start" dominant-baseline="middle">✦ ログデータの自動解析と自然言語による解説</text>
+  <text class="box-text-desc" x="440" y="868" fill="var(--ai-text)" text-anchor="start" dominant-baseline="middle">✦ 各種LLMプロバイダとの柔軟なインテグレーション:</text>
   
   <!-- LLM Providers Tags -->
   <g transform="translate(440, 890)">
@@ -312,4 +317,7 @@
   </g>
   
   <text class="box-text-desc" x="580" y="940" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">langchaingo / google-generative-ai-go</text>
+
+  <!-- Red Highlight Outline for Settings (Log Sources & Ingestion) -->
+  <rect x="25" y="95" width="750" height="240" rx="12" fill="none" stroke="#ef4444" stroke-width="3.5" filter="url(#red-glow)"/>
 </svg>

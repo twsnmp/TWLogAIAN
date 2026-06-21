@@ -59,7 +59,7 @@ https://blugelabs.com/bluge/
 
 を使っています。
 
-![](./images/ja/block.png)
+![システム構成図](./images/ja/block.svg)
 
 ## Windows版のインストール
 
@@ -130,7 +130,7 @@ MacOSの場合はランチャーなどからお好きな方法で起動してく
 1. ログの検索
 1. 分析レポート
 
-![](./images/ja/flow.svg)
+![操作フロー](./images/ja/flow.svg)
 
 
 ## 作業フォルダの選択
@@ -228,7 +228,7 @@ GeoIPのデータベースファイルを指定します。
 TWLogAIANが読み込むことのできるログの場所についての説明です。
 右の図の赤枠の部分の説明です。圧縮ファイルの中にあるログファイルも直接読み込むことができます。Windowsのイベントログにも対応しています。
 
-![](./images/ja/log_sources_settings.png)
+![ログの読み込み場所](./images/ja/log_sources_settings.svg)
 
 
 ## ログ読み込み元の追加

@@ -59,7 +59,7 @@ The backend is developed in Go, and it uses Bluge as its full-text search engine
 
 https://blugelabs.com/bluge/
 
-![](./images/en/block.svg)
+![Architecture Block Diagram](./images/en/block.svg)
 
 
 ## Installation: Windows
@@ -124,7 +124,7 @@ Clicking the **Feedback** button opens the feedback dialog. Please enter any iss
 5. Search logs
 6. View analysis reports
 
-![](./images/en/flow.svg)
+![Workflow Diagram](./images/en/flow.svg)
 
 
 ## Selecting a Workspace Folder
@@ -226,6 +226,7 @@ Specifies the path to the GeoIP database file.
 
 This section explains where TWLogAIAN can load logs from (highlighted in red in the screenshot). Logs stored within compressed archives can be read directly. Windows event logs are also supported.
 
+![Log Loading Locations](./images/en/log_sources_settings.svg)
 
 
 ## Adding a Log Source

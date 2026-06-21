@@ -22,7 +22,7 @@ This guide explains how to install and start using TWLogAIAN, a convenient AI-as
 
 TWLogAIAN imports logs into a full-text search engine to make them searchable. It then helps you analyze the search results using machine learning (AI) and rich visualization tools.
 
-![](./images/en/block.svg)
+![Architecture Block Diagram](./images/en/block.svg)
 
 
 ## Windows: Microsoft Store

@@ -26,9 +26,14 @@
       <stop offset="100%" stop-color="var(--ext-bg-end)"/>
     </linearGradient>
 
-    <!-- Shadow -->
+    <!-- Shadows -->
     <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
       <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06"/>
+    </filter>
+
+    <!-- Red Glow for Settings Highlight -->
+    <filter id="red-glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#ef4444" flood-opacity="0.85"/>
     </filter>
 
     <!-- Arrow markers -->
@@ -169,7 +174,7 @@
   <!-- Title -->
   <g transform="translate(40, 50)">
     <text class="title" x="0" y="0">TWLogAIAN Architecture &amp; Data Flow</text>
-    <text class="subtitle" x="0" y="24">Overview of log ingestion, processing, storage, AI analysis, and visualization</text>
+    <text class="subtitle" x="0" y="24">Overview of log ingestion, processing, storage, AI analysis, and visualization (Highlighting Settings)</text>
   </g>
 
   <!-- Log Sources Section -->
@@ -312,4 +317,7 @@
   </g>
   
   <text class="box-text-desc" x="580" y="940" fill="var(--text-muted)" text-anchor="middle" dominant-baseline="middle">langchaingo / google-generative-ai-go</text>
+
+  <!-- Red Highlight Outline for Settings (Log Sources & Ingestion) -->
+  <rect x="25" y="95" width="750" height="240" rx="12" fill="none" stroke="#ef4444" stroke-width="3.5" filter="url(#red-glow)"/>
 </svg>
