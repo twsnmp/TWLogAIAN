@@ -82,7 +82,7 @@ You can find the latest installer releases at:
 
 https://github.com/twsnmp/TWLogAIAN/releases
 
-Download the Windows MSI installer (`TWLogAIAN.msi`) or the macOS DMG installer (`TWLogAIAN.dmg`).
+Download the Windows MSI installer (`TWLogAIAN.msi`) or the macOS PKG installer (`TWLogAIAN_dev.pkg`).
 
 
 ## Launching: Windows

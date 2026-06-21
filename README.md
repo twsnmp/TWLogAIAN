@@ -6,67 +6,60 @@ TWSNMP`s Log AI Analyzer
 
 ## Overview
 
-This is a project that expands the analysis function of syslog developed with TWSNMP FC and develops it as a desktop application.
-Log analysis is overwhelmingly more effective than having files provided and doing it on your own computer than by accessing the log server.
-I think there are a lot.If you are a Unix command expert, you use commands to search and format logs to perform analysis.
-I think so.I'm sure there are many people who load it into the editor and work with the editor search function.I'm using Excel
-I think there are people too.This tool is a tool to help such people a little bit.Load the provided log files directly from compressed state, directly from a remote server, or directly from a Docker or Kubernetes command, and create indexes and make them searchable using a full-text search engine.The index is from the IP address extracted from the log.
-It can also include additional information such as location information and hostname.You can also easily visualize the results of your search using web technology.All you have to do is delete the log data as a whole folder after the analysis.
+This project extends the syslog analysis features originally developed for TWSNMP FC into a standalone desktop application.
+
+Log analysis is often done more efficiently by bringing the log files to your own computer rather than accessing a remote log server. If you are a Unix command expert, you might use commands to search and format logs. Many people also load logs into a text editor to search them, or use Excel. This tool is designed to assist you with these tasks. It allows you to load log files directly from compressed files, remote servers, or Docker/Kubernetes command outputs, then indexes them using a full-text search engine to make them searchable. The index can also include supplemental information such as geographic locations or hostnames derived from IP addresses extracted from the logs. You can visualize the search results easily using web technologies. When you're done with the analysis, simply delete the log data folder.
 
 ![Log Analysis Flow](docs/images/en/log_analyzer.png)
 
-![2022-03-01_06-22-51](https://user-images.githubusercontent.com/5225950/156246976-ca92f7eb-686c-4bc5-bafd-0053a74f3b88.png)
+![Log Search Screen](docs/images/en/search_results.png)
 
-The log file to be analyzed is
+The log files to be analyzed can be retrieved via:
 
-- Local files
-- Local Directory
-- Local command execution results (Docker and Kubernetes)
-- SCP forwarding from a remote server
-- Results of command execution using SSH on a remote server (Docker and Kubernetes)
-- TWSNMP FC integration (from v1.1.0)
-- Windows Event Log (from v1.1.0)
+- Local files (ZIP, EVTX, text, etc.)
+- Local directories
+- Local command execution results (Docker, Kubernetes, etc.)
+- SCP transfer from a remote server
+- SSH command execution results on a remote server (Docker, Kubernetes, etc.)
+- TWSNMP FC integration
+- Windows Event Log
 
-can be obtained by:
+Log analysis features:
 
-The log analysis function is
+- Automatic log type determination
+- Automatic timestamp retrieval
+- Regular expression and simple text filtering
+- Pattern-based data extraction
+- Location and hostname estimation from extracted IP addresses
+- Vendor name estimation from extracted MAC addresses
+- Full-text search indexing of logs and extracted fields
+- Rich full-text query options (time range, keywords, numeric range, geolocation range)
+- Visualization of log counts and extracted data on graphs/maps:
+  - Histogram
+  - Cluster
+  - Time series
+  - World Map
+  - Globe
+  - Heatmap
+- Export analysis results to CSV or Excel
+- Create chronological notes from selected logs
+- AI-assisted anomaly detection (machine learning)
+- Data extraction during search
+- Explain logs and answer queries using LLM (Ollama, Gemini, OpenAI, Anthropic) integration
 
-- Automatically determine the log type
-- Automatically retrieve timestamps
-- Filter with regular expressions and simple methods
-- Extract data from a specific pattern from the log
-- Location information and host name can be estimated from extracted IP addresses
-- Vendor name can be estimated from extracted MAC addresses
-- Logs and extracted data can be indexed using a full-text search engine
-- Full-text search engine allows you to search by time range, keyword, numeric range, and geographical location range
-- Visualize the number of logs and extracted data on graphs and world maps
-- Histogram
-- Cluster
-- Time series
-- World Map
-- Globe
-- Heatmap (v1.1.0)
-- You can output analysis results to CSV or EXCEL
-- Select logs to create chronologically arranged notes (v1.2.0)
-- Anomaly logs can be detected with AI (machine learning) assistance (from v1.3.0)
-- Data can be extracted during searching
+Technologies used:
 
-It has been realized.
+- Go Language (Backend)
+- Wails v2: Go GUI creation framework
+- Svelte 5 / Vite 8: Frontend framework and build tool
+- Bluge: Go full-text search engine
+- langchaingo: LLM integration library
+- p5.js / p5-svelte: 2D/3D visualizations
+- Apache ECharts: Rich charting
+- Primer/CSS, Octicons: UI design system
+- TensorFlow.js: Frontend AI anomaly detection
 
-The techniques used to develop desktop apps
-
-- GO Language
-- Wails v2: GO Language GUI creation tool
-- Svelte: Web Application Framework
-- Bluge: GO Language Full Text Search Engine
-- p5.js : Visualize
-- Apache echarts: graph display
-- Primer/CSS,Octicons: Screen design
-- TensorFlow.js : AI
-
-is.
-
-The backend is processed in parallel/fastly using GO language, and the JS/CSS/HTML frontend achieves rich expressiveness.
+The backend provides high-performance, parallel processing in Go, while the JS/CSS/HTML frontend delivers rich and expressive visualizations.
 
 ## Document
 
@@ -74,18 +67,19 @@ https://twsnmp.github.io/TWLogAIAN/
 
 ## Status
 
-v1.0.0(2022/3/2) First release
-v1.1.0 (2022/3/14) External link
-v1.2.0 (2022/3/21) Supports memo function
-v1.3.0 (2022/4/3) AI assist compatible
+v1.0.0 (2022/3/2) First release
+v1.1.0 (2022/3/14) External link (TWSNMP FC integration, Windows Event Log)
+v1.2.0 (2022/3/21) Memo function support
+v1.3.0 (2022/4/3) AI assist support
 v1.4.0 (2022/4/11) Improved Grok pattern editing function
-v1.5.0 (2022/4/24) Compatible with data extraction during search, improved Grok pattern editing function
-v1.6.0 (2022/10/29) Grok pattern, improved field editing function, automatic log type determination
-v1.7.0 (2023/1/15) English support, improved log search function
-v1.8.0 (2/5/2023) Improved Grok pattern editing and selection, improved timestamp processing
-v1.9.0 (2/12/2023) Improved Windows event log processing, highlighting
-v1.10.0 (2023/6/12) Improved Windows event log processing, abnormality detection using TFIDF
-v2.0.0 (2026/6/20) LLM
+v1.5.0 (2022/4/24) Data extraction during search, improved Grok pattern editing function
+v1.6.0 (2022/10/29) Grok pattern/field editing improvements, automatic log type determination
+v1.7.0 (2023/1/15) English localization support, improved search features
+v1.8.0 (2023/2/5) Grok pattern editing/selection improvements, timestamp processing improvements
+v1.9.0 (2023/2/12) Windows event log processing improvements, log highlighting
+v1.10.0 (2023/6/12) Windows event log improvements, TF-IDF anomaly detection
+v1.11.0 (2025/4/14) LLM/RAG integration
+v2.0.0 (2026/6/20) Upgrade to Svelte 5 / Vite 8, custom GrokEditor, LLM integration (RAG removed)
 
 ## Build
 
