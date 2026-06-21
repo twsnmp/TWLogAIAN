@@ -67,19 +67,19 @@ https://twsnmp.github.io/TWLogAIAN/
 
 ## Status
 
-v1.0.0 (2022/3/2) First release
-v1.1.0 (2022/3/14) External link (TWSNMP FC integration, Windows Event Log)
-v1.2.0 (2022/3/21) Memo function support
-v1.3.0 (2022/4/3) AI assist support
-v1.4.0 (2022/4/11) Improved Grok pattern editing function
-v1.5.0 (2022/4/24) Data extraction during search, improved Grok pattern editing function
-v1.6.0 (2022/10/29) Grok pattern/field editing improvements, automatic log type determination
-v1.7.0 (2023/1/15) English localization support, improved search features
-v1.8.0 (2023/2/5) Grok pattern editing/selection improvements, timestamp processing improvements
-v1.9.0 (2023/2/12) Windows event log processing improvements, log highlighting
-v1.10.0 (2023/6/12) Windows event log improvements, TF-IDF anomaly detection
-v1.11.0 (2025/4/14) LLM/RAG integration
-v2.0.0 (2026/6/20) Upgrade to Svelte 5 / Vite 8, custom GrokEditor, LLM integration (RAG removed)
+- v1.0.0 (2022/3/2) First release
+- v1.1.0 (2022/3/14) External link (TWSNMP FC integration, Windows Event Log)
+- v1.2.0 (2022/3/21) Memo function support
+- v1.3.0 (2022/4/3) AI assist support
+- v1.4.0 (2022/4/11) Improved Grok pattern editing function
+- v1.5.0 (2022/4/24) Data extraction during search, improved Grok pattern editing function
+- v1.6.0 (2022/10/29) Grok pattern/field editing improvements, automatic log type determination
+- v1.7.0 (2023/1/15) English localization support, improved search features
+- v1.8.0 (2023/2/5) Grok pattern editing/selection improvements, timestamp processing improvements
+- v1.9.0 (2023/2/12) Windows event log processing improvements, log highlighting
+- v1.10.0 (2023/6/12) Windows event log improvements, TF-IDF anomaly detection
+- v1.11.0 (2025/4/14) LLM/RAG integration
+- v2.0.0 (2026/6/20) Upgrade to Svelte 5 / Vite 8, custom GrokEditor, LLM integration (RAG removed)
 
 ## Build
 
