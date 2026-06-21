@@ -1,4 +1,4 @@
-.PHONY: all clean windows mac dev
+.PHONY: all clean windows mac linux dev
 ### バージョンの定義
 VERSION     := "v2.0.0"
 COMMIT      := $(shell git rev-parse --short HEAD)
@@ -7,7 +7,7 @@ COMMIT      := $(shell git rev-parse --short HEAD)
 LDFLAGS  = "-s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT)"
 
 ### PHONY ターゲットのビルドルール
-all: windows mac
+all: windows mac linux
 
 clean:
 	rm -rf build/bin/TWLogAIAN*
@@ -20,6 +20,9 @@ windebug:
 
 mac:
 	wails build  -platform darwin/universal -clean -ldflags $(LDFLAGS)
+
+linux:
+	wails build  -platform linux/amd64 -clean -tags webkit2_41 -ldflags $(LDFLAGS)
 
 dev:
 	wails dev
