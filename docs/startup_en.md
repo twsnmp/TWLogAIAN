@@ -3,161 +3,144 @@ title: TWLogAIAN Startup Guide
 layout: default
 ---
 
-# Getting Started [Back](./index.html)
+# Getting Started with TWLogAIAN
 
-Amazing log analysis tool with AI assist
+A powerful log analysis tool with AI assistance
 
-![](./images/appicon.png){: width="256" }
-
-
+<img src="./images/appicon.png" width="256">
 
 
-# About
-
-This is an explanation of how to install and start using the convenient AI-assisted log analysis tool TWLogAIAN.TWLogAIAN is a log analysis tool for those who develop and support software.It is created with the idea of ​​"easy to collect logs, create indexes that make searches easier, analyze search results in rich expressions, and easily clean up when finished.
+[Back](./index.html)
 
 
-# How TWLogAIAN works
+# Introduction
 
-You can load logs into a full-text search engine and search for them.It helps you analyze search results with machine learning (AI) and visualization.
+This guide explains how to install and start using TWLogAIAN, a convenient AI-assisted log analysis tool. TWLogAIAN is built for software developers and support engineers. It is designed around a simple workflow: "easily collect logs, build indexes to simplify searches, analyze results with rich visualizations, and clean up effortlessly when you're done."
+
+
+# How TWLogAIAN Works
+
+TWLogAIAN imports logs into a full-text search engine to make them searchable. It then helps you analyze the search results using machine learning (AI) and rich visualization tools.
 
 ![](./images/en/block.svg)
 
 
-## Install from Microsoft Store
+## Windows: Microsoft Store
 
 [Microsoft Store](https://ms-windows-store//pdp/?productid=9P8TQLG999Z3)
 
 
+## Windows: MSI
 
-## Windows MSI
-
-Download and install TWLogAIAN.msi from
-
-[GitHUB Releases](https://github.com/twsnmp/TWLogAIAN/releases)
-
-![](./images/en/install_windows.png)
+Download and install `TWLogAIAN.msi` from [GitHub Releases](https://github.com/twsnmp/TWLogAIAN/releases).
 
 
-## Scoop
+## Windows: Scoop
 
-See the following after installing Scoop:
-
-[Scoop](https://scoop.sh/)
-
-
-Install TWLogAIAN with
+Refer to the [Scoop website](https://scoop.sh/) to install Scoop, then run:
 
 ```
->scoop bucket add twsnmp https://github.com/twsnmp/scoop-bucket
->scoop install twlogaian
+> scoop bucket add twsnmp https://github.com/twsnmp/scoop-bucket
+> scoop install twlogaian
 ```
 
-
-## Install MAC OS verison from App Store
-
-[App Store](https://apps.apple.com/app/twlogaian/id1664596440)
+to install TWLogAIAN.
 
 
-![](./images/en/install_macos_startup.png)
+## macOS: App Store
+
+Install from the [App Store](https://apps.apple.com/app/twlogaian/id1664596440).
 
 
-## Start TWLogAIAN
+## Starting TWLogAIAN
 
-If you are using Windows, start the menu from the Mac OS, launcher, etc., etc., etc., start it using any method you like.You should see the Welcome screen.
+Launch the application using your preferred method—such as the Start menu on Windows or the Launchpad on macOS. You should see the Welcome screen.
 
 ![](./images/en/welcome_startup.png)
 
 
 ## Dark Mode
 
-Click on the 🌙 mark in the top right to enter dark mode.
-I like dark mode.
-I think people who are aiming to become White Hackers probably like dark mode.It seems that there are only white hackers in the cat world.
-By assistant cat
+Click the 🌙 icon in the top right to switch to dark mode.
+Personally, I love dark mode.
+I suspect anyone aspiring to be a white hat hacker prefers dark mode as well. Rumor has it that only white hat hackers exist in the cat world. (By the Assistant Cat)
 
 ![](./images/en/dark_mode_startup.png)
 
 
-## Language switching
+## Language Switch
 
-You can switch the screen display to English in the menu at the top right.
+You can switch the interface language to English using the dropdown menu in the top right.
 
 ![](./images/en/language_switch_startup.png)
 
 
-# Analysis flow using TWLogAIAN
+# Log Analysis Flow in TWLogAIAN
 
-The general analysis process is
+The general analysis workflow is as follows:
  
-1. Select a working folder
-2. Setting the log load location
-3. Configuring log loading processing
-4. Loading the log
-5. Search and analyze logs
-
-.
+1. Select a workspace folder
+2. Configure where to load logs from
+3. Configure how logs are processed
+4. Load (index) the logs
+5. Search and analyze the logs
 
 
+## Selecting a Workspace Folder
 
-## Select a working folder
-
-Click the <Start> button to display the working folder selection screen.The working folder will create configuration files and full-text search engine indexes for analysis.Once the analysis is complete, delete the entire folder and it will disappear.You can destroy evidence.
+Clicking the **Start** button opens a dialog to select a workspace folder. In this folder, TWLogAIAN creates configuration files and full-text search indexes for your analysis. When you are finished, you can delete the entire folder to clean up everything without leaving a trace.
 
 ![](./images/en/select_workspace.png)
 
 
-## Setting the log load location
+## Configuring Log Sources
 
-Select the working folder to display the log analysis settings screen.
-First, set the location where the logs will be loaded.Set where the logs to be analyzed are located.You can add it at the beginning using the <+> button.
-In this example, the filenames in the specified folder start with access.
-
-![](./images/en/log_sources_list.png)
-
-
-## Configuring log loading operations
-
-Once you have specified the location to load the target log, you will be setting the processing when loading.There are settings related to handling compressed files in compressed files, handling time when there is no time zone, setting to restrict the logs to be loaded with filters, setting to extract data from logs, setting to check host name and location information from information such as IP addresses, and setting to create indexes.
+Once you select a workspace folder, the log analysis configuration screen will be displayed.
+First, specify where your logs are located. You can add a new source by clicking the **+** button.
+In this example, files in the specified folder with names starting with "access" will be imported.
 
 ![](./images/en/log_loading_config.png)
 
-## Loading the log
 
-Click the <Create Index> button to start loading the log.The progress will be displayed while loading.
+## Configuring Log Loading & Processing Options
+
+After specifying the log source, you can configure how the logs are processed during import. Options include handling nested archives, default time zones for logs without them, filtering out unwanted logs, extracting specific data from logs, resolving hostnames/locations from IP addresses, and choosing where to create the search index.
+
+
+
+## Loading the Logs
+
+Click the **Start** button to begin loading and indexing the logs. A progress bar will show the loading status.
 
 ![](./images/en/indexing_startup.png)
 
 
-## Searching logs
+## Searching Logs
 
-Once the log is loaded and the index creation is complete, the search screen will be displayed.For now, click the Search button to search.
+Once log loading and indexing are complete, the search screen will appear. Simply click the **Search** button to retrieve the logs.
 
 ![](./images/en/log_search_startup.png)
 
 
-## Processing results
+## Processing Results
 
-You can check the status of log loading using the <Processing Results> button.You can check the items of data extracted from the log and the times when there are many logs.
+You can check the import status by clicking the **Processing result** button. This screen allows you to inspect data fields extracted from the logs and see the peak hours of log activity.
 
 ![](./images/en/report_process_results_startup.png)
 
 
-## Search criteria
+## Search Criteria
 
-You can also search by specifying search criteria.
-Time range, keywords, numerical range, location information, etc.
-There are also settings for abnormality detection and data extraction.
+You can refine your search by specifying various search criteria, such as time range, keywords, numeric ranges, and location details. Settings for anomaly detection and data extraction are also available here.
 
 ![](./images/en/search_criteria_startup.png)
 
 
-## Report
+## Reports
 
-You can also view reports by setting the settings to extract location information from time range, location information, and IP addresses.
+If you enable features like time range grouping or location extraction from IP addresses, you can view rich visual reports, such as map locations.
 
 ![](./images/en/report_location_startup.png)
 
- 
 
- Now, enjoy a comfortable log analysis life.
+Enjoy a comfortable and productive log analysis experience!

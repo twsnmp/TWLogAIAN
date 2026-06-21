@@ -8,7 +8,7 @@ TWSNMP`s AI assist Log Analyzer
 
 AIアシスト付きすごいログ分析ツール
 
-![](./images/appicon.png){: width="256" }
+<img src="./images/appicon.png" width="256">
 
 
 ## [Getting Started](./startup_en.html)

@@ -7,7 +7,7 @@ layout: default
 
 AIアシスト付きのすごいログ分析ツール
 
-![](./images/appicon.png){: width="256" }
+<img src="./images/appicon.png" width="256">
 
 
 [戻る](./index.html)
@@ -38,7 +38,6 @@ AIアシスト付きのすごいログ分析ツール
 
 からTWLogAIAN.msiをダウンロードしてインストール
 
-![w:600 bg right](./images/ja/install_windows.png)
 
 
 ## Scoop
@@ -60,8 +59,6 @@ AIアシスト付きのすごいログ分析ツール
 [App Store](https://apps.apple.com/app/twlogaian/id1664596440)
 
 からインスール
-
-![](./images/ja/install_macos_startup.png)
 
 
 ## TWLogAIANの起動

@@ -2,6 +2,8 @@
 import * as echarts from 'echarts'
 import 'echarts-gl'
 import * as ecStat from 'echarts-stat'
+import baseTextureImg from '../../assets/images/world.topo.bathy.200401.jpg'
+import heightTextureImg from '../../assets/images/bathymetry_bw_composite_4k.jpg'
 
 let chart;
 
@@ -59,8 +61,8 @@ export const showGlobe = (div, logs, srcField, dstField,numField, dark) => {
   const option = {
     backgroundColor: '#000',
     globe: {
-      baseTexture: '/assets/images/world.topo.bathy.200401.jpg',
-      heightTexture: '/assets/images/bathymetry_bw_composite_4k.jpg',
+      baseTexture: baseTextureImg,
+      heightTexture: heightTextureImg,
       shading: 'lambert',
       light: {
         ambient: {

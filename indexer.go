@@ -532,6 +532,23 @@ func (b *App) parseLogEnt(l *LogEnt) {
 			l.KeyValue[k] = v
 		}
 	}
+	if b.processConf.View == "syslog" {
+		if _, ok := l.KeyValue["tag"]; !ok {
+			program, _ := l.KeyValue["program"].(string)
+			pidStr := ""
+			if pid, ok := l.KeyValue["pid"]; ok && pid != "" && pid != nil {
+				switch pv := pid.(type) {
+				case float64:
+					pidStr = fmt.Sprintf("[%.0f]", pv)
+				default:
+					pidStr = fmt.Sprintf("[%v]", pv)
+				}
+			}
+			if program != "" || pidStr != "" {
+				l.KeyValue["tag"] = program + pidStr
+			}
+		}
+	}
 	if b.config.GeoIP {
 		for _, f := range b.processConf.GeoFields {
 			if ip, ok := l.KeyValue[f]; ok {
@@ -601,6 +618,24 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 				l.KeyValue[k] = fv
 			} else {
 				l.KeyValue[k] = v
+			}
+		}
+		if et.View == "syslog" {
+			if _, ok := l.KeyValue["tag"]; !ok {
+				program, _ := l.KeyValue["program"].(string)
+				pidStr := ""
+				if pid, ok := l.KeyValue["pid"]; ok && pid != "" && pid != nil {
+					switch pv := pid.(type) {
+					case float64:
+						pidStr = fmt.Sprintf("[%.0f]", pv)
+					default:
+						pidStr = fmt.Sprintf("[%v]", pv)
+					}
+				}
+				if program != "" || pidStr != "" {
+					l.KeyValue["tag"] = program + pidStr
+					exFieldMap["tag"] = true
+				}
 			}
 		}
 		if b.config.GeoIP {

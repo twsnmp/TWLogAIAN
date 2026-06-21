@@ -511,7 +511,14 @@
     "LLMBaseURL": "ベースURL",
     "LLMAPIKey": "APIキー",
     "LLMModel": "モデル名",
-    "LLMNone": "なし"
+    "LLMNone": "なし",
+    "LLMGemini": "Google AI (Gemini)",
+    "LLMOpenAI": "OpenAI",
+    "LLMAnthropic": "Anthropic (Claude)",
+    "LLMOllama": "Ollama (ローカルLLM)",
+    "LLMBaseURLPlaceholder": "ベースURLを入力 (空欄でデフォルト)",
+    "LLMAPIKeyPlaceholder": "APIキーを入力",
+    "LLMModelPlaceholder": "モデル名を入力"
   },
   "Js": {
     "Level": "レベル",

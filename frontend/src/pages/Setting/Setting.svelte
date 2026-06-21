@@ -720,10 +720,10 @@
               <div class="form-group-body">
                 <select class="form-select width-full" bind:value={config.LLMProvider}>
                   <option value="none">{$_('Setting.LLMNone')}</option>
-                  <option value="gemini">Google AI (Gemini)</option>
-                  <option value="openai">OpenAI</option>
-                  <option value="anthropic">Anthropic (Claude)</option>
-                  <option value="ollama">Ollama (ローカルLLM)</option>
+                  <option value="gemini">{$_('Setting.LLMGemini')}</option>
+                  <option value="openai">{$_('Setting.LLMOpenAI')}</option>
+                  <option value="anthropic">{$_('Setting.LLMAnthropic')}</option>
+                  <option value="ollama">{$_('Setting.LLMOllama')}</option>
                 </select>
               </div>
             </div>
@@ -737,7 +737,7 @@
                     class="form-control"
                     type="text"
                     bind:value={config.LLMBaseURL}
-                    placeholder="ベースURLを入力 (空欄でデフォルト)"
+                    placeholder="{$_('Setting.LLMBaseURLPlaceholder')}"
                   />
                 </div>
               </div>
@@ -750,7 +750,7 @@
                     class="form-control"
                     type="password"
                     bind:value={config.LLMAPIKey}
-                    placeholder="APIキーを入力"
+                    placeholder="{$_('Setting.LLMAPIKeyPlaceholder')}"
                   />
                 </div>
               </div>
@@ -763,7 +763,7 @@
                     class="form-control"
                     type="text"
                     bind:value={config.LLMModel}
-                    placeholder="モデル名を入力"
+                    placeholder="{$_('Setting.LLMModelPlaceholder')}"
                   />
                 </div>
               </div>

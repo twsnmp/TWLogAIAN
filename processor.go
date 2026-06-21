@@ -49,6 +49,7 @@ type ProcessConf struct {
 	HostFields  []string
 	MACFields   []string
 	OuiMap      map[string]string
+	View        string
 }
 
 type LogFile struct {
@@ -586,6 +587,23 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 					log.KeyValue[k] = v
 				}
 			}
+			if b.processConf.View == "syslog" {
+				if _, ok := log.KeyValue["tag"]; !ok {
+					program, _ := log.KeyValue["program"].(string)
+					pidStr := ""
+					if pid, ok := log.KeyValue["pid"]; ok && pid != "" && pid != nil {
+						switch pv := pid.(type) {
+						case float64:
+							pidStr = fmt.Sprintf("[%.0f]", pv)
+						default:
+							pidStr = fmt.Sprintf("[%v]", pv)
+						}
+					}
+					if program != "" || pidStr != "" {
+						log.KeyValue["tag"] = program + pidStr
+					}
+				}
+			}
 			var ts time.Time
 			if b.processConf.TimeField != "" {
 				tf := ""
@@ -749,6 +767,7 @@ func (b *App) setFilter() error {
 // autoSetExtractor : サンプルのログをテストしてログの種類を判別する
 func (b *App) autoSetExtractor(l string) string {
 	b.processConf.Extractor = nil
+	b.processConf.View = ""
 	max := 0
 	key := ""
 	for _, e := range extractorTypes {
@@ -766,6 +785,7 @@ func (b *App) autoSetExtractor(l string) string {
 	b.config.HostFields = et.IPFields
 	b.config.MACFields = et.MACFields
 	b.processConf.TimeField = et.TimeField
+	b.processConf.View = et.View
 	config := grok.Config{
 		Patterns:          make(map[string]string),
 		NamedCapturesOnly: true,
@@ -800,9 +820,11 @@ func (b *App) testGrok(l, p string) int {
 func (b *App) setExtractor() error {
 	if b.config.Extractor == "timeonly" || b.config.Extractor == "auto" || b.config.Extractor == "" {
 		b.processConf.Extractor = nil
+		b.processConf.View = ""
 		return nil
 	}
 	grstr := b.config.Grok
+	b.processConf.View = ""
 	if b.config.Extractor != "custom" {
 		et, ok := extractorTypes[b.config.Extractor]
 		if !ok {
@@ -813,6 +835,7 @@ func (b *App) setExtractor() error {
 		b.config.MACFields = et.MACFields
 		b.processConf.TimeField = et.TimeField
 		grstr = et.Grok
+		b.processConf.View = et.View
 	}
 	config := grok.Config{
 		Patterns:          make(map[string]string),

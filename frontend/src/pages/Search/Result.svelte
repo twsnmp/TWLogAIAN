@@ -23,6 +23,14 @@
   let startTime = "";
   let endTime = "";
 
+  let currentPage = 0;
+  const pageSize = 5;
+  $: totalPages = Math.ceil((indexInfo?.Fields?.length || 0) / pageSize);
+  $: paginatedFields = (indexInfo?.Fields || []).slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+  $: if (indexInfo?.Fields) {
+    currentPage = 0;
+  }
+
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   let logFiles = [];
@@ -78,10 +86,10 @@
       <div class="Box-row">
         <div id="chart"></div>
       </div>
-      <div class="Box-row" style="display: flex;">
+      <div class="Box-row" style="display: flex; gap: 16px;">
         <div class="markdown-body log" style="flex: 1;">
           <h5>{$_('Result.OverView')}</h5>
-          <table>
+          <table class="overview-table" width="100%">
             <tbody>
               <tr>
                 <th>{$_('Result.TotalOnIndex')}</th>
@@ -110,31 +118,40 @@
             </tbody>
           </table>
         </div>
-      {#if indexInfo.Fields.length > 0}
-        <div class="markdown-body log" style="flex: 1;">
-          <h5>{$_('Result.ExtractItems')}</h5>
-          <table width="90%">
-            <thead>
-              <tr>
-                <th width="30%">{$_('Result.ValueName')}</th>
-                <th width="40%">{$_('Result.Name')}</th>
-                <th width="20%">{$_('Result.Type')}</th>
-                <th width="10%">{$_('Result.Unit')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each indexInfo.Fields as f}
+        {#if indexInfo.Fields.length > 0}
+          <div class="markdown-body log" style="flex: 1;">
+            <h5>{$_('Result.ExtractItems')}</h5>
+            <table class="extract-table" width="100%">
+              <thead>
                 <tr>
-                  <td>{f}</td>
-                  <td class:color-fg-danger={!isFieldValid(f)}>{getFieldName(f)}</td>
-                  <td>{getFieldType(f)}</td>
-                  <td>{getFieldUnit(f)}</td>
+                  <th width="30%">{$_('Result.ValueName')}</th>
+                  <th width="35%">{$_('Result.Name')}</th>
+                  <th width="20%">{$_('Result.Type')}</th>
+                  <th width="15%">{$_('Result.Unit')}</th>
                 </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {/if}
+              </thead>
+              <tbody>
+                {#each paginatedFields as f}
+                  <tr>
+                    <td>{f}</td>
+                    <td class:color-fg-danger={!isFieldValid(f)}>{getFieldName(f)}</td>
+                    <td>{getFieldType(f)}</td>
+                    <td>{getFieldUnit(f)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+            <div class="d-flex flex-justify-center mt-2" style="align-items: center; gap: 8px;">
+              <button class="btn btn-sm" type="button" disabled={currentPage === 0} on:click={() => currentPage--}>
+                ◀
+              </button>
+              <span style="font-size: 14px;">{currentPage + 1} / {totalPages || 1}</span>
+              <button class="btn btn-sm" type="button" disabled={currentPage >= totalPages - 1} on:click={() => currentPage++}>
+                ▶
+              </button>
+            </div>
+          </div>
+        {/if}
       </div>
       <div class="Box-row markdown-body log">
         <h5>{$_('Result.ReadFiles')}</h5>
@@ -183,7 +200,18 @@
 <style>
   #chart {
     width: 100%;
-    height: 200px;
+    height: 350px;
     margin: 5px auto;
+  }
+  .log table {
+    width: 100% !important;
+    display: table !important;
+  }
+  .overview-table th {
+    width: 45%;
+    white-space: nowrap;
+  }
+  .extract-table th {
+    white-space: nowrap;
   }
 </style>

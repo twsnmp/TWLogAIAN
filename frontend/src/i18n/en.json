@@ -511,7 +511,14 @@
     "LLMBaseURL": "Base URL",
     "LLMAPIKey": "API Key",
     "LLMModel": "Model Name",
-    "LLMNone": "None"
+    "LLMNone": "None",
+    "LLMGemini": "Google AI (Gemini)",
+    "LLMOpenAI": "OpenAI",
+    "LLMAnthropic": "Anthropic (Claude)",
+    "LLMOllama": "Ollama (Local LLM)",
+    "LLMBaseURLPlaceholder": "Enter base URL (leave blank for default)",
+    "LLMAPIKeyPlaceholder": "Enter API key",
+    "LLMModelPlaceholder": "Enter model name"
   },
   "Js": {
     "Error": "Error",

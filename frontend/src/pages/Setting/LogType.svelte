@@ -35,14 +35,14 @@
   let extractorTypeList = [];
   let extractorTypePagination = {
     enable: true,
-    limit: 10,
+    limit: 5,
   };
 
   let fieldTypes = {};
   let fieldTypeList = [];
   let fieldTypePagination = {
     enable: true,
-    limit: 10,
+    limit: 5,
   };
 
   onMount(() => {
@@ -316,77 +316,79 @@
   <EditFieldType {fieldType} {add} on:done={handleEditFieldTypeDone} />
 {:else}
   <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
-    <div class="Box-header">
-      <h3 class="Box-title pb-2">
-        {$_('LogType.Title')}
-        <button
-        class="btn btn-sm float-right"
-        type="button"
-        on:click={() => editExtractorType("")}
-      >
-        <Plus16 />
-      </button>
-      </h3>
-    </div>
-    {#if extractorTypeErrorMsg != ""}
-      <div class="flash flash-error">
-        {extractorTypeErrorMsg}
-        <button
-          class="flash-close js-flash-close"
-          type="button"
-          on:click={clearMsg}
-        >
-          <X16 />
-        </button>
-      </div>
-    {/if}
     <div class="Box-body">
-      <div class="markdown-body mt-3">
-        <Grid 
-          data={extractorTypeList} 
-          sort
-          resizable
-          search={gridSearch}
-          pagination={extractorTypePagination} 
-          columns={extractorTypeColumns} 
-          language={gridLang} 
-        />
-      </div>
-    </div>
-    <div class="Box-header">
-      <h3 class="Box-title pb-2">
-        {$_('LogType.FieldDef')}
-        <button
-          class="btn btn-sm float-right"
-          type="button"
-          on:click={() => editFieldType("")}>
-        <Plus16 />
-        </button>
-      </h3>
-    </div>
-    {#if fieldTypeErrorMsg != ""}
-      <div class="flash flash-error">
-        {fieldTypeErrorMsg}
-        <button
-          class="flash-close js-flash-close"
-          type="button"
-          on:click={clearMsg}
-        >
-          <X16 />
-        </button>
-      </div>
-    {/if}
-    <div class="Box-body">
-      <div class="markdown-body mt-3">
-        <Grid 
-          data={fieldTypeList} 
-          sort
-          resizable
-          search={gridSearch}
-          pagination={fieldTypePagination} 
-          columns={fieldTypeColumns} 
-          language={gridLang} 
-        />
+      <div class="columns-container">
+        <div class="column">
+          <h4 class="mb-2">
+            {$_('LogType.Title')}
+            <button
+              class="btn btn-sm float-right"
+              type="button"
+              on:click={() => editExtractorType("")}
+            >
+              <Plus16 />
+            </button>
+          </h4>
+          {#if extractorTypeErrorMsg != ""}
+            <div class="flash flash-error mb-2">
+              {extractorTypeErrorMsg}
+              <button
+                class="flash-close js-flash-close"
+                type="button"
+                on:click={clearMsg}
+              >
+                <X16 />
+              </button>
+            </div>
+          {/if}
+          <div class="markdown-body mt-2">
+            <Grid 
+              data={extractorTypeList} 
+              sort
+              resizable
+              search={gridSearch}
+              pagination={extractorTypePagination} 
+              columns={extractorTypeColumns} 
+              language={gridLang} 
+            />
+          </div>
+        </div>
+
+        <div class="column">
+          <h4 class="mb-2">
+            {$_('LogType.FieldDef')}
+            <button
+              class="btn btn-sm float-right"
+              type="button"
+              on:click={() => editFieldType("")}
+            >
+              <Plus16 />
+            </button>
+          </h4>
+          {#if fieldTypeErrorMsg != ""}
+            <div class="flash flash-error mb-2">
+              {fieldTypeErrorMsg}
+              <button
+                class="flash-close js-flash-close"
+                type="button"
+                on:click={clearMsg}
+              >
+                <X16 />
+              </button>
+            </div>
+          {/if}
+          <div class="markdown-body mt-2">
+            <Grid 
+              data={fieldTypeList} 
+              sort
+              resizable
+              search={gridSearch}
+              pagination={fieldTypePagination} 
+              columns={fieldTypeColumns} 
+              language={gridLang} 
+            />
+          </div>
+        </div>
       </div>
     </div>
     <div class="Box-footer d-flex flex-justify-between">
@@ -417,3 +419,20 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .columns-container {
+    display: flex;
+    gap: 24px;
+  }
+  .column {
+    flex: 1;
+    min-width: 0;
+  }
+  @media (max-width: 768px) {
+    .columns-container {
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+</style>

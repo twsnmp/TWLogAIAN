@@ -5,363 +5,348 @@ layout: default
 
 # TWLogAIAN User Guide
 
-Amazing log analysis tool with AI assist
+A powerful log analysis tool with AI assistance
 
-![](./images/appicon.png){: width="256" }
+<img src="./images/appicon.png" width="256">
 
 ## Log Analysis Flow
 
 ![](./images/en/log_analyzer.png)
 
 
-## Why we make TWLogAIAN
+## Why TWLogAIAN is Being Developed
 
-TWLogAIAN began development on New Year's Day 2022
-**"A log analysis tool that AI assists me"**
-is.
-The main purpose of developing this tool is to use it myself in practice.The main purpose is to use it for log analysis to investigate problems with software being developed and maintained.We create the best tools for this purpose.
+Development on TWLogAIAN started on New Year's Day, 2022. It is designed to be:
+**"A log analysis tool where the AI assists me."**
 
-## What's different from a typical log analysis system?
-
-- Keep logs only during analysis
-- Once the analysis is complete, you can delete it without a trace
-- Can be used on a regular computer
-- Create/delete indexes for your own full-text search
-
-I think that's what it means.I'll be able to delete the folder and delete the folder to investigate the problem.Large-scale log analysis systems require a server with reasonable performance, but we have made efforts to make it easy to analyze on your own computer.
-
-## What you can do
-
-- Collect logs quickly from anywhere
-- Fast filtering of collected logs
-- Easy and fast data extraction from logs
-- Create full-text search engine indexes from logs and extracted data
-- Easily search and AI analysis of aggregated and extracted data
-- Easily vision the aggregated data, extracted data, and AI analysis results
-- Save lists and graphs of analysis results easily to CSV and Excel files
+The primary motivation for developing this tool is to use it myself in daily work. Specifically, I use it to analyze logs when investigating issues in the software I develop and support. TWLogAIAN is built to be the ideal tool for this exact purpose.
 
 
-# Logs to be analyzed
+## How It Differs from Typical Log Analysis Systems
+
+- Logs are kept only during analysis.
+- Once the analysis is complete, everything can be deleted without a trace.
+- Runs smoothly on a standard personal computer.
+- Allows you to create and delete your own full-text search indexes.
+
+The workflow is simple: when you get logs to troubleshoot a problem, you import them, perform the investigation, and once the issue is resolved, you can delete the folder to wipe all traces. While large-scale log analysis systems require high-performance servers, TWLogAIAN is designed to make lightweight analysis easy and accessible directly on your local computer.
+
+
+## Key Features
+
+- Quickly collect logs from various sources.
+- Filter collected logs at high speed.
+- Easily and quickly extract data fields from logs.
+- Build full-text search indexes from logs and extracted data.
+- Search and analyze aggregated and extracted data easily with AI assistance.
+- Visualize aggregated data, extracted data, and AI analysis results.
+- Export analysis results (lists and graphs) easily to CSV and Excel files.
+
+
+# Supported Log Sources
 
 - Local files
-- Remote file (via SCP)
+- Remote files (via SCP)
 - Logs saved in TWSNMP FC
-- Docker/Kubernets logs (via command/SSH)
-- Gravwell's logs
-- Windows Event Log (including remote)
+- Docker/Kubernetes logs (via command execution/SSH)
+- Gravwell logs
+- Windows Event Logs (including remote servers)
 
 
-# Contents of TWLogAIAN
+# Architecture of TWLogAIAN
 
-Development is carried out in GO language.Full-text search engines include Blue
-I'm using.
+The backend is developed in Go, and it uses Bluge as its full-text search engine:
 
 https://blugelabs.com/bluge/
-
 
 ![](./images/en/block.svg)
 
 
-## Install Windows
+## Installation: Windows
 
-It is published on the Microsoft Store.
+Available on the Microsoft Store:
 
 https://www.microsoft.com/store/apps/9P8TQLG999Z3
 
 
-![](./images/en/install_windows.png)
+## Installation: macOS
 
-
-## Install MacOS
-
-Published on the Apple App Store.
+Available on the Mac App Store:
 
 https://apps.apple.com/app/twlogaian/id1664596440
 
-![](./images/en/install_macos_manual.png)
 
+## Alternative Downloads
 
-## Download the installer
+You can find the latest installer releases at:
 
 https://github.com/twsnmp/TWLogAIAN/releases
 
-Windows版のMSI形式のインストラーファイルTWLogAIAN.msiかMacOS版のMacOS版のTWLogAIAN.pkgをダウンロードしてください。
+Download the Windows MSI installer (`TWLogAIAN.msi`) or the macOS DMG installer (`TWLogAIAN.dmg`).
 
 
-## Starting the Windows version
+## Launching: Windows
 
-For Windows, start it from the Start menu.
-
-![](./images/en/launch_windows.png)
+On Windows, start the application from the Start menu.
 
 
-## Starting the MacOS version
+## Launching: macOS
 
-For MacOS, start it using the launcher or whatever you like.
-
-![](./images/en/launch_macos.png)
+On macOS, launch the application from the Launchpad or via your preferred method.
 
 
-## Wellcom page
+## Welcome Screen
 
-When you start it, the "Welcome page" will appear.
+When launched, the Welcome screen is displayed.
 
 ![](./images/en/welcome_manual.png)
 
 
-## Switching screen mode
+## Screen Mode Switch
 
-The first is light mode (white screen).Click on the moon icon in the top right to enter dark mode.Click on the sun icon in the top right to return to light mode.You can only switch between them on this screen.Using Dark Mode will make you look like an expert.
-
-![](./images/en/screen_mode_switch.png)
+The application starts in light mode by default. Click the moon icon in the top right to switch to dark mode. Click the sun icon in the top right to return to light mode. Note that mode switching is only available on this screen. Using dark mode will make you look like a pro.
 
 
 ## Feedback
 
-Click the <Feedback> button to see the feedback screen
-will be displayed.Please enter your problems and requests and send them.
-It will be delivered directly to the developer.I will respond as much as possible.
-***Information other than the source IP address will not be sent.**
+Clicking the **Feedback** button opens the feedback dialog. Please enter any issues or feature requests and click **Send**. Your feedback goes directly to the developer, and I will do my best to address it.
+***Please note: No information other than the source IP address is transmitted.**
 
 ![](./images/en/feedback.png)
 
 
-## A general flow of log analysis
+## Log Analysis Flow
 
-1. Select a working folder
-1. Setting the location to load the logs
-1. Indexing settings
-1. Loading the log
-1. Searching logs
-1. Analysis Report
+1. Select a workspace folder
+2. Configure log sources (where logs are loaded from)
+3. Configure indexing options
+4. Load logs
+5. Search logs
+6. View analysis reports
 
 ![](./images/en/flow.svg)
 
 
-## Select a working folder
+## Selecting a Workspace Folder
 
-Click the <Start Analysis> button on the Welcome screen to display the Work Folder Selection screen.The working folder will create configuration files and full-text search engine indexes for analysis.Once the analysis is complete, delete the entire folder and it will disappear.Select the working folder and click the < Select > button to display the Log Analysis Settings screen.
+Click the **Start** button on the Welcome screen to open the workspace folder selection dialog. The selected folder will hold the configuration files and full-text search indexes created during analysis. Once the analysis is complete, deleting the entire folder cleans up all files. Select your folder and click **Select** to open the log analysis configuration screen.
 
 ![](./images/en/select_workspace.png)
 
 
 ## Log Analysis Settings Screen
 
-Select the working folder to display the log analysis settings screen.You have selected Custom settings for the log type to display all items.
+Selecting the workspace folder displays the log analysis configuration screen. The image below shows the screen when "Custom" is selected for the log type, displaying all available options.
 
 ![](./images/en/settings_screen.png)
 
 
+### Recursive tar.gz Extraction
 
-### Recursive loading of tar.gz
-
-If there is a file compressed with tar.gz, and if you want to recursively load the contents of the file.There are no restrictions on the hierarchy.If you're not careful, you'll end up loading a large amount of logs.
-
-### UTC is the time zone unknown
-
-Many timestamps in logs do not include time zones, so if the time zone is unknown, we will treat it as local time.However, I have set it to UTC for people who don't like it.
+Check this option to recursively extract and read archives nested inside other `tar.gz` files. There is no depth limit, so use this with care as it may result in loading an extremely large volume of logs.
 
 
-### Filter
+### Treat Unknown Time Zone as UTC
 
-This setting is used to limit the rows to be loaded when loading a log.Can be specified using regular expressions.This is intended to create an index by reading only the logs you want to analyze from a large number of logs.Reducing the amount of target logs will help you reduce loading and searching times.The index size can also be reduced.
+Many log timestamps do not specify a time zone. By default, TWLogAIAN treats unknown time zones as the local time zone. If you prefer to interpret them as UTC, enable this option.
 
-In the example access log,
+
+### Filters
+
+Filters allow you to restrict which log lines are imported. You can specify a regular expression to match. Filtering helps you build a search index containing only the logs relevant to your analysis, which significantly reduces index size and speeds up import and search times.
+
+For example, on an access log, setting the filter to:
 
 ```
 POST
 ```
 
-If you set this to this, you can only load logs (POST requests) that have the string POST in the log.
+will only load logs that contain the string `POST` (i.e., HTTP POST requests).
+
 
 ## Log Types
 
-Specifies the type of log to load.The types of logs that TWLogAIAN knows about how to extract information include those listed on the right.Even with syslog alone, there are old BSD formats and new IETF formats that support time zones and digits subseconds.If you want to set it in detail yourself, select Custom.If you select automatic judgment, you can make a judgment automatically to some extent.
-
-![](./images/en/log_types.png)
+Specify the format of the log you are loading. TWLogAIAN has built-in parsers for various common log formats (as shown on the right). For instance, it supports both the legacy BSD syslog format and the modern IETF syslog format (which includes time zones and sub-second timestamps). Select "Custom" if you want to define parsing rules yourself, or choose "Auto Detect" to let the application automatically identify the log format.
 
 
-## Find the host name
+## Hostname Resolution
 
-Check the host name in DNS from the IP address entry in the log and add the entry.
-For custom settings, enter the variable name of the item you want to check the host name in the "Host Name Resolution Item."For built-in log types such as Apache access logs, the items will be automatically set.
-
-
-## Finding location information
-
-Check the location information in the GeoIP database from the IP address entry in the log and add the entry.For custom settings, enter the variable name of the item you want to check the location information in the "IP Location Information Item."For built-in log types such as Apache access logs, the items will be automatically set.
-
-Please download the location information database from the following site:
-
-https://dev.maxmind.com/geoip/geolite2-free-geolocation-data/
+Enabling this option checks the IP addresses in the log via DNS and appends the resolved hostnames.
+When using a custom log type, enter the variable names of the IP address fields in the **Hostname Resolution Items** field. For built-in log types (such as Apache access logs), these fields are configured automatically.
 
 
-Please set this file to the IP Location Database at the bottom of the Settings.
+## GeoIP Lookup
 
-## Find the vendor name
+Enabling this option looks up IP addresses in a GeoIP database to resolve location information and append it to the log records. For custom log types, enter the variable names of the IP fields in the **IP Location Items** field. For built-in log types, these fields are configured automatically.
 
-Check the vendor name from the MAC address in the log and add the item.Specify the item name for checking the MAC address in the "MAC address item".The relationship between the MAC address and the vendor name is incorporated into TWLogAIAN.
+For instructions on obtaining a compatible GeoIP database, please refer to the following article:
 
-## Timestamp Item
+https://qiita.com/twsnmp/items/bfeab550b7f9b775f754
 
-Specifies the variable name of the item to be used as a timestamp.If the field is blank, the string that looks like a timestamp on the far left side will be automatically retrieved as a timestamp.
-
-
-## Hostname Resolution Item
-
-Specifies the variable name of the item that resolves the host name from the IP address.Multiple values ​​can be specified separated by commas.
-
-## IP Location Intelligence Project
-
-Specifies the variable name of the item to retrieve location information from the IP address.Multiple values ​​can be specified separated by commas.
-
-## MAC address entry
-
-Specifies the variable name for the MAC address field to check the vendor name.Multiple values ​​can be specified separated by commas.
+(Note: Download procedures may have changed).
+Once downloaded, specify the path to the database file in the **IP Location Database** field at the bottom of the settings screen.
 
 
-## Create an index in memory
+## MAC Address Vendor Lookup
 
-Creates an index in memory for the full-text search engine Bluege.Loaded logs will also be saved in memory.It disappears when you exit the program.If you load a large amount of logs, you will naturally run out of memory.If not checked, create an index in the working folder.
+Enabling this option checks MAC addresses in the logs against a built-in OUI database to resolve and append the hardware vendor names. Specify the MAC address variable name in the **MAC Address Items** field.
+
+
+## Timestamp Field
+
+Specifies the variable name of the field to be used as the log timestamp. If left blank, TWLogAIAN will automatically detect and use the leftmost timestamp-like string.
+
+
+## Hostname Resolution Items
+
+Specifies the variable names of the IP fields to resolve to hostnames. You can specify multiple fields separated by commas.
+
+
+## IP Location Items
+
+Specifies the variable names of the IP fields to check for location data. You can specify multiple fields separated by commas.
+
+
+## MAC Address Items
+
+Specifies the variable names of the MAC address fields to check for vendor names. You can specify multiple fields separated by commas.
+
+
+## Create Index in Memory
+
+Builds the Bluge search index in memory and keeps all loaded logs in memory. All data will be lost when the application is closed. Loading an extremely large volume of logs with this option active may run out of memory. If unchecked, the index is saved to the workspace folder on disk.
+
 
 ## IP Location Database
 
-Specifies the GeoIP database file.
-
-## Where to load the log
-
-This explains the location of logs that TWLogAIAN can load.
-Here is an explanation of the red frame in the diagram on the right.You can also read log files in compressed files directly.It also supports Windows event logs.
+Specifies the path to the GeoIP database file.
 
 
-## Adding a log loader
+## Log Loading Locations
 
-To specify where to load the log, click the <+> button in the "Log Loading Location" list on the Log Analysis Settings screen.The editing screen for the source (source) of the log will be displayed.
-
-![](./images/en/add_log_source.png)
+This section explains where TWLogAIAN can load logs from (highlighted in red in the screenshot). Logs stored within compressed archives can be read directly. Windows event logs are also supported.
 
 
-## Editing the source of the log load
 
-Once you have added it, click the edit list button (pencil icon) to load it.
-Please.The editing screen will be displayed.
+## Adding a Log Source
 
-![](./images/en/edit_log_source_list.png)
+To specify a new log source, click the **+** button in the "Log Loading Location" list on the settings screen. This opens the log source creation/editing dialog.
 
 
-## Log Source Edit Screen
 
-The editing screen for the log source (load source) looks like the image on the right.
+## Editing a Log Source
+
+To edit an existing log source, click the edit button (pencil icon) next to it in the list.
+
+
+
+## Log Source Editing Dialog
+
+The editing dialog for log sources is shown on the right.
+
 ![](./images/en/edit_log_source.png)
 
 
-## Deleting log sources
+## Deleting a Log Source
 
-On the editing screen, you can delete the source of the log that is being edited.
-Please click the <Delete> button on the right.
-You can also delete it by clicking the Delete list button.
-
-![](./images/en/delete_log_source.png)
+You can delete a log source from its editing dialog by clicking the **Delete** button. Alternatively, click the delete button (trash can icon) directly in the sources list.
 
 
-## Log loading source type
+## Log Source Types
 
-The type of log loading source is shown in the image on the right.The Windows version has a type that retrieves Windows event logs.
+The available log source types are shown on the right. The Windows version includes a specific type to fetch Windows Event Logs.
 
-![](./images/en/log_source_types.png)
+
 
 ### Single File
 
-Load from a single file.You can specify the log file to load.You can select a file by clicking the button to the right of the file name.For some reason, the file selection dialog box is in English on the Mac version.
+Imports logs from a single file. You can select the file using the button to the right of the path field. (Note: On macOS, the file chooser dialog may appear in English).
 
 ![](./images/en/log_source_single_file.png)
 
 
-#### File name patterns in archives
+#### File Name Pattern in Archive
 
-You can also specify files compressed using ZIP or tar.gz.For compressed files, you can select the file in the compressed file by file name.File name patterns in the archive
+You can select compressed files (such as ZIP or `tar.gz`). For archives, you can specify file filters to choose which files inside the archive to read. Specifying a pattern like:
 
 ```
 access*
 ```
 
-If you specify this, only files that start with access in the compressed file will be read.
+will only load files inside the archive whose names start with "access".
 
 
 ### Folder
 
-Specify the folder where multiple log files are stored.Loads files in the selected folder.There is only one folder hierarchy.Child folders are not supported.
+Imports all log files located within a specified folder. Note that only the top-level files in the folder are read; subdirectories are not supported.
 
 ![](./images/en/log_source_folder.png)
 
 
-#### File name pattern
+#### File Name Pattern
 
-If you want to target only specific files in a folder, specify the file name pattern.
+To import only specific files within the folder, specify a file name pattern.
 
 ```
 access*
 ```
 
-If you specify this, it will only target files starting with access.It also applies to files compressed with ZIP or tar.gz in folders.Loads the internal log file.For compressed files, you can select the file in the compressed file by file name.This is the same as for a single file.
+This will limit the search to files starting with "access". This pattern also applies to ZIP and `tar.gz` archives inside the folder. For archives, you can also filter files inside them, identical to the Single File settings.
 
 
-### SCP
+### SCP Transfer
 
-You can also transfer log files from servers such as Linux and read them directly via SCP.It's much easier than transferring the file, saving it to your local PC and then loading it.The server's IP address, host name, the path to the log file on the server, the user ID and private key password (if any), the SSH private key (key) file (if not specified, use the file from the default storage location). The file is just in a folder on the server, and all that's left is the same as specifying a local folder.You can select the log file to be loaded by specifying the file name pattern or the file name pattern within the compressed file name.
+You can fetch log files directly from Linux or other remote servers using SCP. This is much more convenient than manually transferring and saving files to your local PC. Specify the server's IP address/hostname, log path, user ID, private key password (if applicable), and the SSH private key path (defaults to the standard SSH location if left blank). Once configured, it behaves similarly to a local folder source; you can use file name patterns and archive filters to select target logs.
 
 ![](./images/en/log_source_scp.png)
 
 
-### Run the command
+### Command Execution
 
-This function reads the output from the command executed as a log.This is useful when collecting and analyzing Docker and Kubernets logs using commands.Specifies the command to run.
+Executes a command locally and imports its standard output as log entries. This is useful for fetching and analyzing Docker or Kubernetes logs on the fly. Specify the command to run.
 
 ![](./images/en/log_source_command.png)
 
 
-### Execute SSH command
+### SSH Command Execution
 
-It is similar to running a command, but the command to retrieve logs is executed on a server connected via SSH.I think it would be useful to use in a cloud environment.I haven't used it though.In addition to the commands to be executed, there are settings for accessing via SSH.The address, username, password, and location of the SSH key file.
+Similar to Command Execution, but the command is executed on a remote server connected via SSH. This is particularly convenient for analyzing logs in cloud environments. Along with the command, you need to configure SSH connection settings: server address, username, password, and the location of the SSH key file.
 
 ![](./images/en/log_source_ssh.png)
 
 
-### TWSNMP FC integration
+### TWSNMP FC Integration
 
-You can directly load the syslogs collected by TWNMP FC.Specify the TWSNMP FC URL for the server.Specify the user ID and password to log in to TWSNMP FC in the Access Settings.You also specify the conditions for searching for logs to be retrieved.You can specify duration and hostname, tags, and messages filters.
+Allows you to import syslogs directly from TWSNMP FC. Specify the TWSNMP FC server URL, along with the login credentials (user ID and password). You can also set filter criteria such as time range, hostname, tag, and message keywords to narrow down the retrieved logs.
 
 ![](./images/en/log_source_twsnmp_fc.png)
 
 
-### Windows Event Log
+### Windows Event Logs
 
-In a Windows environment, you can load the Windows event log directly.I'm running wevtutil.exe to retrieve the logs.
+In a Windows environment, you can import Windows Event Logs directly. This feature utilizes `wevtutil.exe` to fetch logs:
 
-https://docs.microsoft.com/ja-jp/windows-server/administration/windows-commands/wevtutil
+https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/wevtutil
 
-
-A command prompt will be displayed while it is being retrieved.Please don't be surprised as it is intentionally displayed.You can also get logs for remote servers as well as Windows machines running TWLogAIAN.Specify the remote server for the server.Specify the user ID, password, and authentication method for authenticating in the access settings.If you want to retrieve local logs, you do not need to specify them.The logs to be retrieved are specified by period and channel.To retrieve event logs for a security channel, you must run TWLogAIAN with administrator privileges.
-
-![](./images/en/log_source_windows_event.png)
+(Note: A command prompt window will briefly appear during retrieval; this is intentional). You can retrieve logs from both the local Windows machine and remote servers. For remote servers, configure the target host, user ID, password, and authentication method in the access settings. For local logs, credentials are not required. Specify the time range and event channel (e.g., Application, Security). Note that to retrieve Security channel logs, TWLogAIAN must be run with administrator privileges.
 
 
-## Types of files that can be loaded
 
-Basically, it supports text-format log files with timestamps.
-The format of the timestamp can be automatically recognized.Files compressed with gz will be automatically unzipped and loaded.You can also load log files in ZIP files up to one level.In the case of tar.gz, it supports multi-level folders and multiple compression.This means that you can also unzip and load gz and tar.gz in tar.gz.If you want to load this recursively, check "Recursive load in tar.gz".It also supports Windows EVTX-style event logs.However, up to 1GB of each file is required to be read into memory.
+## Supported File Formats
 
-![](./images/en/supported_file_types.png)
+TWLogAIAN supports text-based log files that contain timestamps. The timestamp format is detected automatically. Gzip (`.gz`) archives are automatically extracted upon import. Log files inside ZIP archives are supported up to one nesting level. For `.tar.gz` archives, nested folders and multi-layered compression (such as archives inside archives) are fully supported. To enable this nested archive extraction, check the **Recursive tar.gz Extraction** option. Windows Event Log format (`.evtx`) is also supported, up to a file size limit of 1 GB per file (since files are loaded into memory).
+
 
 ## Indexing
 
-TWLogAIAN loads the log file and creates a full-text search engine index.This article explains the process for creating an index.Here is an explanation of the red frame section of the figure.
+TWLogAIAN reads log files and builds a full-text search index. This section explains the indexing process (highlighted in red in the screenshot).
+
+![](./images/en/indexing_manual.png)
 
 
+## What is Indexing?
 
-## What is index creation?
-
-Once the log is loaded, meaningful information is extracted on a row-by-row basis and registered it in the index.for example,
+When logs are imported, TWLogAIAN parses each line to extract meaningful fields and registers them in the search index. For example, consider this Apache access log entry:
 
 ```
 114.119.136.254 - - [03/Apr/2022:00:39:21 +0900] "GET /wiki/index.php?
@@ -371,359 +356,331 @@ title=Must_Know_Mlm_Concepts_For_Accomplishment&action=history HTTP/1.1" 404 141
   PetalBot;+https://webmaster.petalsearch.com/site/petalbot)"
 ```
 
-For Apache access logs like this, you will find information such as the client's IP address, time, request, and path.You can also register this line together in a full text search engine,
-It is more useful when searching by extracting each item and registering it as an index item (field).It's said that the faster the search is and that it's easier to tally.
+This line contains structured data: client IP, timestamp, request method, path, status code, and response size. While you can index the entire line as plain text, extracting each value into index fields makes searches much faster and allows for easy aggregation and analysis.
 
 
-## Getting items by log type
+## Field Extraction by Log Type
 
-If you treat this example as a type of Apache (Combined), the items shown in the image on the right will be extracted.In this example, items are added by checking the host name using DNS from the client's IP and location information.TWLogAIAN is a log analysis tool, so the lowest timestamp is extracted.The format of logs used in the world is included.You can also select the extraction items yourself using the custom settings.
-
-![](./images/en/log_type_fields.png)
-
-## Searching logs
-
-Once you have loaded the log and created an index for the full-text search engine, you can search for the log.This is the red frame in the diagram on the right.
+If we process the previous log entry using the **Apache (Combined)** type, the fields shown on the right will be extracted. In this example, the extracted fields include data directly parsed from the log content, as well as additional information like resolved hostnames (via DNS lookup) and geographical location details (via GeoIP). Because TWLogAIAN is a dedicated log analyzer, it requires at least a timestamp to be extracted. Common log formats are built-in, but you can also configure custom field extractions.
 
 
-## Basics of log search
+## Searching Logs
 
-Immediately after the index is created, the screen will appear as shown in the image on the right.The number of logs loaded into the index and the processing time are displayed in the top right corner.The basic way to search for logs is to search by entering the keyword you want to search in the search statement column above.Search blank to display all items.
-If you change the mode,
+Once log loading and indexing are complete, you can search your logs. This corresponds to the area highlighted in red on the right.
+
+![](./images/en/log_search.png)
+
+
+## Basics of Log Search
+
+Immediately after indexing completes, the search screen will appear as shown. The number of logs indexed and the elapsed time are displayed in the top right. To search, enter keywords into the search box at the top. Leaving the search box blank and clicking search retrieves all logs. You can change the query mode to use Bleve query syntax:
 
 https://blevesearch.com/docs/Query-String-Query/
 
-You can do this by entering a search statement using the syntax.
-
-![](./images/en/log_search_basics.png)
 
 
-## Specify search criteria
+## Specifying Search Criteria
 
-Click the down arrow button next to the search statement to display a screen where you can specify the search criteria.This is a screen where you can set detailed conditions.
+Clicking the down arrow button next to the search box opens the search criteria panel, allowing you to set detailed search filters.
 
 ![](./images/en/search_criteria.png)
 
-## Search criteria specification screen
 
-- Search history
-- Search statement mode
-- Search period
-- Maximum number
-- How to detect abnormal logs
-- Data extraction during search
+## Search Criteria Panel
 
-You can close it using the up arrow button in the same location.
+- **Search History**: View past queries.
+- **Query Mode**: Choose how the search string is interpreted.
+- **Time Range**: Filter by timestamps.
+- **Max Results**: Limit the number of matching records.
+- **Anomaly Detection**: Run machine learning models to detect outliers.
+- **Extract Data on Search**: Extract fields dynamically during search.
 
-![](./images/en/search_criteria_screen.png)
-
-### Search history
-
-A list of previously executed search statements.Select it and enter it into the search statement.You can clear it by clicking the delete button on the far right.
-
-![](./images/en/search_history.png)
-
-### Search statement mode
-
-Specifies how to enter the search statement.There is a simple/regular expression/full-text search.Simple simply enter the keyword you want to search for.Regular expressions involve entering search statements as regular expressions.Selecting full-text search will display keywords and numerical judgment input.Specify the condition and enter it in the search statement using the + button on the right.
-
-![](./images/en/search_mode.png)
-
-
-###  Search period
-
-Specifies the time range to search for the log.There are two ways to specify it.
-- Target specification
-A mode where you copy and paste timestamps to specify the target time
-
-![](./images/en/search_period_2.png)
-
-- Range specification
-Mode for specifying the time range
-
-![](./images/en/search_period_1.png)
+You can close this panel by clicking the up arrow button in the same location.
 
 
 
-## How to detect abnormal logs
+### Search History
 
-An abnormal log is detected from the logs searched using AI (machine learning).Specifies the algorithm to detect.There is no detection/Isolation Forest/Local Outlier Factor/Auto Encoder.If you select something other than not detect, you can select a method for calculating feature amounts.You can specify the numeric data extracted from the log, the string, and the number of keywords to be used for SQL injection.The day and time zone are calculated from the log timestamps and the 24-hour time zone and added to the feature amount.For example, I added the server load figures because it has the characteristic of being low during the night on Sundays but high on Monday mornings.
-
-![](./images/en/anomaly_detection_config.png)
+A list of previously executed search queries. Click an item to populate the search box. You can clear the history using the delete button on the far right.
 
 
-# View search results
 
-Enter a search statement and run the search and the results will be displayed.
+### Query Mode
+
+Determines how your search input is parsed. Options include:
+- **Simple**: Searches for exact matching keywords.
+- **RegEx**: Searches using regular expression syntax.
+- **Full Text**: Shows advanced fields for keyword and numeric criteria. Select conditions and click the **+** button to append them to the search query.
+
+
+### Search Period
+
+Specifies the time range for your search. There are two modes:
+- **Target Mode**: Paste a specific timestamp to focus on a particular point in time.
+
+
+- **Range Mode**: Specify a start and end time range.
+
+
+## Anomaly Detection
+
+Use machine learning models to identify anomalous log entries. Available algorithms include:
+- **None** (No detection)
+- **Isolation Forest**
+- **Local Outlier Factor**
+- **Auto Encoder**
+
+If detection is enabled, you can select which features to analyze, such as extracted numeric fields, string variables, or the frequency of SQL injection signatures. The **Day/Time** option calculates the day of the week and hour of the day from log timestamps to include as features. (This is useful for detecting anomalies relative to routine schedules, such as load spikes that are normal on Monday mornings but anomalous on Sunday nights).
+
+
+
+# Viewing Search Results
+
+After running a query, the results screen is displayed as shown below.
 
 ![](./images/en/search_results.png)
 
-## Link to the graph time range
 
-When you change the time range of the graph, the log list will also be displayed in conjunction with the log list.
-You can select the range by pressing the zoom button in the top right corner of the graph.
+## Linked Graph and Log List
 
-![](./images/en/graph_time_link.png)
+Adjusting the time window on the chart will automatically update the log list to match that timeframe. Click the zoom button in the top right of the chart to select a custom range by dragging across the graph.
 
-## Filter by keyword
 
-Enter a string as a keyword to filter by the strings contained in the log.
+## Filtering by Keyword
 
-![](./images/en/keyword_filter.png)
+You can enter a text string in the keyword filter box to dynamically filter the displayed log list.
 
-## Log display format
 
-Below the search results, you can select the log display format.You can change the display format of the list by switching between this.
+## Log Display Formats
 
-![](./images/en/log_display_format.png)
+Beneath the search results, you can select the display format to change how log entries are presented in the list.
 
 
 ### Time Only
 
-Displays only the time, search score, and log lines.Check the checkbox on the left and select logs to copy and save to clipboard or to memo.
-
-![](./images/en/log_format_time_only.png)
+Displays only the timestamp, search score, and raw log message. You can select log entries via the checkbox on the left to copy them to the clipboard or save them to your notes.
 
 
-### syslog
 
-This is a display specialized for syslog.It cannot be viewed in logs that have not extracted information in syslog format.
+### Syslog
+
+A layout optimized for syslog files. This option is disabled if the logs were not parsed using syslog format.
+
 
 ### Access Log
 
-This is a display format specializing in access logs.It cannot be viewed on logs that have not extracted information in access format.This is the diagram on the right.
+A layout optimized for web server access logs. This option is disabled if the logs were not parsed using access log format.
 
-![](./images/en/log_format_access_log.png)
 
-### Extracted data
 
-Displays the data extracted from the log in a table format.You can scroll sideways when there are many items.
+### Extracted Data
+
+Displays parsed fields in a structured table. You can scroll horizontally to view additional fields.
 
 ![](./images/en/log_format_extracted.png)
 
 
-### Abnormal log score
+### Anomaly Score
 
-It is similar to Time Only, but the score part becomes an abnormal score.
-You can also select and copy memo.This is displayed only when abnormal log detection is turned on.
-
-![](./images/en/log_format_anomaly_score.png)
+Similar to the Time Only format, but the search score is replaced with the calculated anomaly score. This layout is only available when Anomaly Detection is enabled.
 
 
-### export
+
+### Export
+
+An export menu is available at the bottom of the search results screen.
+- **CSV**: Saves the log list to a CSV file.
+- **Excel**: Saves the log list and chart images to an Excel spreadsheet.
+- **AI**: Exports the logs to the AI along with descriptive prompts.
 
 
-Below the search results you will find the export selection.
-- CSV
-Saves the list displayed in the CSV file.
-- Excel
-Saves the list and graph images displayed in the Excel file.
 
-![](./images/en/log_export.png)
+# Reports
 
-### Log type definition
-
-This is used to save Grok settings used to extract information from the log in a definition file.This function allows you to edit it and use it in other analyses.
+TWLogAIAN features robust reporting tools to visualize log analysis in charts and lists. Searching logs displays the reports menu at the bottom of the screen. Click on an item to open the corresponding report view.
 
 
-## Processing results
+## Processing Results
 
-A screen will be displayed to create indexes and check the AI ​​learning status later.You can check the amount of logs, extracted items, and the time period when the amount of logs is high.
+Displays a retrospective view of index creation and AI training states. You can review log volume metrics, parsed field definitions, and peak log activity hours.
 
 ![](./images/en/report_process_results_manual.png)
 
 
-## レポートの表示方法
+## Notes (Memo)
 
-This is a description of the report function that displays log analysis results in graphs and lists.When you search for logs using TWLogAIAN, the report menu will appear at the bottom of the screen.Click to view the report items.Click to display the corresponding report screen.
+The Notes report aggregates log entries you've flagged during search. You can add entries to your notes using the **Memo** button on the right side of the log search list.
 
-![](./images/en/reports_menu.png)
 
-## Memo
 
-This is a report that displays notes about logs added to notes on the Log Search screen.
-You can add it using the <Memo> button to the right of the list in the logs.
+### Viewing Notes
+
+Selecting **Memo** from the **Report** menu displays the notes screen, showing flagged log entries in chronological order.
 
 ![](./images/en/report_memo.png)
 
 
-## View notes
-
-Click "Memo" on the "Report" menu to display a screen similar to that shown below.The logs added to the notes are displayed in chronological order.
-
-![](./images/en/report_memo_view_1.png)
+Each note features **Delete** and **Edit** buttons.
 
 
-Notes have a <Delete> and <Edit> buttons to delete.
-
-![](./images/en/report_memo_view_2.png)
-
-On the Edit screen, you can select a level to add a description.This function allows you to note what the selected log represents.
-
-![](./images/en/report_memo_view_3.png)
-
-Once the memo is complete, click the <Copy> button at the bottom of the screen to copy the memo to the clipboard in text format.It is convenient for pasting the analysis results into an email and reporting them.
+In the editing dialog, you can select severity levels and add descriptions. This is helpful for documenting what each log entry represents during investigations.
 
 
+When finished, click the **Copy** button at the bottom of the screen to copy the compiled notes to your clipboard. This makes it easy to paste findings directly into emails or reports.
 
-## Ranking analysis
 
-Displays the rankings compiled based on information extracted from the log.You can select the items to be tallied in the menu at the top right.
+## Ranking Analysis
+
+Displays compiled ranking charts based on fields extracted from the logs. You can select the target field to rank from the dropdown menu in the top right.
 
 ![](./images/en/report_ranking.png)
 
 
-## Time series analysis
+## Time Series Analysis
 
-Displays the numerical data extracted from the log in chronological order graphs.In the top right corner, there is a menu where you can select the items to be aggregated and what to display.
-
-- Actual data
-The extracted numerical data is displayed as is.
-- Aggregation in minutes
-The extracted numerical data is displayed in minutes.You can view the mean, median, variance, maximum, and minimum values.
-- Time unit aggregation
-The extracted numerical data is displayed in aggregation by time.You can view the mean, median, variance, maximum, and minimum values.
+Plots extracted numeric data on a time-series line chart. Use the top-right menus to select the field and aggregation level:
+- **Raw Data**: Plots the extracted numeric values directly.
+- **Minutely Aggregation**: Aggregates data by the minute, displaying the mean, median, variance, max, and min values.
+- **Hourly Aggregation**: Aggregates data by the hour, displaying the mean, median, variance, max, and min values.
 
 ![](./images/en/report_timeseries.png)
 
 
-## Regression analysis
+## Regression Analysis
 
-Displays the regression analysis using the selected method of numerical data.In linear, it calculates a and b of equations such as y=ax+b and displays a line graph.The example on the right doesn't really make much sense.For data indicating free disk or memory, you may be able to calculate the rate at which it will decrease.
-
-![](./images/en/report_regression.png)
+Performs regression analysis on selected numeric data using the chosen method. For example, the "Linear" method calculates the slope \(a\) and intercept \(b\) of the equation \(y = ax + b\) and overlays the trend line on the graph. (This is useful for metrics like disk space or memory utilization to project usage exhaustion rates).
 
 
-## Time series 3D analysis
 
-This is a report that displays numerical data extracted from the log in a time series 3D graph.The Y-axis is fixed time.You can select X, Z, and color-coded items from the menu in the upper right corner.You can change your perspective by dragging 3D graphs.
-*** "There are things that cannot be seen in the 2d graph"****
-The assistant cat said from heaven.
+## 3D Time Series Analysis
+
+Plots numeric data on a 3D time-series graph. The Y-axis is fixed to time, while you can assign X-axis, Z-axis, and color-coding fields via the menus in the top right. You can rotate the graph and change your perspective by clicking and dragging.
+***"There are things that cannot be seen in a 2D graph,"***
+proclaims the Assistant Cat from above.
 
 ![](./images/en/report_timeseries_3d.png)
 
 
-## Cluster analysis
+## Cluster Analysis
 
-This is a report that displays the results of cluster analysis using numerical data extracted from logs.In the menu on the top right, specify the number of clusters to be classified as two numerical items for cluster analysis.There may be something that can be seen in cluster analysis.
+Performs cluster analysis using numeric fields extracted from the logs. Select two numeric fields and specify the target number of clusters in the top-right menu. Cluster analysis might reveal hidden patterns in your log metrics.
 
-![](./images/en/report_cluster.png)
 
-## Histogram analysis
 
-This is a report that displays histograms from numerical data extracted from logs.
+## Histogram Analysis
+
+Displays a histogram distribution of selected numeric fields. Select the target field from the menu in the top right.
 
 ![](./images/en/report_histogram.png)
 
-You can select the items to be tallied in the menu at the top right.
 
-## FFT analysis (3D)
+## FFT Analysis (3D)
 
-This is a report that analyzes numerical data extracted from the log by FFT analysis.It's like, "You can sometimes see periodic changes in FFT."
+Performs Fast Fourier Transform (FFT) analysis on numeric fields. FFT can help expose periodic patterns and cycles in log occurrences.
 
 ![](./images/en/report_fft_3d.png)
 
 
-## FFT(2D)
+## FFT Analysis (2D)
 
-You can switch between items to be aggregated, graph type, frequency and period in the menu on the top right.The 2D graph shows the access period from a specific IP address.
+Provides detailed 2D frequency domain charts. Use the top-right menus to select the target field, chart type, and toggle between frequency and period. (The 2D graph shown on the right highlights access interval periods from a specific IP address).
 
 ![](./images/en/report_fft_2d.png)
 
 
-## Location intelligence analysis
+## Location Analysis (Map)
 
-This is a report that searches and displays location information from the IP address in the log.In the menu on the top right, specify the location information item and the numerical data item to be color-coded.Double-click on a dot on the map to display Google Maps.
-
+Plots geographic coordinates resolved from log IP addresses on a map. Select the location field and the numeric field to control color coding from the top-right menu. Double-clicking a point on the map opens Google Maps for that location.
 
 ![](./images/en/report_location_manual.png)
 
 
-## Graph (flow) analysis
+## Flow Graph Analysis
 
-This is a report that analyzes the relationship between two items extracted from the log using a graph (flow).It is useful for checking the relationship between the logged in user and the IP you are logged in from.You can specify two related items, color-coded numeric items, and display types in the menu on the top right.
+Visualizes the relationship between two extracted log fields as a network flow graph. This is helpful for tracing connections, such as mapping logged-in user accounts to their origin IP addresses. Select the source/destination fields, color-coding metrics, and chart type in the top-right menu.
 
 ![](./images/en/report_flow_graph.png)
 
-## Flow analysis (Globe)
 
-This is a report that searches location information from the IP address extracted from the log and displays communications on a globe.It has a demo effect, but I don't think there's anything that looks very good.
+## Flow Analysis (Globe)
+
+Visualizes IP address locations and communication paths on a 3D interactive globe. (While visually impressive for demonstrations, it may not offer as much analytical depth as other charts).
 
 ![](./images/en/report_flow_globe.png)
 
+
 ## Heatmap
 
-This is a report that displays the number of logs, etc. in a heat map of the time zones per day and the day of the week.It seems that there are a lot of logs on Mondays at 9am.You can select the items to be tallied and the display format in the menu at the top right.
+Displays log frequencies in a grid mapped by hour of the day versus day of the week (or day of the month). This makes it easy to spot schedule-based patterns, such as spikes occurring at 9:00 AM on Mondays. Use the top-right menu to select fields and grid layouts.
 
 ![](./images/en/report_heatmap.png)
 
 
-## export
+## Exporting Reports
 
-All reports described here can be exported.To the right is the export menu.
-- CSV
-Export only the part of the list to a CSV file.
-- Excel
-Export the graphs and lists to an Excel file.
+All of the reports described above can be exported. Access the export menu in the bottom right:
+- **CSV**: Exports the raw data list to a CSV file.
+- **Excel**: Exports both charts and data tables to an Excel spreadsheet.
 
-![](./images/en/report_export.png)
 
-## Customizing log type
+# Settings
 
-Select a custom type if you want to extract information from a different type of log that is not included.
-Describe the extraction pattern in Grok's syntax.Grok's pattern is
+## Log Type Definitions
+
+Allows you to save Grok patterns and other field extraction settings to definition files, which can then be reused in other analyses.
+
+
+## AI Integration Settings
+
+Configure connections to Large Language Models (LLMs) such as Ollama, Gemini, OpenAI, or Anthropic to request automated log explanations. Specify the API key, model name, and the base URL for local deployments (e.g., Ollama). Note that this feature transmits your selected logs and prompt instructions directly to the LLM without RAG (Retrieval-Augmented Generation) lookup.
+
+
+# Customizing Log Types
+
+To extract data fields from log formats that are not supported out of the box, select the **Custom** log type.
+You can define extraction rules using Grok syntax. For a quick tutorial on Grok, we recommend the following guide:
 
 https://coralogix.com/blog/logstash-grok-tutorial-with-examples/
 
-I thought it was easy to understand.
+Learning Grok syntax is highly beneficial for log analysis engineers, as it is widely supported across various log management tools. Fortunately, there are only four main concepts you need to master:
 
-If you can understand this pattern, it can be applied with many log analysis tools, so I think it will help improve the skills of engineers who perform log analysis.However, I think there are four basic things to remember.
-
-1. Setting to extract information using %{Pattern:Variable name}
-2. Leave the distinctive strings in the log as is
-3. Specify the part of the separating space with \s+
-4. Ignore variable strings with .+
+1. Use `%{PATTERN:variable_name}` to extract information into fields.
+2. Keep literal characters from the log message as-is in the pattern.
+3. Use `\s+` to match delimiting whitespace.
+4. Use `.+` to ignore variable-length strings.
 
 
-## Launch Grok Pattern Editing
+## Launching Grok Pattern Editing
 
-TWLogAIAN has a function that makes it easy to create Grok patterns.Click the E (edit) button to the right of the log to display a screen for editing the Grok pattern.
+TWLogAIAN provides helper tools to make writing Grok patterns as simple as possible. Clicking the **E** (Edit) button next to a log entry launches the Grok pattern editor.
 
-![](./images/en/grok_edit_launch.png)
 
-## Grok Pattern Edit
+## Grok Pattern Editor
 
-The Grok Pattern Edit screen displays the selected logs in the test data.You can automatically create extraction patterns using the Auto Generate button.You can edit and test extraction using the <Test> button.
-Once you've edited it and saved it as a name and you can use it later.
+The Grok Pattern Editor displays the selected log entry as test data. Click the **Auto Generate** button to automatically draft an extraction pattern. You can test and refine your pattern by clicking the **Test** button. Once satisfied, save it under a unique name for future use.
 
 ![](./images/en/grok_edit_screen.png)
 
 
-## <Automatic extraction pattern generation> button
+## Auto Generate Pattern Button
 
-The logs on the first line of the test data are analyzed and patterns are automatically created.Automatically converts timestamps, IP addresses, email addresses, URLs, etc.
-When I was writing this manual, I was able to use a splunk version.
+Analyzes the first line of the test log and automatically generates a matching pattern, converting timestamps, IP addresses, email addresses, and URLs into appropriate Grok patterns. When developing this guide, I also added support to automatically detect key-value syntax patterns (similar to Splunk), such as:
 
 ```
 ip=192.168.1.1
 ```
 
-It incorporates ideas to automatically recognize patterns like this.
 
-### AI linkage settings
+## Log Definition
 
-Configure the connection settings with LLM (Ollama, Gemini, OpenAI, Anthropic) to request log explanations. You can specify the API key, model name, and base URL for local LLMs. RAG (Retrieval-Augmented Generation) is not used, and the selected log and prompt are sent directly to the LLM.
-
-## Log definition
-
-You can check the saved extraction patterns and field definitions in the log definition.
-You can also import and export.
+You can review saved extraction patterns and field configurations in the log definition screen. It also supports importing and exporting configuration definitions.
 
 ![](./images/en/log_definition.png)
 
-## Log type definition file
 
-It is in yaml format, so you can edit it using a text editor.
+## Log Type Definition File
+
+Log definitions are saved in YAML format and can be modified with any standard text editor.
 
 ```yaml
 extractortypes:
@@ -741,5 +698,15 @@ fieldtypes:
   unit: "件"
 ```
 
-`extractortypes` is the definition of the log.`key` is the value that the definition identifies.`name` is a name for humans, and `grok` is the pattern.This is the variable name that `tilefield` recognizes as a timestamp, and `ipfileds` uses as IP addresses for hostname search and location search.The variable name that `macfields` uses to search for vendor names from the MAC address.`fieldtypes` is the definition of the variable.`key` is the variable name.`name` is the name for a human, and `type` is the type of the variable.Specify a number (`number`) or a string (`string`).`unit` is the unit that is displayed in the graph.
-
+- `extractortypes`: List of log type parsing definitions.
+  - `key`: A unique identifier for the definition.
+  - `name`: A user-friendly name for display.
+  - `grok`: The Grok extraction pattern.
+  - `timefield`: The field recognized as the log timestamp.
+  - `ipfields`: A comma-separated list of IP address fields used for hostname and GeoIP location resolution.
+  - `macfields`: A comma-separated list of MAC address fields used for hardware vendor lookup.
+- `fieldtypes`: List of variable type definitions.
+  - `key`: The variable name.
+  - `name`: A user-friendly label for display.
+  - `type`: The data type of the field (`number` or `string`).
+  - `unit`: The unit of measurement displayed on charts.
