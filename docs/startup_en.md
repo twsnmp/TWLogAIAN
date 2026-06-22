@@ -27,7 +27,7 @@ TWLogAIAN imports logs into a full-text search engine to make them searchable. I
 
 ## Windows: Microsoft Store
 
-[Microsoft Store](https://ms-windows-store//pdp/?productid=9P8TQLG999Z3)
+[Microsoft Store](https://apps.microsoft.com/detail/9p8tqlg999z3)
 
 
 ## Windows: MSI

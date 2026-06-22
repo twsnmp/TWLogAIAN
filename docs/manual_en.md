@@ -66,7 +66,8 @@ https://blugelabs.com/bluge/
 
 Available on the Microsoft Store:
 
-https://www.microsoft.com/store/apps/9P8TQLG999Z3
+
+[Microsoft Store](https://apps.microsoft.com/detail/9p8tqlg999z3)
 
 
 ## Installation: macOS
