@@ -76,7 +76,12 @@ func (b *App) exportExcel(data *ExportData) error {
 		if err != nil {
 			return err
 		}
-		f.AddPictureFromBytes("Sheet1", fmt.Sprintf("%c2", imgCol), "", "TWLogAIANLog", ".png", img)
+		if err := f.AddPictureFromBytes("Sheet1", fmt.Sprintf("%c2", imgCol), &excelize.Picture{
+			Extension: ".png",
+			File:      img,
+		}); err != nil {
+			return err
+		}
 	}
 	if err := f.SaveAs(file); err != nil {
 		return err

@@ -21,7 +21,7 @@
   "dependencies": {
     "@primer/css": "^19.1.1",
     "@tensorflow/tfjs": "^3.12.0",
-    "echarts": "^5.2.2",
+    "echarts": "^6.1.0",
     "echarts-gl": "^2.0.8",
     "echarts-stat": "^1.2.0",
     "gridjs": "^5.0.2",
