@@ -20,7 +20,7 @@ require (
 	github.com/xuri/excelize/v2 v2.11.0
 	go.etcd.io/bbolt v1.4.3
 	golang.org/x/crypto v0.53.0
-	golang.org/x/text v0.38.0
+	golang.org/x/text v0.39.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -68,7 +68,7 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/ikawaha/kagome v1.11.2 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/labstack/echo/v4 v4.13.3 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leaanthony/go-ansi-parser v1.6.1 // indirect
