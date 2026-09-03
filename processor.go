@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -169,6 +170,7 @@ func (b *App) GetProcessInfo() ProcessStat {
 	}
 	ret := ProcessStat{
 		Done:        false,
+		ErrorMsg:    b.processStat.ErrorMsg,
 		ReadLines:   b.processStat.ReadLines,
 		SkipLines:   b.processStat.SkipLines,
 		StartTime:   b.processStat.StartTime,
@@ -225,6 +227,51 @@ func (b *App) makeLogFileList() string {
 			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
 				Name:   s.Server,
 				Path:   fmt.Sprintf("%s/?start=%s&end=%s&channel=`%s`", s.Server, s.Start, s.End, s.Channel),
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: s,
+			})
+		case "ftp":
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   s.Server,
+				Path:   s.Server + s.Path,
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: s,
+			})
+		case "loki":
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   s.Server,
+				Path:   fmt.Sprintf("%s/?query=%s", s.Server, s.Query),
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: s,
+			})
+		case "es":
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   s.Server,
+				Path:   fmt.Sprintf("%s/%s?query=%s", s.Server, s.Index, s.Query),
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: s,
+			})
+		case "imap", "pop3":
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   s.Server,
+				Path:   fmt.Sprintf("%s/%s", s.Server, s.Folder),
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: s,
+			})
+		case "twlogeye":
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   s.Server,
+				Path:   fmt.Sprintf("%s/%s/%s", s.Server, s.Target, s.SubTarget),
 				Size:   0,
 				Read:   0,
 				Send:   0,
@@ -355,59 +402,65 @@ func (b *App) logReader() {
 		if b.stopProcess {
 			return
 		}
+		var err error
 		if lf.LogSrc.Type == "cmd" {
-			b.readLogFromCommand(lf)
-			continue
-		}
-		if lf.LogSrc.Type == "ssh" {
-			b.readLogFromSSH(lf)
-			continue
-		}
-		if lf.LogSrc.Type == "twsnmp" {
-			b.readLogFromTWSNMP(lf)
-			continue
-		}
-		if lf.LogSrc.Type == "windows" {
-			b.readLogFromWinEventLog(lf)
-			continue
-		}
-		if _, ok := b.processStat.ReadFiles[lf.Path]; ok {
-			continue
-		}
-		b.processStat.ReadFiles[lf.Path] = true
-		ext := strings.ToLower(filepath.Ext(lf.Path))
-		if ext == ".parquet" || ext == ".pq" || lf.LogSrc.Type == "parquet" {
-			if err := b.readLogFromParquet(lf); err != nil {
-				OutLog("failed to read parquet file err=%v", err)
+			err = b.readLogFromCommand(lf)
+		} else if lf.LogSrc.Type == "ssh" {
+			err = b.readLogFromSSH(lf)
+		} else if lf.LogSrc.Type == "twsnmp" {
+			err = b.readLogFromTWSNMP(lf)
+		} else if lf.LogSrc.Type == "windows" {
+			err = b.readLogFromWinEventLog(lf)
+		} else if lf.LogSrc.Type == "ftp" {
+			err = b.readLogFromFTP(lf)
+		} else if lf.LogSrc.Type == "loki" {
+			err = b.readLogFromLoki(lf)
+		} else if lf.LogSrc.Type == "es" {
+			err = b.readLogFromES(lf)
+		} else if lf.LogSrc.Type == "imap" || lf.LogSrc.Type == "pop3" {
+			err = b.readLogFromEmail(lf)
+		} else if lf.LogSrc.Type == "twlogeye" {
+			err = b.readLogFromTwLogEye(lf)
+		} else {
+			if _, ok := b.processStat.ReadFiles[lf.Path]; ok {
+				continue
 			}
-			continue
+			b.processStat.ReadFiles[lf.Path] = true
+			ext := strings.ToLower(filepath.Ext(lf.Path))
+			if ext == ".parquet" || ext == ".pq" || lf.LogSrc.Type == "parquet" {
+				err = b.readLogFromParquet(lf)
+			} else if ext == ".zip" {
+				err = b.readLogFromZIP(lf)
+			} else if ext == ".evtx" {
+				err = b.readWindowsEvtx(lf)
+			} else if ext == ".eml" || strings.HasSuffix(lf.Path, ".eml.gz") {
+				file, openErr := b.openLogFile(lf)
+				if openErr != nil {
+					err = openErr
+				} else {
+					err = b.readLogFromEMailFile(lf, file)
+					file.Close()
+				}
+			} else if (ext == ".gz" && strings.HasSuffix(lf.Path, "tar.gz")) ||
+				ext == ".tgz" ||
+				ext == ".bin" {
+				err = b.readLogFromTarGZ(lf)
+			} else {
+				file, openErr := b.openLogFile(lf)
+				if openErr != nil {
+					err = openErr
+				} else {
+					b.readOneLogFile(lf, file)
+					file.Close()
+				}
+			}
 		}
-		if ext == ".zip" {
-			if err := b.readLogFromZIP(lf); err != nil {
-				OutLog("failed to read zip log file err=%v", err)
-			}
-			continue
-		} else if ext == ".evtx" {
-			if err := b.readWindowsEvtx(lf); err != nil {
-				OutLog("failed to read evtx file err=%v", err)
-			}
-			continue
-		} else if (ext == ".gz" && strings.HasSuffix(lf.Path, "tar.gz")) ||
-			ext == ".tgz" ||
-			ext == ".bin" {
-			if err := b.readLogFromTarGZ(lf); err != nil {
-				OutLog("failed to read tar gz log file err=%v", err)
-			}
-			continue
-		}
-		file, err := b.openLogFile(lf)
 		if err != nil {
-			OutLog("failed to open log file err=%v", err)
-			b.processStat.ErrorMsg = err.Error()
-			continue
+			OutLog("read log source %s err=%v", lf.Name, err)
+			if b.processStat.ErrorMsg == "" {
+				b.processStat.ErrorMsg = fmt.Sprintf("[%s] %v", lf.Name, err)
+			}
 		}
-		defer file.Close()
-		b.readOneLogFile(lf, file)
 	}
 	b.processStat.LogFiles = append(b.processStat.LogFiles, b.processStat.IntLogFiles...)
 	b.processStat.IntLogFiles = []*LogFile{}
@@ -741,7 +794,13 @@ func (b *App) parseWorker(taskCh <-chan parseTask, resultCh chan<- parseResult, 
 					var ok bool
 					ts, ok, parseErr = localTimeGrinder.Extract([]byte(t.line))
 					if parseErr != nil || !ok {
-						skip = true
+						if b.config.NoTimeStamp {
+							parseOk = true
+							parseErr = nil
+							ts = time.Now()
+						} else {
+							skip = true
+						}
 					}
 				}
 				if !skip {
@@ -775,14 +834,44 @@ func (b *App) parseWorker(taskCh <-chan parseTask, resultCh chan<- parseResult, 
 				}
 			}
 		} else {
+			trimmed := strings.TrimSpace(t.line)
+			if strings.HasPrefix(trimmed, "{") && strings.HasSuffix(trimmed, "}") {
+				var jsonMap map[string]interface{}
+				if err := json.Unmarshal([]byte(trimmed), &jsonMap); err == nil {
+					for k, v := range jsonMap {
+						switch vv := v.(type) {
+						case float64:
+							log.KeyValue[k] = vv
+						case string:
+							if fv, err := strconv.ParseFloat(vv, 64); err == nil {
+								log.KeyValue[k] = fv
+							} else {
+								log.KeyValue[k] = vv
+							}
+						case bool:
+							log.KeyValue[k] = vv
+						}
+					}
+				}
+			}
+
 			var ok bool
 			ts, ok, parseErr = localTimeGrinder.Extract([]byte(t.line))
 			if parseErr != nil {
-				// handled sequentially in the collector
+				if b.config.NoTimeStamp {
+					parseOk = true
+					parseErr = nil
+					ts = time.Now()
+				}
 			} else if ok {
 				parseOk = true
 			} else {
-				skip = true
+				if b.config.NoTimeStamp {
+					parseOk = true
+					ts = time.Now()
+				} else {
+					skip = true
+				}
 			}
 		}
 
@@ -855,11 +944,50 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 		}
 	}
 
-	// Start reader goroutine
+	// Start reader goroutine with multiline handling
 	go func() {
 		defer workerWg.Done() // Decrement reader reference when done
 		defer close(taskCh)
 		seqID := 0
+
+		var mlStartRe *regexp.Regexp
+		var mlSepRe *regexp.Regexp
+		if b.config.MLStart != "" {
+			mlStartRe, _ = regexp.Compile(b.config.MLStart)
+		}
+		if b.config.MLSep != "" {
+			mlSepRe, _ = regexp.Compile(b.config.MLSep)
+		}
+
+		var logBuffer []string
+		logStartLine := 0
+
+		commitTask := func() {
+			if len(logBuffer) == 0 {
+				return
+			}
+			combinedLine := strings.Join(logBuffer, "\n")
+			logBuffer = nil
+
+			if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(combinedLine) {
+				b.processStat.SkipLines++
+				return
+			}
+			if autoSetExtractor {
+				lf.ETName = b.autoSetExtractor(combinedLine)
+				autoSetExtractor = false
+			}
+			startWorkersOnce.Do(startWorkers)
+
+			taskCh <- parseTask{
+				seqID:  seqID,
+				ln:     logStartLine,
+				line:   combinedLine,
+				lfPath: lf.Path,
+			}
+			seqID++
+		}
+
 		for scanner.Scan() {
 			if b.stopProcess {
 				return
@@ -868,25 +996,42 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 			lf.Read += int64(len(l))
 			ln++
 			b.processStat.ReadLines++
-			if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(l) {
-				b.processStat.SkipLines++
-				continue
-			}
-			if autoSetExtractor {
-				lf.ETName = b.autoSetExtractor(l)
-				autoSetExtractor = false
+
+			isCommit := false
+			isAppend := true
+
+			if mlStartRe != nil {
+				if mlStartRe.MatchString(l) {
+					commitTask()
+					logStartLine = ln
+				}
+			} else if mlSepRe != nil {
+				if mlSepRe.MatchString(l) {
+					isCommit = true
+				}
+			} else if b.config.MLLines > 0 {
+				if len(logBuffer) == 0 {
+					logStartLine = ln
+				}
+				if len(logBuffer)+1 >= b.config.MLLines {
+					isCommit = true
+				}
+			} else {
+				logStartLine = ln
+				isCommit = true
 			}
 
-			startWorkersOnce.Do(startWorkers)
-
-			taskCh <- parseTask{
-				seqID:  seqID,
-				ln:     ln,
-				line:   l,
-				lfPath: lf.Path,
+			if len(logBuffer) == 0 {
+				logStartLine = ln
 			}
-			seqID++
+			if isAppend {
+				logBuffer = append(logBuffer, l)
+			}
+			if isCommit {
+				commitTask()
+			}
 		}
+		commitTask()
 	}()
 
 	// Close resultCh when workers (and the reader) are done
@@ -918,7 +1063,11 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 				lastTime = r.ts.UnixNano()
 			} else {
 				if r.parseErr != nil {
-					if lastTime < 1 {
+					if b.config.NoTimeStamp {
+						if lastTime == 0 {
+							lastTime = time.Now().UnixNano()
+						}
+					} else if lastTime < 1 {
 						b.processStat.SkipLines++
 						continue
 					}
@@ -928,8 +1077,14 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 					}
 					lastTime = r.ts.UnixNano()
 				} else {
-					b.processStat.SkipLines++
-					continue
+					if b.config.NoTimeStamp {
+						if lastTime == 0 {
+							lastTime = time.Now().UnixNano()
+						}
+					} else {
+						b.processStat.SkipLines++
+						continue
+					}
 				}
 			}
 
@@ -969,6 +1124,37 @@ func (b *App) readOneLogFile(lf *LogFile, reader io.Reader) {
 	}
 	lf.Duration = time.Since(st).String()
 	OutLog("end readOneLogFile ln=%d", ln)
+}
+
+func (b *App) getLogSourceTimeRange(src *LogSource) (int64, int64) {
+	st := int64(0)
+	et := int64(0)
+	if src.Start != "" {
+		if t, err := time.Parse(time.RFC3339, src.Start); err == nil {
+			st = t.UnixNano()
+		} else if t, err := time.Parse("2006-01-02T15:04", src.Start); err == nil {
+			st = t.UnixNano()
+		} else if t, err := time.Parse("2006-01-02", src.Start); err == nil {
+			st = t.UnixNano()
+		}
+	}
+	if src.End != "" {
+		if t, err := time.Parse(time.RFC3339, src.End); err == nil {
+			et = t.UnixNano()
+		} else if t, err := time.Parse("2006-01-02T15:04", src.End); err == nil {
+			et = t.UnixNano()
+		} else if t, err := time.Parse("2006-01-02", src.End); err == nil {
+			et = t.UnixNano()
+		}
+	}
+	now := time.Now().UnixNano()
+	if st == 0 {
+		st = time.Now().Add(-24 * time.Hour).UnixNano()
+	}
+	if et == 0 || et > now {
+		et = now
+	}
+	return st, et
 }
 
 func (b *App) setTimeGrinder() error {

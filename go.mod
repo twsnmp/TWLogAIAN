@@ -5,17 +5,23 @@ go 1.27
 require (
 	github.com/0xrawsec/golang-evtx v1.2.9
 	github.com/Songmu/timeout v0.4.0
+	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/blugelabs/bluge v0.2.2
 	github.com/blugelabs/query_string v0.3.0
 	github.com/codegaudi/go-iforest v0.0.1
 	github.com/dgraph-io/badger/v4 v4.9.6
+	github.com/emersion/go-imap/v2 v2.0.0-beta.8
 	github.com/fatih/color v1.18.0
 	github.com/gravwell/gravwell/v3 v3.8.20
+	github.com/jlaffaye/ftp v0.2.4
+	github.com/knadh/go-pop3 v1.0.2
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/parquet-go/parquet-go v0.32.0
 	github.com/tmc/langchaingo v0.1.14
 	github.com/twsnmp/golof v1.0.0
 	github.com/twsnmp/tfidf v1.1.0
+	github.com/twsnmp/twlogeye/api v0.6.0
+	github.com/twsnmp/twsnmpfc/client v0.0.0-20240913214048-858814736e0b
 	github.com/viant/afs v1.16.0
 	github.com/vjeantet/grok v1.0.1
 	github.com/wailsapp/wails/v2 v2.15.0
@@ -23,6 +29,7 @@ require (
 	go.etcd.io/bbolt v1.4.3
 	golang.org/x/crypto v0.56.0
 	golang.org/x/text v0.41.0
+	google.golang.org/grpc v1.83.2
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -58,6 +65,8 @@ require (
 	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/emersion/go-message v0.18.2 // indirect
+	github.com/emersion/go-sasl v0.0.0-20241020182733-b788ff22d5a6 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -95,6 +104,7 @@ require (
 	github.com/richardlehane/msoleps v1.0.6 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.49.1 // indirect
+	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/tiendc/go-deepcopy v1.7.2 // indirect
 	github.com/tkrajina/go-reflector v0.5.8 // indirect
 	github.com/twpayne/go-geom v1.6.1 // indirect
@@ -120,6 +130,5 @@ require (
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
-	google.golang.org/grpc v1.83.2 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )

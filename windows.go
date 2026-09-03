@@ -38,6 +38,9 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 			OutLog("readWindowsEvtxInt recover=%v", err)
 		}
 	}()
+	if b.processStat.TimeLine == nil {
+		b.processStat.TimeLine = make(map[int64]int)
+	}
 	ef, err := evtx.New(r)
 	if err == nil {
 		err = ef.Header.Verify()
@@ -54,6 +57,7 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 	comPath := evtx.Path("/Event/System/Computer")
 	levelPath := evtx.Path("/Event/System/Level")
 	providerPath := evtx.Path("/Event/System/Provider/Name")
+	summary := lf.LogSrc != nil && lf.LogSrc.Summary
 	for e := range ef.FastEvents() {
 		if b.stopProcess {
 			return nil
@@ -109,6 +113,10 @@ func (b *App) readWindowsEvtxInt(lf *LogFile, r io.ReadSeeker) error {
 		user, err := e.GetString(&evtx.UserIDPath)
 		if err != nil {
 			user = ""
+		}
+		if summary {
+			l = fmt.Sprintf("%s Level=%d Provider=%s EventID=%d Channel=%s User=%s Computer=%s",
+				t.Format("2006-01-02T15:04:05.000"), level, provider, eid, ch, user, com)
 		}
 		log := LogEnt{
 			ID:       fmt.Sprintf("%s:%s:%d", lf.Path, ch, erid),

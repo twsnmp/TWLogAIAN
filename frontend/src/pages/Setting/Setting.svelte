@@ -48,6 +48,10 @@
     SampleLog: "",
     ForceUTC: false,
     Strict: false,
+    MLStart: "",
+    MLSep: "",
+    MLLines: 0,
+    NoTimeStamp: false,
     LLMProvider: "none",
     LLMBaseURL: "",
     LLMAPIKey: "",
@@ -113,7 +117,17 @@
     switch (e.Type) {
       case "ssh":
       case "scp":
+      case "ftp":
         return e.Server + ":" + e.Path;
+      case "loki":
+        return e.Server + " (" + (e.Query || e.Pattern || "all") + ")";
+      case "es":
+        return e.Server + "/" + (e.Index || "*") + " (" + (e.Query || "*") + ")";
+      case "imap":
+      case "pop3":
+        return e.Server + (e.Folder ? "/" + e.Folder : "");
+      case "twlogeye":
+        return e.Server + "/" + (e.Target || "notify") + (e.SubTarget ? "/" + e.SubTarget : "");
       case "twsnmp":
         return (
           e.Server +
@@ -245,8 +259,20 @@
         return $_('Setting.SSH');
       case "twsnmp":
         return $_('Setting.TSNMP');
+      case "ftp":
+        return $_('Setting.FTP');
+      case "loki":
+        return $_('Setting.Loki');
+      case "es":
+        return $_('Setting.ES');
+      case "imap":
+        return $_('Setting.IMAP');
+      case "pop3":
+        return $_('Setting.POP3');
+      case "twlogeye":
+        return $_('Setting.TWLogEye');
     }
-    return "";
+    return t || "";
   };
 
   const editLogSourceButtons = (_, row) => {
@@ -593,6 +619,41 @@
                   />
                 </div>
               {/if}
+            </div>
+
+            <!-- Multiline & NoTimeStamp Settings -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5>{$_('Setting.MultilineSetting')}</h5>
+              </div>
+              <div class="form-group-body d-flex flex-wrap" style="gap: 8px;">
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="{$_('Setting.MLStart')}"
+                  style="flex: 2 1 140px;"
+                  bind:value={config.MLStart}
+                />
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="{$_('Setting.MLSep')}"
+                  style="flex: 2 1 140px;"
+                  bind:value={config.MLSep}
+                />
+                <input
+                  class="form-control"
+                  type="number"
+                  min="0"
+                  placeholder="{$_('Setting.MLLines')}"
+                  style="flex: 1 1 80px;"
+                  bind:value={config.MLLines}
+                />
+              </div>
+              <label class="d-block mt-1" style="cursor: pointer;">
+                <input type="checkbox" bind:checked={config.NoTimeStamp} class="mr-1" />
+                {$_('Setting.NoTimeStamp')}
+              </label>
             </div>
 
             <!-- Indexer Setting (Storage Engine & In-Memory) -->

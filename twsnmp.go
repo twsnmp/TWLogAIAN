@@ -1,138 +1,214 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
-	"strings"
+	"net/url"
 	"time"
+
+	"github.com/twsnmp/twsnmpfc/client"
 )
 
-type twsnmpLogin struct {
-	UserID   string `json:"UserID"`
-	Password string `json:"Password"`
-}
-
-type twsnmpSyslogFilter struct {
-	StartDate string
-	StartTime string
-	EndDate   string
-	EndTime   string
-	Level     string
-	Type      string
-	Host      string
-	Tag       string
-	Message   string
-	Extractor string
-	NextTime  int64
-	Filter    int
-}
-
-type twsnmpSyslogResp struct {
-	Logs          []*twsnmpSyslogLogEnt
-	ExtractHeader []string
-	ExtractDatas  [][]string
-	NextTime      int64
-	Process       int
-	Filter        int
-	Limit         int
-}
-
-type twsnmpSyslogLogEnt struct {
-	Time     int64
-	Level    string
-	Host     string
-	Type     string
-	Tag      string
-	Message  string
-	Severity int
-	Facility int
-}
-
 func (b *App) readLogFromTWSNMP(lf *LogFile) error {
-	token, err := b.loginToTWSNMP(lf)
-	if err != nil {
-		return err
-	}
-	return b.getLogFromTWSNMP(lf, token)
-}
-
-func (b *App) loginToTWSNMP(lf *LogFile) (string, error) {
-	login := new(twsnmpLogin)
-	login.UserID = lf.LogSrc.User
-	login.Password = lf.LogSrc.Password
-
-	login_json, _ := json.Marshal(login)
-
-	res, err := http.Post(lf.LogSrc.Server+"login", "application/json", bytes.NewBuffer(login_json))
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-
-	r, err := io.ReadAll(res.Body)
-	if err != nil {
-		return "", err
-	}
-	respMap := make(map[string]string)
-	err = json.Unmarshal(r, &respMap)
-	if err != nil {
-		return "", err
-	}
-	return respMap["token"], nil
-}
-
-func (b *App) getLogFromTWSNMP(lf *LogFile, token string) error {
-
-	filter := new(twsnmpSyslogFilter)
-	if lf.LogSrc.Start != "" {
-		if a := strings.SplitN(lf.LogSrc.Start, "T", 2); len(a) == 2 && a[1] != "" {
-			filter.StartDate = a[0]
-			filter.StartTime = a[1]
+	src := lf.LogSrc
+	u, err := url.Parse(src.Server)
+	scheme := "http"
+	host := src.Server
+	if err == nil && u.Host != "" {
+		host = u.Host
+		if u.Scheme != "" {
+			scheme = u.Scheme
 		}
 	}
-	if lf.LogSrc.End != "" {
-		if a := strings.SplitN(lf.LogSrc.End, "T", 2); len(a) == 2 && a[1] != "" {
-			filter.EndDate = a[0]
-			filter.EndTime = a[1]
+	if src.TLS {
+		scheme = "https"
+	}
+	serverURL := fmt.Sprintf("%s://%s", scheme, host)
+	c := client.NewClient(serverURL)
+	c.InsecureSkipVerify = src.InsecureSkip
+	c.Timeout = 60
+
+	user := src.User
+	if user == "" {
+		user = "twsnmp"
+	}
+	pass := src.Password
+	if pass == "" {
+		pass = "twsnmp"
+	}
+
+	if err := c.Login(user, pass); err != nil {
+		return fmt.Errorf("failed to login to TWSNMP FC: %w", err)
+	}
+
+	st, et := b.getLogSourceTimeRange(src)
+	logType := src.SubTarget
+	if logType == "" {
+		logType = "syslog"
+	}
+
+	pr, pw := io.Pipe()
+
+	go func() {
+		defer pw.Close()
+		switch logType {
+		case "eventlog":
+			f := &client.EventLogFilter{
+				StartDate: time.Unix(0, st).Format("2006-01-02"),
+				StartTime: time.Unix(0, st).Format("15:04"),
+				EndDate:   time.Unix(0, et).Format("2006-01-02"),
+				EndTime:   time.Unix(0, et).Format("15:04"),
+			}
+			r, err := c.GetEventLogs(f)
+			if err != nil {
+				OutLog("TWSNMP GetEventLogs err=%v", err)
+				return
+			}
+			for _, l := range r.EventLogs {
+				if b.stopProcess {
+					return
+				}
+				sl := fmt.Sprintf("%s %s '%s' %s\n", time.Unix(0, l.Time).Format(time.RFC3339Nano), l.Type, l.NodeName, l.Event)
+				pw.Write([]byte(sl))
+			}
+
+		case "trap":
+			f := &client.SnmpTrapFilter{
+				StartDate: time.Unix(0, st).Format("2006-01-02"),
+				StartTime: time.Unix(0, st).Format("15:04"),
+				EndDate:   time.Unix(0, et).Format("2006-01-02"),
+				EndTime:   time.Unix(0, et).Format("15:04"),
+			}
+			traps, err := c.GetSnmpTraps(f)
+			if err != nil {
+				OutLog("TWSNMP GetSnmpTraps err=%v", err)
+				return
+			}
+			for _, l := range traps {
+				if b.stopProcess {
+					return
+				}
+				sl := fmt.Sprintf("%s %s %s %s\n", time.Unix(0, l.Time).Format(time.RFC3339Nano), l.FromAddress, l.TrapType, l.Variables)
+				pw.Write([]byte(sl))
+			}
+
+		case "netflow", "ipfix":
+			ipfix := logType == "ipfix"
+			f := &client.NetflowFilter{
+				NextTime: st,
+				Filter:   0,
+			}
+			for ct := st; ct >= 0 && ct < et; {
+				if b.stopProcess {
+					return
+				}
+				f.NextTime = ct
+				var r *client.NetflowWebAPI
+				var err error
+				if ipfix {
+					r, err = c.GetIPFIX(f)
+				} else {
+					r, err = c.GetNetFlow(f)
+				}
+				if err != nil {
+					OutLog("TWSNMP GetNetflow/IPFIX err=%v", err)
+					return
+				}
+				for _, l := range r.Logs {
+					j, err := json.Marshal(&l)
+					if err != nil {
+						continue
+					}
+					sl := fmt.Sprintf("%s %s\n", time.Unix(0, l.Time).Format(time.RFC3339Nano), string(j))
+					pw.Write([]byte(sl))
+					ct = l.Time
+				}
+				if r.NextTime == 0 {
+					break
+				}
+			}
+
+		case "sflow":
+			f := &client.SFlowFilter{
+				NextTime: st,
+				Filter:   0,
+			}
+			for ct := st; ct >= 0 && ct < et; {
+				if b.stopProcess {
+					return
+				}
+				f.NextTime = ct
+				r, err := c.GetSFlow(f)
+				if err != nil {
+					OutLog("TWSNMP GetSFlow err=%v", err)
+					return
+				}
+				for _, l := range r.Logs {
+					j, err := json.Marshal(&l)
+					if err != nil {
+						continue
+					}
+					sl := fmt.Sprintf("%s %s\n", time.Unix(0, l.Time).Format(time.RFC3339Nano), string(j))
+					pw.Write([]byte(sl))
+					ct = l.Time
+				}
+				if r.NextTime == 0 {
+					break
+				}
+			}
+
+		case "arp":
+			f := &client.ArpFilter{
+				StartDate: time.Unix(0, st).Format("2006-01-02"),
+				StartTime: time.Unix(0, st).Format("15:04"),
+				EndDate:   time.Unix(0, et).Format("2006-01-02"),
+				EndTime:   time.Unix(0, et).Format("15:04"),
+			}
+			arpLogs, err := c.GetArpLogs(f)
+			if err != nil {
+				OutLog("TWSNMP GetArpLogs err=%v", err)
+				return
+			}
+			for _, l := range arpLogs {
+				if b.stopProcess {
+					return
+				}
+				j, err := json.Marshal(&l)
+				if err != nil {
+					continue
+				}
+				sl := fmt.Sprintf("%s %s\n", time.Unix(0, l.Time).Format(time.RFC3339Nano), string(j))
+				pw.Write([]byte(sl))
+			}
+
+		default: // "syslog"
+			f := &client.SyslogFilter{
+				NextTime: st,
+				Filter:   0,
+			}
+			for ct := st; ct >= 0 && ct < et; {
+				if b.stopProcess {
+					return
+				}
+				f.NextTime = ct
+				r, err := c.GetSyslogs(f)
+				if err != nil {
+					OutLog("TWSNMP GetSyslogs err=%v", err)
+					return
+				}
+				for _, l := range r.Logs {
+					sl := fmt.Sprintf("%s %s %s: %s\n", time.Unix(0, l.Time).Format(time.RFC3339Nano), l.Type, l.Tag, l.Message)
+					pw.Write([]byte(sl))
+					ct = l.Time
+				}
+				if r.NextTime == 0 {
+					break
+				}
+			}
 		}
-	}
-	filter.Host = lf.LogSrc.Host
-	filter.Tag = lf.LogSrc.Tag
-	filter.Message = lf.LogSrc.Pattern
+	}()
 
-	filter_json, _ := json.Marshal(filter)
-
-	req, err := http.NewRequest("POST", lf.LogSrc.Server+"api/log/syslog", bytes.NewBuffer(filter_json))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	r, err := io.ReadAll(res.Body)
-	if err != nil {
-		return err
-	}
-
-	syslogResp := new(twsnmpSyslogResp)
-	err = json.Unmarshal(r, &syslogResp)
-	if err != nil {
-		return err
-	}
-	logs := []string{}
-	for _, l := range syslogResp.Logs {
-		ts := time.Unix(0, l.Time)
-		logs = append(logs, fmt.Sprintf("%s %s %s %s", ts.Format(time.RFC3339Nano), l.Host, l.Tag, l.Message))
-	}
-	b.readOneLogFile(lf, strings.NewReader(strings.Join(logs, "\n")))
+	b.readOneLogFile(lf, pr)
 	return nil
 }

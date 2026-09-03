@@ -563,11 +563,59 @@ export const getLogLevel = (l) => {
       ? "warn"
       : "normal";
   }
-  const level = l.KeyValue.suverity_str || l.KeyValue.level || l.All;
-  if (/(alert|error|crit|fatal|emerg|failure|err )/i.test(level)) {
+
+  // 集計レポート (Normal, Warn, Error フィールドが存在する場合)
+  if (l.KeyValue.Normal !== undefined || l.KeyValue.normal !== undefined) {
+    const normal = (l.KeyValue.Normal ?? l.KeyValue.normal) * 1 || 0;
+    const warn = (l.KeyValue.Warn ?? l.KeyValue.warn) * 1 || 0;
+    const error = (l.KeyValue.Error ?? l.KeyValue.error) * 1 || 0;
+    if (normal === 0 && error > 0) return "error";
+    if (normal === 0 && warn > 0) return "warn";
+    return "normal";
+  }
+
+  const explicitLevel = l.KeyValue.suverity_str || l.KeyValue.severity || l.KeyValue.level || l.KeyValue.log_level || l.KeyValue.status;
+  if (explicitLevel && typeof explicitLevel === "string") {
+    if (/(alert|error|crit|fatal|emerg|failure|err)/i.test(explicitLevel)) {
+      return "error";
+    }
+    if (/warn/i.test(explicitLevel)) {
+      return "warn";
+    }
+    return "normal";
+  }
+
+  // l.All のチェック (JSON の場合はキー名誤判定を防ぐ)
+  let text = l.All || "";
+  if (typeof text === "string" && text.startsWith("{") && text.endsWith("}")) {
+    try {
+      const obj = JSON.parse(text);
+      if (obj.Normal !== undefined || obj.normal !== undefined) {
+        const normal = (obj.Normal ?? obj.normal) * 1 || 0;
+        const warn = (obj.Warn ?? obj.warn) * 1 || 0;
+        const error = (obj.Error ?? obj.error) * 1 || 0;
+        if (normal === 0 && error > 0) return "error";
+        if (normal === 0 && warn > 0) return "warn";
+        return "normal";
+      }
+      if (obj.level || obj.severity || obj.status) {
+        const lv = String(obj.level || obj.severity || obj.status);
+        if (/(alert|error|crit|fatal|emerg|failure|err)/i.test(lv)) return "error";
+        if (/warn/i.test(lv)) return "warn";
+        return "normal";
+      }
+      if (obj.message || obj.msg || obj.log) {
+        text = String(obj.message || obj.msg || obj.log);
+      } else {
+        text = Object.values(obj).filter(v => typeof v === "string").join(" ");
+      }
+    } catch (_) {}
+  }
+
+  if (/(alert|error|crit|fatal|emerg|failure|err )/i.test(text)) {
     return "error";
   }
-  if (/warn/i.test(level)) {
+  if (/warn/i.test(text)) {
     return "warn";
   }
   return "normal";

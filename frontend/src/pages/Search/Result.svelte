@@ -39,7 +39,10 @@
     const r = await GetProcessInfo();
     if (r) {
       if (r.LogFiles) {
-        logFiles = r.LogFiles
+        logFiles = [...r.LogFiles];
+      }
+      if (r.IntLogFiles) {
+        logFiles = [...logFiles, ...r.IntLogFiles];
       }
       if (r.ErrorMsg) {
         errorMsg = r.ErrorMsg;

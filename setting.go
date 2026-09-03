@@ -36,6 +36,12 @@ type Config struct {
 	TimeGrinderOverride string
 	TimeGrinderRegExp   string
 	TimeGrinderFormat   string
+	// Multiline settings
+	MLStart string
+	MLSep   string
+	MLLines int
+	// No timestamp setting
+	NoTimeStamp bool
 	// LLM Settings
 	LLMProvider string
 	LLMBaseURL  string
@@ -62,6 +68,25 @@ type LogSource struct {
 	Channel  string
 	Auth     string
 	ShiftJIS bool
+	Summary  bool
+	// for Loki / ES / OpenSearch / Email / TWLogEye
+	Query        string
+	Index        string
+	TimeField    string
+	MessageField string
+	Token        string
+	APIKey       string
+	OrgID        string
+	Folder       string
+	Target       string
+	SubTarget    string
+	Level        string
+	ReportType   string
+	TLS          bool
+	InsecureSkip bool
+	CACert       string
+	ClientCert   string
+	ClientKey    string
 }
 type WindowSettings struct {
 	X     int
@@ -79,7 +104,7 @@ func (b *App) SelectFile(t, title string) string {
 		dir = true
 	case "geoip":
 		dir = false
-	case "sshkey":
+	case "sshkey", "cert", "key", "cacert":
 		dir = false
 		sh = true
 	case "logdir":

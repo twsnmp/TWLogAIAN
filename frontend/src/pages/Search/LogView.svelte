@@ -727,6 +727,15 @@
         </button>
       </div>
     {/if}
+    {#if !busy && indexInfo && indexInfo.Total === 0}
+      <div class="flash flash-warn d-flex flex-items-center flex-justify-between">
+        <span>{$_('LogView.NoDataMsg')}</span>
+        <button class="btn btn-sm btn-primary" type="button" on:click={back}>
+          <Reply16 />
+          {$_('LogView.BackBtn')}
+        </button>
+      </div>
+    {/if}
     <div class="Box-row">
       <div class="clearfix">
         <div class="col-9 float-left">
