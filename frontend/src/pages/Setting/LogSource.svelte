@@ -88,6 +88,7 @@
         >
           <option value="folder">{$_('LogSource.Folder')}</option>
           <option value="file">{$_('LogSource.OneFile')}</option>
+          <option value="parquet">{$_('LogSource.Parquet')}</option>
           <option value="scp">{$_('LogSource.SCP')}</option>
           {#if windows || logSource.Type == "windows"}
             <option value="windows">Windows</option>
@@ -136,6 +137,33 @@
             <span class="input-group-button">
               <button class="btn" type="button" on:click={selectLogFile}>
                 <File16 />
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    {/if}
+    {#if logSource.Type == "parquet"}
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5>{$_('LogSource.Parquet')}</h5>
+        </div>
+        <div class="form-group-body">
+          <div class="input-group">
+            <input
+              class="form-control"
+              type="text"
+              placeholder="{$_('LogSource.Parquet')}"
+              bind:value={logSource.Path}
+            />
+            <span class="input-group-button">
+              <button class="btn" type="button" on:click={selectLogFile}>
+                <File16 />
+              </button>
+            </span>
+            <span class="input-group-button">
+              <button class="btn" type="button" on:click={selectLogFolder}>
+                <FileDirectory16 />
               </button>
             </span>
           </div>

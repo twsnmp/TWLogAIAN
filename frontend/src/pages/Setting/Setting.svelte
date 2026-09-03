@@ -44,6 +44,7 @@
     MACFields: "",
     Recursive: false,
     InMemory: false,
+    StorageEngine: "bluge",
     SampleLog: "",
     ForceUTC: false,
     Strict: false,
@@ -86,10 +87,19 @@
       if (!c.Extractor) {
         c.Extractor = "auto";
       }
+      if (!c.StorageEngine || c.StorageEngine === "inmemory") {
+        c.StorageEngine = "bluge";
+      }
       config = c;
       orgConfig = c;
     }
     wait = false;
+  };
+
+  const changeStorageEngine = () => {
+    if (config.StorageEngine !== "bluge") {
+      config.InMemory = false;
+    }
   };
 
   const getHasIndex = async () => {
@@ -220,6 +230,8 @@
         return $_('Setting.Folder');
       case "file":
         return $_('Setting.OneFile');
+      case "parquet":
+        return "Parquet";
       case "scp":
         return $_('Setting.SCP');
       case "windows":
@@ -376,7 +388,7 @@
 {:else if page == "logType"}
   <LogType on:done={handleDone} />
 {:else}
-  <div class="Box mx-auto Box--condensed" style="max-width: 99%;">
+  <div class="Box mx-auto Box--condensed setting-box" style="max-width: 99%;">
     {#if busy}
       <div class="Box-header">
         <h3 class="Box-title">{$_('Setting.StartingTitle')}</h3>
@@ -421,8 +433,8 @@
           </button>
         </div>
       {/if}
-      <div class="Box-body">
-        <div class="form-group">
+      <div class="Box-body setting-body">
+        <div class="form-group mb-2">
           <div class="form-group-header">
             <h5 class="pb-1">
               {$_('Setting.LogFrom')}
@@ -435,29 +447,29 @@
               </button>
             </h5>
           </div>
-          <div class="form-group-body markdown-body mt-3">
-            <table class="width-full text-left" style="border-collapse: collapse; margin-bottom: 15px;">
+          <div class="form-group-body markdown-body mt-1">
+            <table class="width-full text-left" style="border-collapse: collapse; margin-bottom: 8px;">
               <thead>
                 <tr class="border-bottom">
-                  <th class="p-2" style="width: 10%;">No</th>
-                  <th class="p-2" style="width: 20%;">{$_('Setting.Type')}</th>
-                  <th class="p-2" style="width: 50%;">{$_('Setting.Path')}</th>
-                  <th class="p-2" style="width: 10%;">{$_('Setting.Edit')}</th>
-                  <th class="p-2" style="width: 10%;">{$_('Setting.Delete')}</th>
+                  <th class="p-1" style="width: 8%;">No</th>
+                  <th class="p-1" style="width: 18%;">{$_('Setting.Type')}</th>
+                  <th class="p-1" style="width: 54%;">{$_('Setting.Path')}</th>
+                  <th class="p-1" style="width: 10%;">{$_('Setting.Edit')}</th>
+                  <th class="p-1" style="width: 10%;">{$_('Setting.Delete')}</th>
                 </tr>
               </thead>
               <tbody>
                 {#each logSources as e}
                   <tr class="border-bottom">
-                    <td class="p-2">{e.No}</td>
-                    <td class="p-2">{formatLogSourceType(e.Type)}</td>
-                    <td class="p-2">{getLSPath(e)}</td>
-                    <td class="p-2">
+                    <td class="p-1">{e.No}</td>
+                    <td class="p-1">{formatLogSourceType(e.Type)}</td>
+                    <td class="p-1">{getLSPath(e)}</td>
+                    <td class="p-1">
                       <button class="btn btn-sm" type="button" on:click={() => editLogSource(e.No)} aria-label="Edit">
                         <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
                       </button>
                     </td>
-                    <td class="p-2">
+                    <td class="p-1">
                       <button class="btn btn-sm btn-danger" type="button" on:click={() => deleteLogSource(e.No)} aria-label="Delete">
                         <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M6.5 1.75a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3V1.75zm4.5 0V3h2.25a.75.75 0 010 1.5H2.75a.75.75 0 010-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75zM4.496 6.675a.75.75 0 10-1.492.15l.66 6.6A1.75 1.75 0 005.405 15h5.19c.9 0 1.652-.681 1.741-1.576l.66-6.6a.75.75 0 00-1.492-.149l-.66 6.6a.25.25 0 01-.249.225h-5.19a.25.25 0 01-.249-.225l-.66-6.6z"></path></svg>
                       </button>
@@ -466,14 +478,16 @@
                 {/each}
               </tbody>
             </table>
-            <label class="p-1">
-              <input type="checkbox" bind:checked={config.Recursive} />
-              {$_('Setting.RecTGZ')}
-            </label>
-            <label class="p-1">
-              <input type="checkbox" bind:checked={config.ForceUTC} />
-              {$_('Setting.ForceUTC')}
-            </label>
+            <div class="d-flex" style="gap: 16px;">
+              <label class="d-flex flex-items-center" style="cursor: pointer;">
+                <input type="checkbox" bind:checked={config.Recursive} class="mr-1" />
+                {$_('Setting.RecTGZ')}
+              </label>
+              <label class="d-flex flex-items-center" style="cursor: pointer;">
+                <input type="checkbox" bind:checked={config.ForceUTC} class="mr-1" />
+                {$_('Setting.ForceUTC')}
+              </label>
+            </div>
           </div>
         </div>
         <div class="columns-container">
@@ -481,7 +495,7 @@
             <!-- Filter -->
             <div class="form-group">
               <div class="form-group-header">
-                <h5 class="pb-1">{$_('Setting.Filter')}</h5>
+                <h5>{$_('Setting.Filter')}</h5>
               </div>
               <div class="form-group-body">
                 <input
@@ -497,7 +511,7 @@
             <!-- Log Type -->
             <div class="form-group">
               <div class="form-group-header">
-                <h5 class="pb-1">{$_('Setting.LogType')}</h5>
+                <h5>{$_('Setting.LogType')}</h5>
               </div>
               <div class="form-group-body">
                 <select
@@ -509,8 +523,8 @@
                     <option value={item.Key}>{item.Name}</option>
                   {/each}
                 </select>
-                <label class="d-block mt-2 p-1">
-                  <input type="checkbox" bind:checked={config.Strict} />
+                <label class="d-block mt-1" style="cursor: pointer;">
+                  <input type="checkbox" bind:checked={config.Strict} class="mr-1" />
                   {$_('Setting.StrictPatCheck')}
                 </label>
               </div>
@@ -519,7 +533,7 @@
             <!-- Time Extract -->
             <div class="form-group">
               <div class="form-group-header">
-                <h5 class="pb-1">{$_('Setting.TimeExtract')}</h5>
+                <h5>{$_('Setting.TimeExtract')}</h5>
               </div>
               <div class="form-group-body">
                 <!-- svelte-ignore a11y-no-onchange -->
@@ -578,11 +592,47 @@
               {/if}
             </div>
 
+            <!-- Indexer Setting (Storage Engine & In-Memory) -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5>{$_('Setting.IndexerSetting')}</h5>
+              </div>
+              <div class="form-group-body">
+                <select
+                  class="form-select width-full"
+                  disabled={hasIndex}
+                  bind:value={config.StorageEngine}
+                  on:change={changeStorageEngine}
+                >
+                  <option value="bluge">{$_('Setting.StorageEngineBluge')}</option>
+                  <option value="parquet">{$_('Setting.StorageEngineParquet')}</option>
+                  <option value="badger">{$_('Setting.StorageEngineBadger')}</option>
+                  <option value="bbolt">{$_('Setting.StorageEngineBbolt')}</option>
+                </select>
+                {#if config.StorageEngine === "bluge"}
+                  <div class="form-checkbox mt-1 mb-0">
+                    <label style="cursor: pointer;">
+                      <input
+                        type="checkbox"
+                        disabled={hasIndex}
+                        bind:checked={config.InMemory}
+                        aria-describedby="help-text-for-inmemory"
+                      />
+                      {$_('Setting.IndexInMemory')}
+                    </label>
+                    <p class="note" id="help-text-for-inmemory">
+                      {$_('Setting.InMemoryMsg')}
+                    </p>
+                  </div>
+                {/if}
+              </div>
+            </div>
+
             <!-- Extract Pattern and Extract Info (conditional) -->
             {#if config?.Extractor == "custom" || config?.Extractor == "auto" || (config?.Extractor || "").startsWith("EXT")}
               <div class="form-group">
                 <div class="form-group-header">
-                  <h5 class="pb-1">{$_('Setting.ExtractPat')}</h5>
+                  <h5>{$_('Setting.ExtractPat')}</h5>
                 </div>
                 <div class="form-group-body">
                   <input
@@ -596,7 +646,7 @@
               </div>
               <div class="form-group">
                 <div class="form-group-header">
-                  <h5 class="pb-1">{$_('Setting.ExtractInfo')}</h5>
+                  <h5>{$_('Setting.ExtractInfo')}</h5>
                 </div>
                 <div class="form-group-body d-flex flex-wrap" style="gap: 8px;">
                   <input
@@ -642,21 +692,22 @@
             <!-- Address Info -->
             <div class="form-group">
               <div class="form-group-header">
-                <h5 class="pb-1">{$_('Setting.AddressInfo')}</h5>
+                <h5>{$_('Setting.AddressInfo')}</h5>
               </div>
-              <div class="form-group-body">
-                <label class="d-block p-1">
-                  <input type="checkbox" bind:checked={config.HostName} />
+              <div class="form-group-body d-flex flex-wrap" style="gap: 16px;">
+                <label class="d-flex flex-items-center" style="cursor: pointer;">
+                  <input type="checkbox" bind:checked={config.HostName} class="mr-1" />
                   {$_('Setting.CheckHostName')}
                 </label>
-                <label class="d-block p-1">
-                  <input type="checkbox" bind:checked={config.GeoIP} />
+                <label class="d-flex flex-items-center" style="cursor: pointer;">
+                  <input type="checkbox" bind:checked={config.GeoIP} class="mr-1" />
                   {$_('Setting.CheckIPLoc')}
                 </label>
-                <label class="d-block p-1">
+                <label class="d-flex flex-items-center" style="cursor: pointer;">
                   <input
                     type="checkbox"
                     bind:checked={config.VendorName}
+                    class="mr-1"
                   />
                   {$_('Setting.CheckVendorName')}
                 </label>
@@ -667,7 +718,7 @@
             {#if config.GeoIP}
               <div class="form-group">
                 <div class="form-group-header">
-                  <h5 class="pb-1">{$_('Setting.GeoDB')}</h5>
+                  <h5>{$_('Setting.GeoDB')}</h5>
                 </div>
                 <div class="form-group-body">
                   <div class="input-group">
@@ -687,84 +738,67 @@
               </div>
             {/if}
 
-            <!-- Indexer Setting -->
-            <div class="form-group">
-              <div class="form-group-header">
-                <h5 class="pb-1">{$_('Setting.IndexerSetting')}</h5>
-              </div>
-              <div class="form-group-body">
-                <div class="form-checkbox">
-                  <label>
-                    <input
-                      type="checkbox"
-                      disabled={hasIndex}
-                      bind:checked={config.InMemory}
-                      aria-describedby="help-text-for-inmemory"
-                    />
-                    {$_('Setting.IndexInMemory')}
-                  </label>
-                  <p class="note" id="help-text-for-inmemory">
-                    {$_('Setting.InMemoryMsg')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
             <!-- LLM Settings -->
             <hr class="mt-2 mb-2" />
-            <h4 class="mb-2">{$_('Setting.LLMSetting')}</h4>
-            <div class="form-group">
-              <div class="form-group-header">
-                <h5 class="pb-1">{$_('Setting.LLMProvider')}</h5>
+            <h5 class="mb-1">{$_('Setting.LLMSetting')}</h5>
+            <div class="d-flex" style="gap: 8px;">
+              <div class="form-group" style="flex: 1;">
+                <div class="form-group-header">
+                  <h5>{$_('Setting.LLMProvider')}</h5>
+                </div>
+                <div class="form-group-body">
+                  <select class="form-select width-full" bind:value={config.LLMProvider}>
+                    <option value="none">{$_('Setting.LLMNone')}</option>
+                    <option value="gemini">{$_('Setting.LLMGemini')}</option>
+                    <option value="openai">{$_('Setting.LLMOpenAI')}</option>
+                    <option value="anthropic">{$_('Setting.LLMAnthropic')}</option>
+                    <option value="ollama">{$_('Setting.LLMOllama')}</option>
+                  </select>
+                </div>
               </div>
-              <div class="form-group-body">
-                <select class="form-select width-full" bind:value={config.LLMProvider}>
-                  <option value="none">{$_('Setting.LLMNone')}</option>
-                  <option value="gemini">{$_('Setting.LLMGemini')}</option>
-                  <option value="openai">{$_('Setting.LLMOpenAI')}</option>
-                  <option value="anthropic">{$_('Setting.LLMAnthropic')}</option>
-                  <option value="ollama">{$_('Setting.LLMOllama')}</option>
-                </select>
-              </div>
+              {#if config.LLMProvider != "none"}
+                <div class="form-group" style="flex: 1;">
+                  <div class="form-group-header">
+                    <h5>{$_('Setting.LLMModel')}</h5>
+                  </div>
+                  <div class="form-group-body">
+                    <input
+                      class="form-control width-full"
+                      type="text"
+                      bind:value={config.LLMModel}
+                      placeholder="{$_('Setting.LLMModelPlaceholder')}"
+                    />
+                  </div>
+                </div>
+              {/if}
             </div>
             {#if config.LLMProvider != "none"}
-              <div class="form-group">
-                <div class="form-group-header">
-                  <h5 class="pb-1">{$_('Setting.LLMBaseURL')}</h5>
+              <div class="d-flex" style="gap: 8px;">
+                <div class="form-group" style="flex: 1;">
+                  <div class="form-group-header">
+                    <h5>{$_('Setting.LLMBaseURL')}</h5>
+                  </div>
+                  <div class="form-group-body">
+                    <input
+                      class="form-control width-full"
+                      type="text"
+                      bind:value={config.LLMBaseURL}
+                      placeholder="{$_('Setting.LLMBaseURLPlaceholder')}"
+                    />
+                  </div>
                 </div>
-                <div class="form-group-body">
-                  <input
-                    class="form-control"
-                    type="text"
-                    bind:value={config.LLMBaseURL}
-                    placeholder="{$_('Setting.LLMBaseURLPlaceholder')}"
-                  />
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="form-group-header">
-                  <h5 class="pb-1">{$_('Setting.LLMAPIKey')}</h5>
-                </div>
-                <div class="form-group-body">
-                  <input
-                    class="form-control"
-                    type="password"
-                    bind:value={config.LLMAPIKey}
-                    placeholder="{$_('Setting.LLMAPIKeyPlaceholder')}"
-                  />
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="form-group-header">
-                  <h5 class="pb-1">{$_('Setting.LLMModel')}</h5>
-                </div>
-                <div class="form-group-body">
-                  <input
-                    class="form-control"
-                    type="text"
-                    bind:value={config.LLMModel}
-                    placeholder="{$_('Setting.LLMModelPlaceholder')}"
-                  />
+                <div class="form-group" style="flex: 1;">
+                  <div class="form-group-header">
+                    <h5>{$_('Setting.LLMAPIKey')}</h5>
+                  </div>
+                  <div class="form-group-body">
+                    <input
+                      class="form-control width-full"
+                      type="password"
+                      bind:value={config.LLMAPIKey}
+                      placeholder="{$_('Setting.LLMAPIKeyPlaceholder')}"
+                    />
+                  </div>
                 </div>
               </div>
             {/if}
@@ -815,21 +849,36 @@
 {/if}
 
 <style>
+  .setting-box {
+    max-height: calc(100vh - 30px);
+    display: flex;
+    flex-direction: column;
+  }
+  .setting-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
   .columns-container {
     display: flex;
-    gap: 24px;
-    margin-top: 15px;
+    gap: 20px;
+    margin-top: 10px;
   }
   .column {
     flex: 1;
     min-width: 0;
   }
   .form-group {
-    margin-top: 8px;
-    margin-bottom: 8px;
+    margin-top: 4px;
+    margin-bottom: 6px;
   }
   .form-group-header {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+  }
+  .form-group-header h5 {
+    margin-bottom: 0;
+    font-size: 13px;
+    font-weight: 600;
   }
   table.width-full {
     display: table !important;

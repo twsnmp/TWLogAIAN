@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/blugelabs/bluge"
 	querystr "github.com/blugelabs/query_string"
+	"github.com/twsnmp/TWLogAIAN/pkg/datastore"
 	"github.com/vjeantet/grok"
 
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -38,23 +40,66 @@ type GeoEnt struct {
 	City    string
 }
 
+func (b *App) getStorageEngine() string {
+	if b.config.StorageEngine != "" && b.config.StorageEngine != "inmemory" {
+		return strings.ToLower(b.config.StorageEngine)
+	}
+	if b.workdir != "" {
+		if _, err := os.Stat(filepath.Join(b.workdir, "logs.parquet")); err == nil {
+			return "parquet"
+		}
+		matches, _ := filepath.Glob(filepath.Join(b.workdir, "*.parquet"))
+		if len(matches) > 0 {
+			return "parquet"
+		}
+		if _, err := os.Stat(filepath.Join(b.workdir, "twlogaian.badger")); err == nil {
+			return "badger"
+		}
+		if _, err := os.Stat(filepath.Join(b.workdir, "twlogaian_logs.db")); err == nil {
+			return "bbolt"
+		}
+	}
+	return "bluge"
+}
+
 func (b *App) StartLogIndexer() error {
 	var err error
-	if b.indexer.writer == nil {
-		if b.config.InMemory {
-			b.indexer.config = bluge.InMemoryOnlyConfig()
-		} else {
-			dir := filepath.Join(b.workdir, "bluge")
-			if err := os.MkdirAll(dir, 0777); err != nil {
+	engine := b.getStorageEngine()
+	if engine == "parquet" || engine == "badger" || engine == "bbolt" {
+		if b.ds == nil {
+			var dsPath string
+			switch engine {
+			case "parquet":
+				dsPath = filepath.Join(b.workdir, "logs.parquet")
+				b.ds = datastore.NewParquetDataStore()
+			case "badger":
+				dsPath = filepath.Join(b.workdir, "twlogaian.badger")
+				b.ds = datastore.NewBadgerDataStore()
+			case "bbolt":
+				dsPath = filepath.Join(b.workdir, "twlogaian_logs.db")
+				b.ds = datastore.NewBboltDataStore()
+			}
+			if err := b.ds.Open(dsPath); err != nil {
 				return err
 			}
-			b.indexer.config = bluge.DefaultConfig(dir)
 		}
-		b.indexer.writer, err = bluge.OpenWriter(b.indexer.config)
-		if err != nil {
-			return err
+	} else {
+		if b.indexer.writer == nil {
+			if b.config.InMemory {
+				b.indexer.config = bluge.InMemoryOnlyConfig()
+			} else {
+				dir := filepath.Join(b.workdir, "bluge")
+				if err := os.MkdirAll(dir, 0777); err != nil {
+					return err
+				}
+				b.indexer.config = bluge.DefaultConfig(dir)
+			}
+			b.indexer.writer, err = bluge.OpenWriter(b.indexer.config)
+			if err != nil {
+				return err
+			}
+			b.indexer.logMap = make(map[string]*LogEnt)
 		}
-		b.indexer.logMap = make(map[string]*LogEnt)
 	}
 	b.wg.Add(1)
 	go b.logIndexer()
@@ -64,24 +109,57 @@ func (b *App) StartLogIndexer() error {
 // 作業ディレクトリにインデックスがあるか？
 func (b *App) HasIndex() bool {
 	if b.config.InMemory {
-		return b.indexer.writer != nil
+		return b.indexer.writer != nil || b.ds != nil
+	}
+	if b.workdir == "" {
+		return false
+	}
+	engine := b.getStorageEngine()
+	if engine == "parquet" {
+		if _, err := os.Stat(filepath.Join(b.workdir, "logs.parquet")); err == nil {
+			return true
+		}
+		matches, _ := filepath.Glob(filepath.Join(b.workdir, "*.parquet"))
+		return len(matches) > 0
+	}
+	if engine == "badger" {
+		if st, err := os.Stat(filepath.Join(b.workdir, "twlogaian.badger")); err == nil && st.IsDir() {
+			return true
+		}
+	}
+	if engine == "bbolt" {
+		if _, err := os.Stat(filepath.Join(b.workdir, "twlogaian_logs.db")); err == nil {
+			return true
+		}
 	}
 	if st, err := os.Stat(filepath.Join(b.workdir, "bluge")); err == nil && st.IsDir() {
+		return true
+	}
+	matches, _ := filepath.Glob(filepath.Join(b.workdir, "*.parquet"))
+	if len(matches) > 0 {
 		return true
 	}
 	return false
 }
 
 func (b *App) CloseIndexor() error {
+	var err error
 	if b.indexer.writer != nil {
-		err := b.indexer.writer.Close()
-		b.indexer.writer = nil
-		if b.config.InMemory {
-			b.clearProcessStat()
+		if e := b.indexer.writer.Close(); e != nil {
+			err = e
 		}
-		return err
+		b.indexer.writer = nil
 	}
-	return nil
+	if b.ds != nil {
+		if e := b.ds.Close(); e != nil {
+			err = e
+		}
+		b.ds = nil
+	}
+	if b.config.InMemory {
+		b.clearProcessStat()
+	}
+	return err
 }
 
 // 作業ディレクトリのインデックスを削除
@@ -102,12 +180,13 @@ func (b *App) ClearIndex(title, message string) string {
 	if b.config.InMemory {
 		return ""
 	}
-	if st, err := os.Stat(filepath.Join(b.workdir, "bluge")); err != nil && !st.IsDir() {
+	if b.workdir == "" {
 		return ""
 	}
-	if err := os.RemoveAll(filepath.Join(b.workdir, "bluge")); err != nil {
-		return err.Error()
-	}
+	_ = os.RemoveAll(filepath.Join(b.workdir, "bluge"))
+	_ = os.RemoveAll(filepath.Join(b.workdir, "logs.parquet"))
+	_ = os.RemoveAll(filepath.Join(b.workdir, "twlogaian.badger"))
+	_ = os.Remove(filepath.Join(b.workdir, "twlogaian_logs.db"))
 	return ""
 }
 
@@ -122,9 +201,7 @@ func (b *App) logIndexer() {
 	bFirstLog := true
 	total := 0
 
-	var indexWg sync.WaitGroup
 	var logMapMu sync.Mutex
-	sem := make(chan struct{}, 4)
 
 	flushBatch := func(buf []*LogEnt) {
 		if len(buf) == 0 {
@@ -135,13 +212,11 @@ func (b *App) logIndexer() {
 			b.setFieldTypes(buf[0])
 		}
 		total += len(buf)
-		indexWg.Add(1)
-		go func(batchBuf []*LogEnt) {
-			defer indexWg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			b.addLogToIndex(batchBuf, &logMapMu)
-		}(buf)
+		if b.ds != nil {
+			b.saveLogsToDataStore(buf)
+		} else {
+			b.addLogToIndex(buf, &logMapMu)
+		}
 	}
 
 	for {
@@ -150,14 +225,13 @@ func (b *App) logIndexer() {
 			if !ok {
 				flushBatch(b.indexer.logBuffer)
 				b.indexer.logBuffer = nil
-				indexWg.Wait()
 				b.processStat.Done = true
 				b.indexer.duration = time.Since(st)
 				OutLog("stop logindexer, total indexed=%d", total)
 				return
 			}
 			b.indexer.logBuffer = append(b.indexer.logBuffer, l)
-			if len(b.indexer.logBuffer) >= 5000 {
+			if len(b.indexer.logBuffer) >= 10000 {
 				flushBatch(b.indexer.logBuffer)
 				b.indexer.logBuffer = []*LogEnt{}
 			}
@@ -170,9 +244,37 @@ func (b *App) logIndexer() {
 	}
 }
 
+func (b *App) saveLogsToDataStore(buf []*LogEnt) {
+	if len(buf) == 0 || b.ds == nil {
+		return
+	}
+	entries := make([]*datastore.LogEntry, len(buf))
+	for i, l := range buf {
+		var delta int64
+		var hasDelta bool
+		if d, ok := l.KeyValue["delta"]; ok {
+			if df, ok := d.(float64); ok {
+				delta = int64(df * 1000.0 * 1000.0 * 1000.0)
+				hasDelta = true
+			}
+		}
+		entries[i] = &datastore.LogEntry{
+			Time:     l.Time,
+			Hash:     "00",
+			Line:     i + 1,
+			Log:      l.All,
+			Delta:    delta,
+			HasDelta: hasDelta,
+		}
+	}
+	if err := b.ds.SaveLogs(entries); err != nil {
+		OutLog("saveLogsToDataStore err=%v", err)
+	}
+}
+
 func (b *App) addLogToIndex(buf []*LogEnt, logMapMu *sync.Mutex) {
 	st := time.Now()
-	if len(buf) < 1 {
+	if len(buf) < 1 || b.indexer.writer == nil {
 		return
 	}
 	storeKeyMap := map[string]bool{
@@ -248,6 +350,23 @@ type IndexInfo struct {
 func (b *App) GetIndexInfo() (IndexInfo, error) {
 	OutLog("GetIndexInfo")
 	ret := IndexInfo{}
+	if b.ds != nil {
+		t, err := b.ds.Count()
+		if err != nil {
+			OutLog("GetIndexInfo ds count err=%v", err)
+			return ret, err
+		}
+		ret.Total = uint64(t)
+		ret.Duration = b.indexer.duration.String()
+		ret.StartTime = b.processStat.StartTime
+		ret.EndTime = b.processStat.EndTime
+		fields := []string{"time", "delta", "log"}
+		for _, ft := range fieldTypes {
+			fields = append(fields, ft.Key)
+		}
+		ret.Fields = fields
+		return ret, nil
+	}
 	if b.indexer.writer == nil {
 		return ret, nil
 	}
@@ -303,6 +422,9 @@ type SearchResult struct {
 
 func (b *App) SearchLog(r SearchRequest) SearchResult {
 	OutLog("SearchLog r=%#v", r)
+	if b.ds != nil {
+		return b.searchDataStore(r)
+	}
 	view := "timeonly"
 	if b.config.Extractor == "auto" {
 		view = "auto"
@@ -713,4 +835,160 @@ func (b *App) grokParseLogs(extractor string, sr *SearchResult) {
 		sr.ExFields = append(sr.ExFields, k)
 	}
 	OutLog("end grokParseLogs dur=%v", time.Since(st))
+}
+
+func parseTimeFilter(tf string) (int64, int64) {
+	var st, et int64
+	parts := strings.Fields(tf)
+	for _, p := range parts {
+		if strings.HasPrefix(p, "time:>=") {
+			tStr := strings.Trim(strings.TrimPrefix(p, "time:>="), `"'`)
+			if t, err := time.Parse(time.RFC3339Nano, tStr); err == nil {
+				st = t.UnixNano()
+			} else if t, err := time.Parse(time.RFC3339, tStr); err == nil {
+				st = t.UnixNano()
+			}
+		} else if strings.HasPrefix(p, "time:>") {
+			tStr := strings.Trim(strings.TrimPrefix(p, "time:>"), `"'`)
+			if t, err := time.Parse(time.RFC3339Nano, tStr); err == nil {
+				st = t.UnixNano() + 1
+			} else if t, err := time.Parse(time.RFC3339, tStr); err == nil {
+				st = t.UnixNano() + 1
+			}
+		} else if strings.HasPrefix(p, "time:<=") {
+			tStr := strings.Trim(strings.TrimPrefix(p, "time:<="), `"'`)
+			if t, err := time.Parse(time.RFC3339Nano, tStr); err == nil {
+				et = t.UnixNano()
+			} else if t, err := time.Parse(time.RFC3339, tStr); err == nil {
+				et = t.UnixNano()
+			}
+		} else if strings.HasPrefix(p, "time:<") {
+			tStr := strings.Trim(strings.TrimPrefix(p, "time:<"), `"'`)
+			if t, err := time.Parse(time.RFC3339Nano, tStr); err == nil {
+				et = t.UnixNano() - 1
+			} else if t, err := time.Parse(time.RFC3339, tStr); err == nil {
+				et = t.UnixNano() - 1
+			}
+		}
+	}
+	return st, et
+}
+
+func (b *App) searchDataStore(r SearchRequest) SearchResult {
+	OutLog("searchDataStore r=%#v", r)
+	stTime := time.Now()
+	view := "timeonly"
+	if b.config.Extractor == "auto" {
+		view = "auto"
+	} else if et, ok := extractorTypes[b.config.Extractor]; ok {
+		view = et.View
+	}
+	ret := SearchResult{
+		Logs:     []*LogEnt{},
+		View:     view,
+		Fields:   []string{"time", "delta", "log"},
+		ExFields: []string{},
+	}
+	if b.ds == nil {
+		return ret
+	}
+
+	var re *regexp.Regexp
+	var simpleWords []string
+	var notWords []string
+	query := strings.TrimSpace(r.Query)
+
+	if r.Mode == "regexp" && query != "" && query != "*" {
+		var err error
+		re, err = regexp.Compile(query)
+		if err != nil {
+			ret.ErrorMsg = err.Error()
+			return ret
+		}
+	} else if query != "" && query != "*" {
+		words := strings.Fields(query)
+		for _, w := range words {
+			if strings.HasPrefix(w, "!") && len(w) > 1 {
+				notWords = append(notWords, w[1:])
+			} else {
+				simpleWords = append(simpleWords, w)
+			}
+		}
+	}
+
+	var stFilter, etFilter int64
+	if r.TimeFilter != "" {
+		stFilter, etFilter = parseTimeFilter(r.TimeFilter)
+	}
+
+	limit := r.Limit
+	if limit <= 0 {
+		limit = 500
+	}
+
+	var hit uint64
+	var logs []*LogEnt
+
+	matchLog := func(logStr string) bool {
+		if re != nil {
+			return re.MatchString(logStr)
+		}
+		for _, nw := range notWords {
+			if strings.Contains(logStr, nw) {
+				return false
+			}
+		}
+		for _, sw := range simpleWords {
+			if strings.HasSuffix(sw, "*") && len(sw) > 1 {
+				prefix := sw[:len(sw)-1]
+				if !strings.Contains(logStr, prefix) {
+					return false
+				}
+			} else {
+				if !strings.Contains(logStr, sw) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+
+	err := b.ds.ForEach(stFilter, etFilter, func(entry *datastore.LogEntry) bool {
+		if matchLog(entry.Log) {
+			hit++
+			if len(logs) < limit {
+				l := &LogEnt{
+					ID:       entry.ID(),
+					Time:     entry.Time,
+					All:      entry.Log,
+					KeyValue: make(map[string]interface{}),
+				}
+				if entry.HasDelta {
+					l.KeyValue["delta"] = float64(entry.Delta) / (1000.0 * 1000.0 * 1000.0)
+				}
+				b.parseLogEnt(l)
+				logs = append(logs, l)
+			}
+		}
+		return true
+	})
+
+	if err != nil {
+		ret.ErrorMsg = err.Error()
+		return ret
+	}
+
+	ret.Hit = hit
+	ret.Logs = logs
+	ret.Duration = time.Since(stTime).String()
+
+	if r.Anomaly != "" {
+		b.setAnomalyScore(r.Anomaly, r.Vector, &ret)
+		ret.Fields = append(ret.Fields, "anomalyScore")
+	}
+	if r.Extractor != "" {
+		b.grokParseLogs(r.Extractor, &ret)
+	}
+	setFields(&ret)
+	return ret
 }

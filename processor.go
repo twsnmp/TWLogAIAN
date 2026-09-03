@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/oschwald/geoip2-golang"
+	"github.com/twsnmp/TWLogAIAN/pkg/datastore"
 	"github.com/viant/afs/scp"
 	"github.com/vjeantet/grok"
 
@@ -112,6 +113,12 @@ func (b *App) setupProcess(noRead bool) string {
 	if !noRead {
 		b.processStat.ErrorMsg = ""
 		b.processStat.Done = false
+		if b.processStat.ReadFiles == nil {
+			b.processStat.ReadFiles = make(map[string]bool)
+		}
+		if b.processStat.TimeLine == nil {
+			b.processStat.TimeLine = make(map[int64]int)
+		}
 	}
 	if err := b.setTimeGrinder(); err != nil {
 		OutLog("failed to create new timegrinder err=%v", err)
@@ -183,7 +190,7 @@ func (b *App) makeLogFileList() string {
 			if e := b.addLogFolder(s); e != "" {
 				return e
 			}
-		case "file":
+		case "file", "parquet":
 			if e := b.addLogFile(s, s.Path); e != "" {
 				return e
 			}
@@ -253,6 +260,18 @@ func (b *App) addLogFile(src *LogSource, p string) string {
 		return err.Error()
 	}
 	if s.IsDir() {
+		if src.Type == "parquet" || strings.HasSuffix(strings.ToLower(p), ".parquet") || strings.HasSuffix(strings.ToLower(p), ".pq") {
+			n := filepath.Base(p)
+			b.processStat.LogFiles = append(b.processStat.LogFiles, &LogFile{
+				Name:   n,
+				Path:   p,
+				Size:   0,
+				Read:   0,
+				Send:   0,
+				LogSrc: src,
+			})
+			return ""
+		}
 		return ""
 	}
 	n := filepath.Base(p)
@@ -357,6 +376,12 @@ func (b *App) logReader() {
 		}
 		b.processStat.ReadFiles[lf.Path] = true
 		ext := strings.ToLower(filepath.Ext(lf.Path))
+		if ext == ".parquet" || ext == ".pq" || lf.LogSrc.Type == "parquet" {
+			if err := b.readLogFromParquet(lf); err != nil {
+				OutLog("failed to read parquet file err=%v", err)
+			}
+			continue
+		}
 		if ext == ".zip" {
 			if err := b.readLogFromZIP(lf); err != nil {
 				OutLog("failed to read zip log file err=%v", err)
@@ -387,6 +412,66 @@ func (b *App) logReader() {
 	b.processStat.LogFiles = append(b.processStat.LogFiles, b.processStat.IntLogFiles...)
 	b.processStat.IntLogFiles = []*LogFile{}
 	OutLog("stop logReader")
+}
+
+func (b *App) readLogFromParquet(lf *LogFile) error {
+	st := time.Now()
+	OutLog("start readLogFromParquet path=%s", lf.Path)
+	pds := datastore.NewParquetDataStore()
+	if err := pds.Open(lf.Path); err != nil {
+		return err
+	}
+	defer pds.Close()
+
+	if b.processStat.TimeLine == nil {
+		b.processStat.TimeLine = make(map[int64]int)
+	}
+
+	ln := 0
+	err := pds.ForEach(0, 0, func(e *datastore.LogEntry) bool {
+		if b.stopProcess {
+			return false
+		}
+		ln++
+		b.processStat.ReadLines++
+		lf.Read += int64(len(e.Log))
+
+		if b.processConf.Filter != nil && !b.processConf.Filter.MatchString(e.Log) {
+			b.processStat.SkipLines++
+			return true
+		}
+
+		log := LogEnt{
+			ID:       fmt.Sprintf("%s:%06d", lf.Path, ln),
+			Time:     e.Time,
+			KeyValue: make(map[string]interface{}),
+			All:      e.Log,
+		}
+		if e.HasDelta {
+			log.KeyValue["delta"] = float64(e.Delta) / (1000.0 * 1000.0 * 1000.0)
+		}
+
+		b.parseLogEnt(&log)
+
+		timeH := log.Time / (1000 * 1000 * 1000 * 3600)
+		if _, ok := b.processStat.TimeLine[timeH]; !ok {
+			b.processStat.TimeLine[timeH] = 0
+		}
+		b.processStat.TimeLine[timeH]++
+		if log.Time < b.processStat.StartTime {
+			b.processStat.StartTime = log.Time
+		}
+		if log.Time > b.processStat.EndTime {
+			b.processStat.EndTime = log.Time
+		}
+
+		b.logCh <- &log
+		lf.Send += int64(len(log.All))
+		return true
+	})
+	lf.Duration = time.Since(st).String()
+	OutLog("end readLogFromParquet ln=%d dur=%v", ln, lf.Duration)
+	return err
 }
 
 func (b *App) readLogFromZIP(lf *LogFile) error {

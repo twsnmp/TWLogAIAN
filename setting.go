@@ -28,8 +28,9 @@ type Config struct {
 	HostFields string
 	VendorName bool
 	MACFields  string
-	InMemory   bool
-	ForceUTC   bool
+	InMemory      bool
+	StorageEngine string
+	ForceUTC      bool
 	Strict     bool
 	// TimeGrinder
 	TimeGrinderOverride string
@@ -185,6 +186,9 @@ func (b *App) loadSettingsFromDB() error {
 		}
 		if err := json.Unmarshal(v, &b.config); err != nil {
 			return err
+		}
+		if b.config.StorageEngine == "" || b.config.StorageEngine == "inmemory" {
+			b.config.StorageEngine = b.getStorageEngine()
 		}
 		v = bkt.Get([]byte("logSources"))
 		if v != nil {
@@ -395,7 +399,11 @@ func (b *App) addWorkDirs(wd string) {
 // GetConfig : 設定の取得
 func (b *App) GetConfig() Config {
 	OutLog("GetConfig")
-	return b.config
+	c := b.config
+	if c.StorageEngine == "" || c.StorageEngine == "inmemory" {
+		c.StorageEngine = b.getStorageEngine()
+	}
+	return c
 }
 
 // SetConfig : 設定の変更

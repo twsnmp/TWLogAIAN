@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/twsnmp/TWLogAIAN/pkg/datastore"
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.etcd.io/bbolt"
 )
@@ -32,6 +33,7 @@ type App struct {
 	}
 	workdir     string
 	db          *bbolt.DB
+	ds          datastore.DataStore
 	config      Config
 	logSources  []*LogSource
 	processStat ProcessStat

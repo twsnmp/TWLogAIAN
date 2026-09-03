@@ -11,6 +11,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/twsnmp/TWLogAIAN/pkg/datastore"
 )
 
 // Helper to generate a dummy log line
@@ -533,4 +535,222 @@ func (b *App) readOneLogFileSequential(lf *LogFile, reader io.Reader) {
 		lf.Send += int64(len(l))
 	}
 }
+
+func TestParquetImportAndSearch(t *testing.T) {
+	makeDefalutLogTypes()
+
+	tempDir := t.TempDir()
+	app := NewApp()
+	app.config.Extractor = "syslog"
+	app.config.StorageEngine = "parquet"
+	app.workdir = tempDir
+	app.wg = &sync.WaitGroup{}
+
+	err := app.setExtractor()
+	if err != nil {
+		t.Fatalf("failed to set extractor: %v", err)
+	}
+	err = app.setTimeGrinder()
+	if err != nil {
+		t.Fatalf("failed to set timegrinder: %v", err)
+	}
+
+	var buf bytes.Buffer
+	for i := 0; i < 500; i++ {
+		buf.WriteString(generateDummyLogLine(i) + "\n")
+	}
+
+	lf := &LogFile{
+		Name: "dummy.log",
+		Path: "dummy.log",
+		LogSrc: &LogSource{
+			Type: "file",
+		},
+	}
+
+	app.setupProcess(false)
+	app.logCh = make(chan *LogEnt, 1000)
+
+	if err := app.StartLogIndexer(); err != nil {
+		t.Fatalf("failed to start indexer: %v", err)
+	}
+
+	app.readOneLogFile(lf, &buf)
+
+	close(app.logCh)
+	app.wg.Wait()
+
+	if !app.HasIndex() {
+		t.Errorf("expected HasIndex to be true for Parquet storage")
+	}
+
+	info, err := app.GetIndexInfo()
+	if err != nil {
+		t.Fatalf("failed to get index info: %v", err)
+	}
+	if info.Total != 500 {
+		t.Errorf("expected 500 logs in Parquet index info, got %d", info.Total)
+	}
+
+	// Test SearchLog - Match all
+	res := app.SearchLog(SearchRequest{
+		Mode:  "simple",
+		Query: "",
+		Limit: 100,
+	})
+	if res.Hit != 500 {
+		t.Errorf("expected 500 hits, got %d", res.Hit)
+	}
+	if len(res.Logs) != 100 {
+		t.Errorf("expected 100 logs limited, got %d", len(res.Logs))
+	}
+
+	// Test SearchLog - Simple filter
+	res = app.SearchLog(SearchRequest{
+		Mode:  "simple",
+		Query: "program[1002] 42",
+		Limit: 10,
+	})
+	if res.Hit != 6 {
+		t.Errorf("expected 6 hits for 'program[1002] 42', got %d", res.Hit)
+	}
+
+	// Test SearchLog - Regexp filter
+	res = app.SearchLog(SearchRequest{
+		Mode:  "regexp",
+		Query: `\bnumber (10|20|30)\b`,
+		Limit: 10,
+	})
+	if res.Hit != 3 {
+		t.Errorf("expected 3 hits for regexp, got %d", res.Hit)
+	}
+
+	app.CloseIndexor()
+}
+
+func TestParquetLogSourceImport(t *testing.T) {
+	makeDefalutLogTypes()
+
+	tempDir := t.TempDir()
+
+	// Step 1: Create a parquet file using ParquetDataStore
+	pqDir := filepath.Join(tempDir, "source.parquet")
+	pds := datastore.NewParquetDataStore()
+	if err := pds.Open(pqDir); err != nil {
+		t.Fatalf("failed to open parquet datastore: %v", err)
+	}
+	now := time.Now().UnixNano()
+	entries := make([]*datastore.LogEntry, 200)
+	for i := 0; i < 200; i++ {
+		entries[i] = &datastore.LogEntry{
+			Time:     now + int64(i)*1000000000,
+			Hash:     "pq",
+			Line:     i + 1,
+			Log:      fmt.Sprintf("2026-09-03 12:00:%02d host app[%d]: test message %d", i%60, 1000+i, i),
+			Delta:    1000000000,
+			HasDelta: true,
+		}
+	}
+	if err := pds.SaveLogs(entries); err != nil {
+		t.Fatalf("failed to save logs to parquet: %v", err)
+	}
+	pds.Close()
+
+	// Step 2: Read it into TWLogAIAN using InMemory index
+	app := NewApp()
+	app.config.Extractor = "auto"
+	app.config.InMemory = true
+	app.workdir = tempDir
+	app.wg = &sync.WaitGroup{}
+	app.logSources = []*LogSource{
+		{
+			No:   1,
+			Type: "parquet",
+			Path: pqDir,
+		},
+	}
+
+	startErr := app.Start(app.config, false)
+	if startErr != "" {
+		t.Fatalf("app.Start failed: %s", startErr)
+	}
+	app.wg.Wait()
+
+	info, err := app.GetIndexInfo()
+	if err != nil {
+		t.Fatalf("GetIndexInfo failed: %v", err)
+	}
+	if info.Total != 200 {
+		t.Errorf("expected 200 indexed logs from parquet log source, got %d", info.Total)
+	}
+
+	app.CloseIndexor()
+}
+
+func BenchmarkParquetLogImport(b *testing.B) {
+	makeDefalutLogTypes()
+
+	tempDir, err := os.MkdirTemp("", "twlogaian-bench-pq")
+	if err != nil {
+		b.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	logFilePath := filepath.Join(tempDir, "bench.log")
+	f, err := os.Create(logFilePath)
+	if err != nil {
+		b.Fatalf("failed to create temp log file: %v", err)
+	}
+	for i := 0; i < 50000; i++ {
+		f.WriteString(generateDummyLogLine(i) + "\n")
+	}
+	f.Close()
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		app := NewApp()
+		app.config.Extractor = "syslog"
+		app.config.StorageEngine = "parquet"
+		app.workdir = filepath.Join(tempDir, fmt.Sprintf("work-pq-%d", i))
+		app.wg = &sync.WaitGroup{}
+
+		err := app.setExtractor()
+		if err != nil {
+			b.Fatalf("failed to set extractor: %v", err)
+		}
+		err = app.setTimeGrinder()
+		if err != nil {
+			b.Fatalf("failed to set timegrinder: %v", err)
+		}
+
+		lf := &LogFile{
+			Name: "bench.log",
+			Path: logFilePath,
+			LogSrc: &LogSource{
+				Type: "file",
+			},
+		}
+
+		app.setupProcess(false)
+		app.logCh = make(chan *LogEnt, 50000)
+
+		if err := app.StartLogIndexer(); err != nil {
+			b.Fatalf("failed to start indexer: %v", err)
+		}
+
+		file, err := os.Open(logFilePath)
+		if err != nil {
+			b.Fatalf("failed to open file: %v", err)
+		}
+
+		app.readOneLogFile(lf, file)
+		file.Close()
+
+		close(app.logCh)
+		app.wg.Wait()
+		app.CloseIndexor()
+	}
+}
+
 
