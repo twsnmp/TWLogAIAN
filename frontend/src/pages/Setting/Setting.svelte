@@ -11,6 +11,7 @@
   import { createEventDispatcher } from "svelte";
   import LogSource from "./LogSource.svelte";
   import LogType from "./LogType.svelte";
+  import ModelManager from "./ModelManager.svelte";
   import { onMount } from "svelte";
   import { loadFieldTypes } from "../../js/define";
   import { _,getLocale } from '../../i18n/i18n';
@@ -24,6 +25,8 @@
     ClearIndex,
     SelectFile,
     CloseWorkDir,
+    GetAIHardwareStatus,
+    GetLocalModels,
   } from '../../../wailsjs/go/main/App';
 
   let locale = getLocale();
@@ -76,12 +79,26 @@
     ShiftJIS: true,
   };
   let logSources = [];
+  let localModels = [];
+  let hardwareStatus = { acceleration: "", detail: "", has_gpu_lib: false };
   let errorMsg = "";
   let infoMsg = "";
   let page = "";
   let orgConfig;
   let hasIndex = false;
   let wait = true;
+
+  const loadLocalAIInfo = async () => {
+    try {
+      hardwareStatus = await GetAIHardwareStatus();
+      localModels = (await GetLocalModels()) || [];
+      if (config.LLMProvider === "tensai" && (!config.LLMModel || config.LLMModel === "") && localModels.length > 0) {
+        config.LLMModel = localModels[0].name;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
   const getConfig = async () => {
     const c = await GetConfig();
     if (c) {
@@ -202,6 +219,7 @@
     getLogSources();
     getExtractorTypes();
     getHasIndex();
+    loadLocalAIInfo();
   });
 
   const editLogSource = (sno) => {
@@ -416,6 +434,8 @@
   <LogSource {logSource} on:done={handleDone} />
 {:else if page == "logType"}
   <LogType on:done={handleDone} />
+{:else if page == "modelManager"}
+  <ModelManager on:close={() => { page = ""; loadLocalAIInfo(); }} on:modelsChanged={loadLocalAIInfo} />
 {:else}
   <div class="Box mx-auto Box--condensed setting-box" style="max-width: 99%;">
     {#if busy}
@@ -811,8 +831,9 @@
                   <h5>{$_('Setting.LLMProvider')}</h5>
                 </div>
                 <div class="form-group-body">
-                  <select class="form-select width-full" bind:value={config.LLMProvider}>
+                  <select class="form-select width-full" bind:value={config.LLMProvider} on:change={() => { if (config.LLMProvider === 'tensai') loadLocalAIInfo(); }}>
                     <option value="none">{$_('Setting.LLMNone')}</option>
+                    <option value="tensai">{$_('Setting.LLMTensai')}</option>
                     <option value="gemini">{$_('Setting.LLMGemini')}</option>
                     <option value="openai">{$_('Setting.LLMOpenAI')}</option>
                     <option value="anthropic">{$_('Setting.LLMAnthropic')}</option>
@@ -820,7 +841,26 @@
                   </select>
                 </div>
               </div>
-              {#if config.LLMProvider && config.LLMProvider != "none"}
+              {#if config.LLMProvider === "tensai"}
+                <div class="form-group" style="flex: 1;">
+                  <div class="form-group-header">
+                    <h5>{$_('Setting.LLMModelSelect')}</h5>
+                  </div>
+                  <div class="form-group-body">
+                    {#if localModels.length > 0}
+                      <select class="form-select width-full" bind:value={config.LLMModel}>
+                        {#each localModels as m}
+                          <option value={m.name}>{m.name} ({m.size_human})</option>
+                        {/each}
+                      </select>
+                    {:else}
+                      <button class="btn btn-sm btn-outline width-full color-fg-attention" type="button" on:click={() => (page = "modelManager")}>
+                        {$_('Setting.LLMNoLocalModel')}
+                      </button>
+                    {/if}
+                  </div>
+                </div>
+              {:else if config.LLMProvider && config.LLMProvider != "none"}
                 <div class="form-group" style="flex: 1;">
                   <div class="form-group-header">
                     <h5>{$_('Setting.LLMModel')}</h5>
@@ -836,7 +876,23 @@
                 </div>
               {/if}
             </div>
-            {#if config.LLMProvider && config.LLMProvider != "none"}
+
+            {#if config.LLMProvider === "tensai"}
+              <div class="d-flex flex-items-center flex-justify-between mt-2 p-2 bg-gray-light rounded-2 border">
+                <div class="d-flex flex-items-center">
+                  <span class="text-bold mr-2 text-small">{$_('Setting.LLMAcceleration')}:</span>
+                  <span class="Label Label--small {hardwareStatus.acceleration === 'GPU' ? 'Label--success' : hardwareStatus.acceleration.includes('SIMD') ? 'Label--accent' : 'Label--secondary'}">
+                    {hardwareStatus.acceleration || 'Detecting...'}
+                  </span>
+                  <span class="ml-2 color-fg-muted text-small">{hardwareStatus.detail}</span>
+                </div>
+                <div>
+                  <button class="btn btn-sm btn-primary" type="button" on:click={() => (page = "modelManager")}>
+                    {$_('Setting.LLMManageModels')}
+                  </button>
+                </div>
+              </div>
+            {:else if config.LLMProvider && config.LLMProvider != "none"}
               <div class="d-flex" style="gap: 8px;">
                 <div class="form-group" style="flex: 1;">
                   <div class="form-group-header">

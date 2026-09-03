@@ -10,11 +10,13 @@ require (
 	github.com/blugelabs/query_string v0.3.0
 	github.com/codegaudi/go-iforest v0.0.1
 	github.com/dgraph-io/badger/v4 v4.9.6
+	github.com/dustin/go-humanize v1.0.1
 	github.com/emersion/go-imap/v2 v2.0.0-beta.8
 	github.com/fatih/color v1.18.0
 	github.com/gravwell/gravwell/v3 v3.8.20
 	github.com/jlaffaye/ftp v0.2.4
 	github.com/knadh/go-pop3 v1.0.2
+	github.com/mattn/tensai v0.0.25
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/parquet-go/parquet-go v0.32.0
 	github.com/tmc/langchaingo v0.1.14
@@ -28,6 +30,7 @@ require (
 	github.com/xuri/excelize/v2 v2.11.0
 	go.etcd.io/bbolt v1.4.3
 	golang.org/x/crypto v0.56.0
+	golang.org/x/sys v0.47.0
 	golang.org/x/text v0.41.0
 	google.golang.org/grpc v1.83.2
 	gopkg.in/yaml.v2 v2.4.0
@@ -64,7 +67,7 @@ require (
 	github.com/dgraph-io/ristretto/v2 v2.2.0 // indirect
 	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
-	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/ebitengine/purego v0.10.2 // indirect
 	github.com/emersion/go-message v0.18.2 // indirect
 	github.com/emersion/go-sasl v0.0.0-20241020182733-b788ff22d5a6 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -124,7 +127,6 @@ require (
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/api v0.264.0 // indirect
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect

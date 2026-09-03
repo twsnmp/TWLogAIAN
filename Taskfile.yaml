@@ -4,6 +4,7 @@ vars:
   VERSION: v2.0.0
   COMMIT:
     sh: git rev-parse --short HEAD
+  TAGS: wgpu24
 
 tasks:
   default:
@@ -12,19 +13,19 @@ tasks:
       - task: windows
   dev:
     cmds:
-      - wails dev
+      - wails dev -tags {{.TAGS}}
   mac:
     cmds:
-      - wails build  -platform darwin/universal -ldflags "-s -w -X main.version={{.VERSION}} -X main.commit={{.COMMIT}}"
+      - wails build -platform darwin/universal -tags {{.TAGS}} -ldflags "-s -w -X main.version={{.VERSION}} -X main.commit={{.COMMIT}}"
   linux:
     cmds:
-      - wails build -clean -platform linux/amd64 -tags webkit2_41 -ldflags "-s -w -X main.version={{.VERSION}} -X main.commit={{.COMMIT}}"
+      - wails build -clean -platform linux/amd64 -tags "webkit2_41,{{.TAGS}}" -ldflags "-s -w -X main.version={{.VERSION}} -X main.commit={{.COMMIT}}"
   windows:
     cmds:
-      - wails build  -platform windows/amd64 -ldflags "-s -w -X main.version={{.VERSION}} -X main.commit={{.COMMIT}}"
+      - wails build -platform windows/amd64 -tags {{.TAGS}} -ldflags "-s -w -X main.version={{.VERSION}} -X main.commit={{.COMMIT}}"
   windebug:
     cmds:
-      - wails build  -platform windows/amd64 -debug -clean -windowsconsole -ldflags "-s -w -X main.version={{.VERSION}} -X main.commit={{.COMMIT}}"
+      - wails build -platform windows/amd64 -debug -clean -windowsconsole -tags {{.TAGS}} -ldflags "-s -w -X main.version={{.VERSION}} -X main.commit={{.COMMIT}}"
   clean:
     cmds:
       - rm -rf build/bin/TWLogAIAN*

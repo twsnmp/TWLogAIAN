@@ -9,6 +9,8 @@ import (
 	"github.com/tmc/langchaingo/llms/googleai"
 	"github.com/tmc/langchaingo/llms/ollama"
 	"github.com/tmc/langchaingo/llms/openai"
+	"github.com/twsnmp/TWLogAIAN/pkg/ai/tensai"
+	"github.com/twsnmp/TWLogAIAN/pkg/model"
 )
 
 type AIAnswer struct {
@@ -59,6 +61,12 @@ func (b *App) GetLLM(ctx context.Context) (llms.Model, error) {
 			opts = append(opts, anthropic.WithBaseURL(b.config.LLMBaseURL))
 		}
 		return anthropic.New(opts...)
+	case "tensai", "embedded", "local":
+		modelPath, err := model.FindModel("", b.config.LLMModel)
+		if err != nil {
+			return nil, fmt.Errorf("local model not found: %w", err)
+		}
+		return tensai.NewWithOptions(modelPath, false)
 	}
 	return nil, fmt.Errorf("llm provider not found")
 }
