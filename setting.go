@@ -124,7 +124,11 @@ func (b *App) SetWorkDir(wd string) string {
 		return "not dir"
 	}
 	b.logSources = []*LogSource{}
-	b.config = Config{}
+	b.config = Config{
+		Extractor:     "auto",
+		StorageEngine: "bluge",
+		LLMProvider:   "none",
+	}
 	makeDefalutLogTypes()
 	b.clearProcessStat()
 	err = b.openDB(wd)
@@ -189,6 +193,9 @@ func (b *App) loadSettingsFromDB() error {
 		}
 		if b.config.StorageEngine == "" || b.config.StorageEngine == "inmemory" {
 			b.config.StorageEngine = b.getStorageEngine()
+		}
+		if b.config.LLMProvider == "" {
+			b.config.LLMProvider = "none"
 		}
 		v = bkt.Get([]byte("logSources"))
 		if v != nil {
@@ -402,6 +409,9 @@ func (b *App) GetConfig() Config {
 	c := b.config
 	if c.StorageEngine == "" || c.StorageEngine == "inmemory" {
 		c.StorageEngine = b.getStorageEngine()
+	}
+	if c.LLMProvider == "" {
+		c.LLMProvider = "none"
 	}
 	return c
 }

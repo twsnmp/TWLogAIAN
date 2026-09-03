@@ -90,6 +90,9 @@
       if (!c.StorageEngine || c.StorageEngine === "inmemory") {
         c.StorageEngine = "bluge";
       }
+      if (!c.LLMProvider) {
+        c.LLMProvider = "none";
+      }
       config = c;
       orgConfig = c;
     }
@@ -756,7 +759,7 @@
                   </select>
                 </div>
               </div>
-              {#if config.LLMProvider != "none"}
+              {#if config.LLMProvider && config.LLMProvider != "none"}
                 <div class="form-group" style="flex: 1;">
                   <div class="form-group-header">
                     <h5>{$_('Setting.LLMModel')}</h5>
@@ -772,7 +775,7 @@
                 </div>
               {/if}
             </div>
-            {#if config.LLMProvider != "none"}
+            {#if config.LLMProvider && config.LLMProvider != "none"}
               <div class="d-flex" style="gap: 8px;">
                 <div class="form-group" style="flex: 1;">
                   <div class="form-group-header">
