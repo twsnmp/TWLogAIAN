@@ -12,11 +12,19 @@ const baseOption = () => {
       show: false,
     },
     toolbox: {
+      right: "2%",
+      top: 0,
       feature: {
         dataZoom: {},
       },
     },
-    dataZoom: [{}],
+    dataZoom: [
+      {
+        type: "slider",
+        bottom: 8,
+        height: 22,
+      },
+    ],
     tooltip: {
       trigger: "axis",
       axisPointer: {
@@ -24,10 +32,11 @@ const baseOption = () => {
       },
     },
     grid: {
-      left: "8%",
-      right: "8%",
-      top: 10,
-      buttom: 0,
+      left: "3%",
+      right: "5%",
+      top: 25,
+      bottom: 45,
+      containLabel: true,
     },
     xAxis: {
       type: "time",
@@ -125,10 +134,11 @@ export const showLogChart = (div, logs, dark, cb) => {
   addMultiChartData(data, count, ctm, ctm + 1);
   chart.setOption({
     grid: {
-      left: "2%",
+      left: "3%",
       right: "5%",
-      top: 50,
-      buttom: 0,
+      top: 25,
+      bottom: 45,
+      containLabel: true,
     },
     series: [
       {
@@ -157,6 +167,8 @@ export const showLogChart = (div, logs, dark, cb) => {
       },
     ],
     legend: {
+      top: 0,
+      left: "center",
       textStyle: {
         fontSize: 10,
       },

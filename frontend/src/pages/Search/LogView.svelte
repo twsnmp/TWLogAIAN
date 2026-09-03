@@ -929,8 +929,8 @@
 <style>
   #chart {
     width: 100%;
-    height: 220px;
-    margin: 5px auto;
+    height: 230px;
+    margin: 0 auto;
   }
   #infoMsg {
     position: absolute;

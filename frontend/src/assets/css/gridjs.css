@@ -15,8 +15,8 @@
 
 .gridjs-head {
   width: 100%;
-  margin-bottom: 3px;
-  padding: 3px 1px;
+  margin-bottom: 2px;
+  padding: 2px 0px;
 }
 
 .gridjs-head::after {
@@ -51,9 +51,11 @@
 }
 
 input.gridjs-input {
-  padding: 5px 5px;
+  height: 28px;
+  padding: 2px 8px;
   font-size: 12px;
-  line-height: 1.45;
+  line-height: 20px;
+  box-sizing: border-box;
 }
 
 .gridjs-pagination::after {
@@ -183,6 +185,7 @@ table.gridjs-table {
 
 .gridjs-search-input {
   width: 250px;
+  height: 28px;
 }
 
 .gridjs-td .gridjs-checkbox {
