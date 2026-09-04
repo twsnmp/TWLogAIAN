@@ -230,6 +230,7 @@
         Type: "folder",
         Path: "",
         Pattern: "",
+        InternalPattern: "",
         Server: "",
         User: "",
         Password: "",

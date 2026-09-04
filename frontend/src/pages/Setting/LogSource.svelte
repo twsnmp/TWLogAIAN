@@ -165,6 +165,19 @@
           />
         </div>
       </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5>{$_("LogSource.FileNamePatInArc")}</h5>
+        </div>
+        <div class="form-group-body">
+          <input
+            class="form-control"
+            type="text"
+            placeholder={$_("LogSource.Pat")}
+            bind:value={logSource.InternalPattern}
+          />
+        </div>
+      </div>
     {/if}
 
     <!-- Single File -->
@@ -187,6 +200,19 @@
               </button>
             </span>
           </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <h5>{$_("LogSource.FileNamePatInArc")}</h5>
+        </div>
+        <div class="form-group-body">
+          <input
+            class="form-control"
+            type="text"
+            placeholder={$_("LogSource.Pat")}
+            bind:value={logSource.InternalPattern}
+          />
         </div>
       </div>
     {/if}
@@ -308,6 +334,34 @@
                 </button>
               </span>
             </div>
+          </div>
+        </div>
+      {/if}
+      {#if logSource.Type == "scp"}
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>{$_("LogSource.FileNamePat")}</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control"
+              type="text"
+              placeholder={$_("LogSource.FileNamePat")}
+              bind:value={logSource.Pattern}
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-group-header">
+            <h5>{$_("LogSource.FileNamePatInArc")}</h5>
+          </div>
+          <div class="form-group-body">
+            <input
+              class="form-control"
+              type="text"
+              placeholder={$_("LogSource.Pat")}
+              bind:value={logSource.InternalPattern}
+            />
           </div>
         </div>
       {/if}
