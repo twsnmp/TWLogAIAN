@@ -685,6 +685,21 @@
     "LogCategory": "ログのカテゴリー",
     "LogDesr": "ログの説明",
     "LogDescrMsg": "ログに関する説明",
-    "ExportBtn": "エクスポート"
+    "ExportBtn": "エクスポート",
+    "AskWithMaskedPII": "PIIをマスクして質問",
+    "MaskPII": "PIIマスク",
+    "OriginalLog": "元ログ",
+    "Masked": "マスク済",
+    "PresetExplain": "ログの解説",
+    "PresetCause": "原因の分析",
+    "PresetAction": "対策・対処法",
+    "PresetSecurity": "セキュリティリスク",
+    "PresetPattern": "パターン抽出",
+    "PresetSummary": "要約",
+    "BlankPromptNote": "空欄の場合はログの解説を行います",
+    "ReadOnly": "編集不可",
+    "Lang": "言語",
+    "LangJa": "日本語",
+    "LangEn": "English"
   }
 }

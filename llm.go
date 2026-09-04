@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"regexp"
+	"strings"
+
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/anthropic"
 	"github.com/tmc/langchaingo/llms/googleai"
@@ -11,6 +14,7 @@ import (
 	"github.com/tmc/langchaingo/llms/openai"
 	"github.com/twsnmp/TWLogAIAN/pkg/ai/tensai"
 	"github.com/twsnmp/TWLogAIAN/pkg/model"
+	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type AIAnswer struct {
@@ -80,26 +84,160 @@ func (b *App) AskAIAboutLog(prompt, logStr, lang string) AIAnswer {
 		r.Error = err.Error()
 		return r
 	}
-	system := `You are an expert in log analysis.
-Please explain the log input by the user.`
+
+	cleanPrompt := strings.TrimSpace(prompt)
+	var system string
+	var humanContent string
+
 	if lang == "ja" {
-		system = `あなたはログ分析に関する専門家です。
-ユーザーの入力したログについて解説してください。`
+		system = `あなたはサイバーセキュリティおよびログ分析の専門家です。
+ユーザーから提示されたログを詳細に分析し、日本語で分かりやすく解説してください。
+見出し、箇条書き、太字、コードブロックなどを適切に活用し、Markdown形式で整形して回答してください。`
+
+		if cleanPrompt == "" {
+			cleanPrompt = "このログの内容について詳しく解説してください。ログの意味、重要な要素、エラーや異常の有無、想定される原因と推奨される対応をわかりやすく説明してください。"
+		}
+		humanContent = fmt.Sprintf("対象ログ:\n```\n%s\n```\n\n質問・指示:\n%s\n\n回答は日本語のMarkdown形式で記述してください。", logStr, cleanPrompt)
+	} else {
+		system = `You are an expert in cybersecurity and log analysis.
+Please analyze the log provided by the user in detail and provide a clear, well-structured explanation in English.
+Format your response using Markdown (use headings, bullet points, bold text, code blocks, etc.).`
+
+		if cleanPrompt == "" {
+			cleanPrompt = "Please explain this log in detail. Describe its meaning, key components, whether there are anomalies or errors, potential root causes, and recommended actions."
+		}
+		humanContent = fmt.Sprintf("Target Log:\n```\n%s\n```\n\nQuestion/Instruction:\n%s\n\nPlease provide your answer in English using Markdown formatting.", logStr, cleanPrompt)
 	}
+
 	history := []llms.MessageContent{
 		llms.TextParts(llms.ChatMessageTypeSystem, system),
-		llms.TextParts(llms.ChatMessageTypeHuman, fmt.Sprintf("Log:\n%s\n\nQuestion:\n%s", logStr, prompt)),
+		llms.TextParts(llms.ChatMessageTypeHuman, humanContent),
 	}
-	resp, err := llm.GenerateContent(ctx, history)
+
+	var sb strings.Builder
+	resp, err := llm.GenerateContent(ctx, history, llms.WithStreamingFunc(func(c context.Context, chunk []byte) error {
+		chunkStr := string(chunk)
+		sb.WriteString(chunkStr)
+		if b.ctx != nil {
+			wails.EventsEmit(b.ctx, "ask_ai_stream", chunkStr)
+		}
+		return nil
+	}))
 	if err != nil {
 		OutLog("AskAIAboutLog err=%v", err)
 		r.Error = err.Error()
 		return r
 	}
-	if len(resp.Choices) < 1 {
-		r.Error = "no response from LLM"
-		return r
+	if resp != nil && len(resp.Choices) > 0 && resp.Choices[0].Content != "" {
+		r.Answer = resp.Choices[0].Content
+	} else {
+		r.Answer = sb.String()
 	}
-	r.Answer = resp.Choices[0].Content
+	if r.Answer == "" {
+		r.Error = "no response from LLM"
+	}
 	return r
+}
+
+// MaskPII replaces sensitive information (IPs, MACs, emails, domains, credentials, etc.) with consistent masked placeholders.
+func MaskPII(logStr string) string {
+	res := logStr
+
+	// Map to keep track of replacements consistently within a log
+	ipMap := make(map[string]string)
+	macMap := make(map[string]string)
+	emailMap := make(map[string]string)
+	hostMap := make(map[string]string)
+	userMap := make(map[string]string)
+
+	// 1. Mask Secrets/Passwords/Tokens (e.g. password=xyz, token=abc)
+	secretRe := regexp.MustCompile(`(?i)\b(password|passwd|pwd|token|api_?key|secret|auth|bearer|private_?key)\s*([:=])\s*([^\s,;]+)`)
+	res = secretRe.ReplaceAllString(res, `$1$2[REDACTED]`)
+
+	// 2. Mask Emails
+	emailRe := regexp.MustCompile(`\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b`)
+	res = emailRe.ReplaceAllStringFunc(res, func(m string) string {
+		if val, ok := emailMap[m]; ok {
+			return val
+		}
+		tag := fmt.Sprintf("[EMAIL_%d]", len(emailMap)+1)
+		emailMap[m] = tag
+		return tag
+	})
+
+	// 3. Mask MAC Addresses
+	macRe := regexp.MustCompile(`\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b`)
+	res = macRe.ReplaceAllStringFunc(res, func(m string) string {
+		if val, ok := macMap[m]; ok {
+			return val
+		}
+		tag := fmt.Sprintf("[MAC_%d]", len(macMap)+1)
+		macMap[m] = tag
+		return tag
+	})
+
+	// 4. Mask IPv4 Addresses
+	ipv4Re := regexp.MustCompile(`\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`)
+	res = ipv4Re.ReplaceAllStringFunc(res, func(m string) string {
+		if val, ok := ipMap[m]; ok {
+			return val
+		}
+		tag := fmt.Sprintf("[IP_%d]", len(ipMap)+1)
+		ipMap[m] = tag
+		return tag
+	})
+
+	// 5. Mask IPv6 Addresses (standard / full)
+	ipv6Re := regexp.MustCompile(`\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b`)
+	res = ipv6Re.ReplaceAllStringFunc(res, func(m string) string {
+		if val, ok := ipMap[m]; ok {
+			return val
+		}
+		tag := fmt.Sprintf("[IP_%d]", len(ipMap)+1)
+		ipMap[m] = tag
+		return tag
+	})
+
+	// 6. Mask Domains / FQDNs
+	domainRe := regexp.MustCompile(`\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+(?:com|net|org|edu|gov|io|co|jp|cn|de|uk|info|biz|me|xyz|tech|online|dev|site|internal|local|corp|domain)\b`)
+	res = domainRe.ReplaceAllStringFunc(res, func(m string) string {
+		if val, ok := hostMap[m]; ok {
+			return val
+		}
+		tag := fmt.Sprintf("[HOST_%d]", len(hostMap)+1)
+		hostMap[m] = tag
+		return tag
+	})
+
+	// 7. Mask Users in common patterns: e.g. "user <name>", "user=<name>", "user: <name>", "for user <name>", "from user <name>"
+	userRe := regexp.MustCompile(`(?i)\b(user(?:name)?|for user|from user)\s*[:=\s]\s*([a-zA-Z0-9._-]+)`)
+	res = userRe.ReplaceAllStringFunc(res, func(m string) string {
+		sub := userRe.FindStringSubmatch(m)
+		if len(sub) == 3 {
+			prefix := sub[1]
+			uname := sub[2]
+			if uname == "[REDACTED]" || strings.HasPrefix(uname, "[") {
+				return m
+			}
+			tag, ok := userMap[uname]
+			if !ok {
+				tag = fmt.Sprintf("[USER_%d]", len(userMap)+1)
+				userMap[uname] = tag
+			}
+			sep := " "
+			if strings.Contains(m, "=") {
+				sep = "="
+			} else if strings.Contains(m, ":") {
+				sep = ": "
+			}
+			return prefix + sep + tag
+		}
+		return m
+	})
+
+	return res
+}
+
+func (b *App) MaskPII(logStr string) string {
+	return MaskPII(logStr)
 }

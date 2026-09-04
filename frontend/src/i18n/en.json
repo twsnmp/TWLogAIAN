@@ -685,6 +685,21 @@
     "SyncToWeaviate": "Synchronize with Weaviate settings",
     "Test": "Test",
     "VectorModel": "Vectorization",
-    "VectorModelName": "Vectorization model"
+    "VectorModelName": "Vectorization model",
+    "AskWithMaskedPII": "Ask with PII Masked",
+    "MaskPII": "Mask PII",
+    "OriginalLog": "Original Log",
+    "Masked": "Masked",
+    "PresetExplain": "Explain Log",
+    "PresetCause": "Analyze Cause",
+    "PresetAction": "Countermeasures",
+    "PresetSecurity": "Security Risk",
+    "PresetPattern": "Extract Pattern",
+    "PresetSummary": "Summary",
+    "BlankPromptNote": "Leave blank to explain the log",
+    "ReadOnly": "Read-only",
+    "Lang": "Language",
+    "LangJa": "Japanese",
+    "LangEn": "English"
   }
 }
