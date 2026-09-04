@@ -37,6 +37,8 @@
   import Graph from "../Report/Graph.svelte";
   import Globe from "../Report/Globe.svelte";
   import Heatmap from "../Report/Heatmap.svelte";
+  import Interval from "../Report/Interval.svelte";
+  import Delay from "../Report/Delay.svelte";
   import Memo from "../Report/Memo.svelte";
   import EditExtractorType from "../Setting/EditExtractorType.svelte";
   import { loadFieldTypes, getFieldType } from "../../js/define";
@@ -339,9 +341,7 @@
     page = "";
     report = "";
     await tick();
-    setTimeout(() => {
-      resizeLogChart();
-    }, 50);
+    updateChart();
   };
 
   const showReport = () => {
@@ -687,6 +687,10 @@
   <Globe fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "heatmap"}
   <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+{:else if page == "interval"}
+  <Interval logs={result.Logs} on:done={handleDone} dark />
+{:else if page == "delay"}
+  <Delay fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "extractorType"}
   <EditExtractorType
     {extractorType}
@@ -928,6 +932,8 @@
               <option value="graph">{$_('LogView.GraphMenu')}</option>
               <option value="globe">{$_('LogView.GlobeMenu')}</option>
               <option value="heatmap">{$_('LogView.HeatmapMenu')}</option>
+              <option value="interval">{$_('LogView.IntervalMenu')}</option>
+              <option value="delay">{$_('LogView.DelayMenu')}</option>
             </select>
           {/if}
         </div>
