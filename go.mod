@@ -16,7 +16,7 @@ require (
 	github.com/gravwell/gravwell/v3 v3.8.20
 	github.com/jlaffaye/ftp v0.2.4
 	github.com/knadh/go-pop3 v1.0.2
-	github.com/mattn/tensai v0.0.25
+	github.com/mattn/tensai v0.0.26
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/parquet-go/parquet-go v0.32.0
 	github.com/tmc/langchaingo v0.1.14
