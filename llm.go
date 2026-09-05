@@ -345,7 +345,8 @@ func isErrorWord(s string) bool {
 		strings.Contains(s, "alert") ||
 		strings.Contains(s, "emerg") ||
 		strings.Contains(s, "err ") ||
-		strings.Contains(s, "err:")
+		strings.Contains(s, "err:") ||
+		strings.Contains(s, "denied")
 }
 
 func getLogLevelString(l *LogEnt) string {
@@ -353,25 +354,101 @@ func getLogLevelString(l *LogEnt) string {
 		return "INFO"
 	}
 	if l.KeyValue != nil {
-		if sev, ok := l.KeyValue["severity_str"].(string); ok && sev != "" {
-			sevLower := strings.ToLower(sev)
-			if isErrorWord(sevLower) {
+		// 1. Direct _level attribute from frontend getLogLevel
+		if lvl, ok := l.KeyValue["_level"].(string); ok && lvl != "" {
+			switch strings.ToLower(lvl) {
+			case "error":
 				return "ERROR"
-			}
-			if strings.Contains(sevLower, "warn") {
+			case "warn":
 				return "WARN"
+			case "debug":
+				return "DEBUG"
+			default:
+				return "INFO"
 			}
 		}
-		if lv, ok := l.KeyValue["level"].(string); ok && lv != "" {
-			lvLower := strings.ToLower(lv)
-			if isErrorWord(lvLower) {
+
+		// 2. Syslog severity / priority (PRI)
+		var suverityNum float64
+		hasSuverity := false
+		if s, ok := l.KeyValue["suverity"].(float64); ok {
+			suverityNum = s
+			hasSuverity = true
+		} else if p, ok := l.KeyValue["priority"].(float64); ok {
+			suverityNum = p
+			hasSuverity = true
+		}
+		if hasSuverity {
+			mod := int(suverityNum) % 8
+			if mod < 4 {
 				return "ERROR"
-			}
-			if strings.Contains(lvLower, "warn") {
+			} else if mod == 4 {
 				return "WARN"
+			}
+			return "INFO"
+		}
+
+		// 3. HTTP response code
+		if code, ok := l.KeyValue["response"].(float64); ok && code > 99 {
+			if code >= 400 {
+				return "ERROR"
+			} else if code >= 300 {
+				return "WARN"
+			}
+			return "INFO"
+		}
+
+		// 4. Windows winLevel
+		if wl, ok := l.KeyValue["winLevel"].(float64); ok {
+			iwl := int(wl)
+			if iwl == 1 || iwl == 2 || iwl == 100 {
+				return "ERROR"
+			} else if iwl == 3 || iwl == 101 {
+				return "WARN"
+			}
+			return "INFO"
+		}
+
+		// 5. Normal / Warn / Error fields
+		var normalCount, warnCount, errorCount float64
+		if n, ok := l.KeyValue["Normal"].(float64); ok {
+			normalCount = n
+		} else if n, ok := l.KeyValue["normal"].(float64); ok {
+			normalCount = n
+		}
+		if w, ok := l.KeyValue["Warn"].(float64); ok {
+			warnCount = w
+		} else if w, ok := l.KeyValue["warn"].(float64); ok {
+			warnCount = w
+		}
+		if e, ok := l.KeyValue["Error"].(float64); ok {
+			errorCount = e
+		} else if e, ok := l.KeyValue["error"].(float64); ok {
+			errorCount = e
+		}
+		if normalCount == 0 && errorCount > 0 {
+			return "ERROR"
+		}
+		if normalCount == 0 && warnCount > 0 {
+			return "WARN"
+		}
+
+		// 6. Explicit string levels
+		levelFields := []string{"suverity_str", "severity", "level", "log_level", "status"}
+		for _, lf := range levelFields {
+			if v, ok := l.KeyValue[lf].(string); ok && v != "" {
+				vLower := strings.ToLower(v)
+				if isErrorWord(vLower) {
+					return "ERROR"
+				}
+				if strings.Contains(vLower, "warn") {
+					return "WARN"
+				}
 			}
 		}
 	}
+
+	// 7. Check text of log
 	allLower := strings.ToLower(l.All)
 	if isErrorWord(allLower) {
 		return "ERROR"
@@ -408,10 +485,11 @@ func (b *App) formatAIStats(dur time.Duration, tokens int, llm llms.Model) strin
 	return speedStr
 }
 
-func buildAIPromptJA(req AIAnalysisReportRequest, summary AIReportSummary, samples []string) string {
+func buildAIPromptJA(req AIAnalysisReportRequest, summary AIReportSummary, samples []string) (string, string) {
+	system := "あなたは高度なサイバーセキュリティおよびログ分析の専門家です。提示されたログデータを詳細に分析し、運用管理者が迅速に対処できる実践的な日本語の分析レポート（Markdown形式）を作成してください。回答は必ず日本語で記述してください。"
+
 	var sb strings.Builder
-	sb.WriteString("あなたは高度なサイバーセキュリティおよびログ分析の専門家です。\n")
-	sb.WriteString("提示されたログデータを詳細に分析し、運用管理者が迅速に対処できる実践的な日本語の分析レポート（Markdown形式）を作成してください。\n\n")
+	sb.WriteString("提示されたログデータを詳細に分析し、運用管理者が迅速に対処できる実践的な日本語の分析レポートを作成してください。\n\n")
 
 	if req.Prompt != "" {
 		sb.WriteString("【特別な指示・分析リクエスト】\n")
@@ -459,21 +537,22 @@ func buildAIPromptJA(req AIAnalysisReportRequest, summary AIReportSummary, sampl
 
 必ず日本語で回答してください。`)
 
-	return sb.String()
+	return system, sb.String()
 }
 
-func buildAIPromptEN(req AIAnalysisReportRequest, summary AIReportSummary, samples []string) string {
+func buildAIPromptEN(req AIAnalysisReportRequest, summary AIReportSummary, samples []string) (string, string) {
+	system := "You are an expert in cybersecurity, systems administration, and log analysis. You must write your entire analysis and report strictly in English. Even if the log entries, user prompt, or metadata are written in Japanese or other languages, translate and provide all explanations, headings, and recommendations purely in English without using Japanese characters."
+
 	var sb strings.Builder
-	sb.WriteString("You are an expert in cybersecurity, systems administration, and log analysis.\n")
 	sb.WriteString("Analyze the provided log dataset in detail and produce a structured, actionable analysis report in Markdown format.\n\n")
 
 	if req.Prompt != "" {
-		sb.WriteString("【Custom Instruction / Request】\n")
+		sb.WriteString("[Custom Instruction / Request]\n")
 		sb.WriteString(req.Prompt)
 		sb.WriteString("\n\n")
 	}
 
-	sb.WriteString("【Log Summary Data】\n")
+	sb.WriteString("[Log Summary Data]\n")
 	sb.WriteString(fmt.Sprintf("- Total Log Count: %d\n", summary.TotalEntries))
 	sb.WriteString(fmt.Sprintf("- Error Count: %d\n", summary.ErrorCount))
 	sb.WriteString(fmt.Sprintf("- Warning Count: %d\n", summary.WarningCount))
@@ -484,14 +563,14 @@ func buildAIPromptEN(req AIAnalysisReportRequest, summary AIReportSummary, sampl
 	}
 
 	if len(summary.TopErrors) > 0 {
-		sb.WriteString("\n【Top Error Patterns】\n")
+		sb.WriteString("\n[Top Error Patterns]\n")
 		for i, ep := range summary.TopErrors {
 			sb.WriteString(fmt.Sprintf("%d. Count: %d occurrences\n   Pattern: `%s`\n   Example: `%s`\n", i+1, ep.Count, ep.Pattern, ep.Example))
 		}
 	}
 
 	if len(samples) > 0 {
-		sb.WriteString("\n【Recent Log Sample】\n```\n")
+		sb.WriteString("\n[Recent Log Samples]\n```\n")
 		for _, s := range samples {
 			sb.WriteString(s)
 			sb.WriteString("\n")
@@ -499,7 +578,7 @@ func buildAIPromptEN(req AIAnalysisReportRequest, summary AIReportSummary, sampl
 		sb.WriteString("```\n\n")
 	}
 
-	sb.WriteString(`【Report Requirements】
+	sb.WriteString(`[Report Requirements]
 Please structure your response using Markdown (headings, bullet points, bold text, code blocks) with the following sections:
 1. **Executive Summary**: Overall trend, system health assessment, and key highlights.
 2. **Detected Anomalies & Risks**:
@@ -513,7 +592,17 @@ Please structure your response using Markdown (headings, bullet points, bold tex
 
 Please write your entire response strictly in English.`)
 
-	return sb.String()
+	return system, sb.String()
+}
+
+// CancelAIReport cancels any running AI analysis generation.
+func (b *App) CancelAIReport() {
+	b.aiMu.Lock()
+	defer b.aiMu.Unlock()
+	if b.aiCancel != nil {
+		b.aiCancel()
+		b.aiCancel = nil
+	}
 }
 
 // AnalyzeLogsWithAI aggregates statistics, extracts top error patterns, and streams AI analysis.
@@ -523,6 +612,25 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 			Error: "No logs to analyze",
 		}
 	}
+
+	// Cancel any previously active generation
+	b.CancelAIReport()
+
+	parentCtx := b.ctx
+	if parentCtx == nil {
+		parentCtx = context.Background()
+	}
+	ctx, cancel := context.WithCancel(parentCtx)
+	b.aiMu.Lock()
+	b.aiCancel = cancel
+	b.aiMu.Unlock()
+
+	defer func() {
+		b.aiMu.Lock()
+		cancel()
+		b.aiCancel = nil
+		b.aiMu.Unlock()
+	}()
 
 	if req.Lang == "" {
 		req.Lang = "ja"
@@ -613,7 +721,6 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 		samples = append(samples, fmt.Sprintf("%s[%s] %s", tStr, getLogLevelString(l), msg))
 	}
 
-	ctx := b.ctx
 	llm, err := b.GetLLM(ctx)
 	if err != nil {
 		OutLog("AnalyzeLogsWithAI GetLLM err=%v", err)
@@ -623,15 +730,16 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 		}
 	}
 
-	var promptText string
-	if req.Lang == "ja" {
-		promptText = buildAIPromptJA(req, summary, samples)
+	var systemText, humanText string
+	if req.Lang == "en" {
+		systemText, humanText = buildAIPromptEN(req, summary, samples)
 	} else {
-		promptText = buildAIPromptEN(req, summary, samples)
+		systemText, humanText = buildAIPromptJA(req, summary, samples)
 	}
 
 	history := []llms.MessageContent{
-		llms.TextParts(llms.ChatMessageTypeHuman, promptText),
+		llms.TextParts(llms.ChatMessageTypeSystem, systemText),
+		llms.TextParts(llms.ChatMessageTypeHuman, humanText),
 	}
 
 	var sb strings.Builder
@@ -640,6 +748,9 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 	decoder := &utf8StreamDecoder{}
 
 	resp, err := llm.GenerateContent(ctx, history, llms.WithStreamingFunc(func(c context.Context, chunk []byte) error {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		tokenCount++
 		chunkStr := decoder.decode(chunk)
 		if chunkStr != "" {
@@ -651,9 +762,11 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 		return nil
 	}))
 	if tail := decoder.flush(); tail != "" {
-		sb.WriteString(tail)
-		if b.ctx != nil {
-			wails.EventsEmit(b.ctx, "ai_report_stream", tail)
+		if ctx.Err() == nil {
+			sb.WriteString(tail)
+			if b.ctx != nil {
+				wails.EventsEmit(b.ctx, "ai_report_stream", tail)
+			}
 		}
 	}
 
@@ -668,6 +781,11 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 	}
 
 	if err != nil {
+		if ctx.Err() == context.Canceled {
+			return AIAnalysisReportResponse{
+				Error: "Analysis canceled",
+			}
+		}
 		OutLog("AnalyzeLogsWithAI GenerateContent err=%v", err)
 		return AIAnalysisReportResponse{
 			Summary:  summary,

@@ -10,11 +10,12 @@
   } from "svelte-octicons";
   import * as echarts from "echarts";
   import { createEventDispatcher, onMount, onDestroy } from "svelte";
-  import { AnalyzeLogsWithAI } from "../../../wailsjs/go/main/App";
+  import { AnalyzeLogsWithAI, CancelAIReport } from "../../../wailsjs/go/main/App";
   import { EventsOn, EventsOff } from "../../../wailsjs/runtime/runtime";
   import { copyText } from "svelte-copy";
   import { _, getLocale } from "../../i18n/i18n";
   import { renderMarkdown } from "../../js/markdown";
+  import { getLogLevel } from "../Search/logview.js";
 
   export let logs = [];
   export let dark = false;
@@ -31,6 +32,7 @@
   let topNError = 10;
   let customPrompt = "";
   let showPatterns = false;
+  let selectedPresetIndex = -1;
 
   let summary = {
     TotalEntries: logs ? logs.length : 0,
@@ -44,34 +46,152 @@
   let markdown = "";
   let stats = "";
 
-  $: presets = lang === "ja" ? [
-    { label: $_("AI.PresetGeneral"), text: "ログ全体の傾向、エラーや異常パターンの有無、推奨される対応策を総合的に分析してください。" },
-    { label: $_("AI.PresetIncident"), text: "重大なセキュリティインシデント、不正アクセス、攻撃の兆候に特化して分析し、危険度と証拠ログ、緊急対処策を提示してください。" },
-    { label: $_("AI.PresetPerf"), text: "システムのパフォーマンス障害、レイテンシ悪化、リソース枯渇やエラー急増のボトルネックに特化して原因究明と是正策を提示してください。" },
-    { label: $_("AI.PresetActionPlan"), text: "発見された問題点を解消しシステムの可用性・信頼性を高めるための具体的かつ実行可能な推奨アクションプラン・再発防止策を提示してください。" },
-  ] : [
-    { label: $_("AI.PresetGeneral"), text: "Analyze overall log trends, identify anomalies and error patterns, and summarize actionable recommendations." },
-    { label: $_("AI.PresetIncident"), text: "Focus specifically on critical security incidents, intrusion attempts, and anomalies. Highlight high-risk indicators and provide immediate containment procedures." },
-    { label: $_("AI.PresetPerf"), text: "Focus specifically on performance bottlenecks, latency spikes, resource exhaustion, and error surges. Identify potential culprits and corrective actions." },
-    { label: $_("AI.PresetActionPlan"), text: "Provide a concrete, actionable roadmap and preventative recommendations to improve overall system reliability and stability." },
+  const jaPresets = [
+    { label: "全体サマリー・異常検知", text: "ログ全体の傾向、エラーや異常パターンの有無、推奨される対応策を総合的に分析してください。" },
+    { label: "重大インシデント・不正アクセス調査", text: "重大なセキュリティインシデント、不正アクセス、攻撃の兆候に特化して分析し、危険度と証拠ログ、緊急対処策を提示してください。" },
+    { label: "性能障害・エラー急増の特定", text: "システムのパフォーマンス障害、レイテンシ悪化、リソース枯渇やエラー急増のボトルネックに特化して原因究明と是正策を提示してください。" },
+    { label: "推奨アクション・再発防止策", text: "発見された問題点を解消しシステムの可用性・信頼性を高めるための具体的かつ実行可能な推奨アクションプラン・再発防止策を提示してください。" },
   ];
 
-  const selectPreset = (p) => {
+  const enPresets = [
+    { label: "Overall Summary & Anomalies", text: "Analyze overall log trends, identify anomalies and error patterns, and summarize actionable recommendations." },
+    { label: "Critical Incidents & Security", text: "Focus specifically on critical security incidents, intrusion attempts, and anomalies. Highlight high-risk indicators and provide immediate containment procedures." },
+    { label: "Performance Bottlenecks & Spikes", text: "Focus specifically on performance bottlenecks, latency spikes, resource exhaustion, and error surges. Identify potential culprits and corrective actions." },
+    { label: "Recommendations & Action Plan", text: "Provide a concrete, actionable roadmap and preventative recommendations to improve overall system reliability and stability." },
+  ];
+
+  $: presets = lang === "ja" ? jaPresets : enPresets;
+
+  const selectPreset = (p, idx) => {
+    selectedPresetIndex = idx;
     customPrompt = p.text;
   };
 
   const setLang = (newLang) => {
+    if (lang === newLang) return;
+    const oldPresets = lang === "ja" ? jaPresets : enPresets;
+    const newPresets = newLang === "ja" ? jaPresets : enPresets;
+    const matchIdx = oldPresets.findIndex((p) => p.text === customPrompt);
+    if (matchIdx !== -1) {
+      customPrompt = newPresets[matchIdx].text;
+      selectedPresetIndex = matchIdx;
+    }
     lang = newLang;
   };
+
+  $: t = lang === "en" ? {
+    title: "AI Analysis Report",
+    totalLogs: "Total",
+    errorLogs: "Errors",
+    warnLogs: "Warnings",
+    timeRange: "Time Range",
+    presets: "Presets:",
+    placeholder: "Enter additional questions or analysis instructions (leave blank for standard analysis)",
+    analyzeBtn: "Analyze Logs with AI",
+    analyzingBtn: "Analyzing...",
+    topErrors: "Top Error Patterns",
+    showPatterns: "Show Error Patterns",
+    hidePatterns: "Hide Error Patterns",
+    count: "Count",
+    pattern: "Pattern",
+    example: "Example",
+    noErrors: "No error logs detected",
+    analyzingMsg: "AI is analyzing logs...",
+    thinkingMsg: "AI is thinking...",
+    emptyPrompt: "Click \"Analyze Logs with AI\" button above to start AI log analysis.",
+    back: "Back",
+    copy: "Copy",
+    copied: "Copied to clipboard",
+    exportMD: "Markdown",
+    exportTXT: "Text",
+    lang: "Lang:",
+    maskPII: "Mask PII",
+  } : {
+    title: $_("AI.ReportTitle") || "AI分析レポート",
+    totalLogs: $_("AI.TotalLogs") || "総ログ数",
+    errorLogs: $_("AI.ErrorLogs") || "エラー数",
+    warnLogs: $_("AI.WarnLogs") || "警告数",
+    timeRange: $_("AI.TimeRange") || "期間",
+    presets: "プリセット:",
+    placeholder: "追加の質問や分析の指示を入力してください（空欄の場合は標準分析を実行します）",
+    analyzeBtn: $_("AI.AnalyzeLogs") || "AI分析を実行",
+    analyzingBtn: "分析中...",
+    topErrors: $_("AI.TopErrors") || "頻出エラーパターン (上位)",
+    showPatterns: $_("AI.ShowPatterns") || "頻出エラーパターンを表示",
+    hidePatterns: $_("AI.HidePatterns") || "頻出エラーパターンを閉じる",
+    count: $_("AI.Count") || "発生回数",
+    pattern: $_("AI.Pattern") || "パターン",
+    example: $_("AI.Example") || "該当例",
+    noErrors: $_("AI.NoErrors") || "エラーログは検出されませんでした",
+    analyzingMsg: "AIがログ全体を分析しています...",
+    thinkingMsg: $_("AI.AIThinking") || "AIが考えています...",
+    emptyPrompt: "「AI分析を実行」ボタンをクリックして分析を開始してください。",
+    back: $_("AI.BackBtn") || "戻る",
+    copy: $_("AI.Copy") || "コピー",
+    copied: $_("LogView.Copied") || "コピーしました",
+    exportMD: "Markdown",
+    exportTXT: "テキスト",
+    lang: "言語:",
+    maskPII: $_("AI.MaskPII") || "PIIマスク",
+  };
+
+  const calculateInitialSummary = () => {
+    if (!logs || logs.length === 0) {
+      summary = {
+        TotalEntries: 0,
+        ErrorCount: 0,
+        WarningCount: 0,
+        StartTime: 0,
+        EndTime: 0,
+        TopErrors: [],
+      };
+      return;
+    }
+
+    let errCount = 0;
+    let warnCount = 0;
+    let minTime = logs[0].Time || 0;
+    let maxTime = logs[0].Time || 0;
+
+    for (const l of logs) {
+      if (l.Time > 0) {
+        if (minTime === 0 || l.Time < minTime) minTime = l.Time;
+        if (l.Time > maxTime) maxTime = l.Time;
+      }
+      const lvl = getLogLevel(l);
+      if (lvl === "error") {
+        errCount++;
+      } else if (lvl === "warn") {
+        warnCount++;
+      }
+    }
+
+    summary = {
+      TotalEntries: logs.length,
+      ErrorCount: errCount,
+      WarningCount: warnCount,
+      StartTime: minTime,
+      EndTime: maxTime,
+      TopErrors: summary.TopErrors || [],
+    };
+  };
+
+  $: if (logs) {
+    calculateInitialSummary();
+  }
 
   onMount(() => {
     EventsOn("ai_report_stream", (chunk) => {
       markdown += chunk;
     });
+    calculateInitialSummary();
   });
 
   onDestroy(() => {
     EventsOff("ai_report_stream");
+    try {
+      CancelAIReport();
+    } catch (e) {}
   });
 
   const runAnalysis = async () => {
@@ -79,6 +199,11 @@
       errorMsg = $_("AI.NoAnswer");
       return;
     }
+
+    try {
+      await CancelAIReport();
+    } catch (e) {}
+
     busy = true;
     errorMsg = "";
     infoMsg = "";
@@ -86,6 +211,15 @@
     stats = "";
 
     try {
+      const preparedLogs = logs.map((l) => {
+        const kv = l.KeyValue ? { ...l.KeyValue } : {};
+        kv["_level"] = getLogLevel(l);
+        return {
+          ...l,
+          KeyValue: kv,
+        };
+      });
+
       const req = {
         Prompt: customPrompt,
         Lang: lang,
@@ -93,17 +227,22 @@
         TopNError: topNError,
         SampleSize: sampleSize,
       };
-      const res = await AnalyzeLogsWithAI(req, logs);
+      const res = await AnalyzeLogsWithAI(req, preparedLogs);
       busy = false;
       if (res) {
         if (res.Summary) {
           summary = res.Summary;
+          if (summary.TopErrors && summary.TopErrors.length > 0) {
+            showPatterns = true;
+          }
         }
         if (res.Stats) {
           stats = res.Stats;
         }
         if (res.Error) {
-          errorMsg = res.Error;
+          if (res.Error !== "Analysis canceled") {
+            errorMsg = res.Error;
+          }
         }
         if (res.Markdown && !markdown) {
           markdown = res.Markdown;
@@ -118,7 +257,7 @@
   const copy = async () => {
     if (!markdown) return;
     await copyText(markdown);
-    infoMsg = $_("LogView.Copied") || "Copied";
+    infoMsg = t.copied;
     setTimeout(() => {
       infoMsg = "";
     }, 2000);
@@ -145,31 +284,38 @@
   };
 
   const back = () => {
+    try {
+      CancelAIReport();
+    } catch (e) {}
     dispatch("done", {});
   };
 
   $: renderedMarkdown = renderMarkdown(markdown);
-  $: placeholderText = lang === "ja"
-    ? "追加の質問や分析の指示を入力してください（空欄の場合は標準分析を実行します）"
-    : "Enter additional questions or instructions (leave blank for standard analysis)";
 </script>
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%; display: flex; flex-direction: column; max-height: calc(100vh - 40px);">
   <!-- Header -->
-  <div class="Box-header d-flex flex-justify-between flex-items-center flex-wrap" style="gap: 8px;">
-    <div class="d-flex flex-items-center flex-wrap" style="gap: 8px;">
-      <h3 class="Box-title m-0">{$_("AI.ReportTitle")}</h3>
-      <span class="Label Label--secondary">{$_("AI.TotalLogs")}: {summary.TotalEntries}</span>
+  <div class="Box-header d-flex flex-items-center flex-wrap py-2" style="row-gap: 8px; column-gap: 12px;">
+    <h3 class="Box-title mr-2" style="white-space: nowrap; flex-shrink: 0;">
+      {t.title}
+      {#if busy}
+        <span class="Label Label--warning ml-2">{t.analyzingBtn}</span>
+      {/if}
+    </h3>
+
+    <!-- Summary Badges -->
+    <div class="d-flex flex-items-center flex-wrap flex-auto f6" style="gap: 6px;">
+      <span class="Label Label--info">{t.totalLogs}: {summary.TotalEntries}</span>
       {#if summary.ErrorCount > 0}
-        <span class="Label Label--danger">{$_("AI.ErrorLogs")}: {summary.ErrorCount}</span>
+        <span class="Label Label--danger">{t.errorLogs}: {summary.ErrorCount}</span>
       {:else if summary.TotalEntries > 0}
-        <span class="Label Label--secondary">{$_("AI.ErrorLogs")}: {summary.ErrorCount}</span>
+        <span class="Label">{t.errorLogs}: 0</span>
       {/if}
       {#if summary.WarningCount > 0}
-        <span class="Label Label--warning">{$_("AI.WarnLogs")}: {summary.WarningCount}</span>
+        <span class="Label Label--warning">{t.warnLogs}: {summary.WarningCount}</span>
       {/if}
       {#if summary.StartTime > 0 && summary.EndTime > 0}
-        <span class="Label Label--secondary text-small" title="Time range">
+        <span class="Label text-small" title={t.timeRange}>
           {formatTime(summary.StartTime)} 〜 {formatTime(summary.EndTime)}
         </span>
       {/if}
@@ -178,11 +324,11 @@
       {/if}
     </div>
 
-    <!-- Controls -->
-    <div class="d-flex flex-items-center" style="gap: 8px;">
+    <!-- Right Controls -->
+    <div class="d-flex flex-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
       <!-- Language Toggle Group -->
       <div class="d-flex flex-items-center">
-        <span class="text-small color-fg-muted font-weight-bold mr-1">{$_("AI.Lang")}:</span>
+        <span class="text-small color-fg-muted font-weight-bold mr-1">{t.lang}</span>
         <div class="BtnGroup">
           <button
             class="btn btn-sm BtnGroup-item"
@@ -191,7 +337,7 @@
             on:click={() => setLang("ja")}
             disabled={busy}
           >
-            {$_("AI.LangJa")}
+            日本語
           </button>
           <button
             class="btn btn-sm BtnGroup-item"
@@ -200,13 +346,13 @@
             on:click={() => setLang("en")}
             disabled={busy}
           >
-            {$_("AI.LangEn")}
+            English
           </button>
         </div>
       </div>
 
       <!-- Sample size -->
-      <select class="form-select select-sm" bind:value={sampleSize} disabled={busy} title={$_("AI.SampleSize")}>
+      <select class="form-select select-sm" bind:value={sampleSize} disabled={busy} title="Sample Size">
         <option value={20}>20 sample</option>
         <option value={50}>50 sample</option>
         <option value={100}>100 sample</option>
@@ -224,17 +370,17 @@
       >
         {#if maskPII}
           <ShieldLock16 />
-          {$_("AI.MaskPII")} ON
+          {t.maskPII} ON
         {:else}
           <ShieldCheck16 />
-          {$_("AI.MaskPII")} OFF
+          {t.maskPII} OFF
         {/if}
       </button>
 
       <!-- Back button -->
       <button class="btn btn-sm btn-secondary" type="button" on:click={back}>
         <X16 />
-        {$_("AI.BackBtn")}
+        {t.back}
       </button>
     </div>
   </div>
@@ -255,14 +401,14 @@
   <div class="Box-body p-3" style="overflow-y: auto; flex: 1;">
     <!-- Preset Action Bar -->
     <div class="mb-2 d-flex flex-wrap flex-items-center" style="gap: 6px;">
-      <span class="text-bold text-small mr-1" style="color: var(--color-fg-muted);">Presets:</span>
-      {#each presets as p}
+      <span class="text-bold text-small mr-1" style="color: var(--color-fg-muted);">{t.presets}</span>
+      {#each presets as p, idx}
         <button
           class="btn btn-sm"
           class:btn-outline={customPrompt === p.text}
           type="button"
           disabled={busy}
-          on:click={() => selectPreset(p)}
+          on:click={() => selectPreset(p, idx)}
         >
           {p.label}
         </button>
@@ -274,18 +420,24 @@
       <input
         type="text"
         class="form-control flex-auto"
-        placeholder={placeholderText}
+        placeholder={t.placeholder}
         bind:value={customPrompt}
         on:keydown={(e) => { if (e.key === "Enter" && !busy) runAnalysis(); }}
         disabled={busy}
       />
-      <button class="btn btn-primary" type="button" on:click={runAnalysis} disabled={busy}>
+      <button
+        class="btn btn-primary d-flex flex-items-center flex-justify-center"
+        style="white-space: nowrap; flex-shrink: 0; min-width: 130px; gap: 6px;"
+        type="button"
+        on:click={runAnalysis}
+        disabled={busy}
+      >
         {#if busy}
           <span class="AnimatedEllipsis"></span>
-          {$_("AI.Analyzing")}
+          <span>{t.analyzingBtn}</span>
         {:else}
           <Play16 />
-          {$_("AI.AnalyzeLogs")}
+          <span>{t.analyzeBtn}</span>
         {/if}
       </button>
     </div>
@@ -303,10 +455,10 @@
           {:else}
             <ChevronRight16 />
           {/if}
-          <span class="text-bold">{$_("AI.TopErrors")} ({summary.TopErrors ? summary.TopErrors.length : 0})</span>
+          <span class="text-bold">{t.topErrors} ({summary.TopErrors ? summary.TopErrors.length : 0})</span>
         </div>
         <span class="text-small text-muted">
-          {showPatterns ? $_("AI.HidePatterns") : $_("AI.ShowPatterns")}
+          {showPatterns ? t.hidePatterns : t.showPatterns}
         </span>
       </div>
 
@@ -317,9 +469,9 @@
               <thead>
                 <tr>
                   <th style="width: 8%;">#</th>
-                  <th style="width: 12%;">{$_("AI.Count")}</th>
-                  <th style="width: 40%;">{$_("AI.Pattern")}</th>
-                  <th style="width: 40%;">{$_("AI.Example")}</th>
+                  <th style="width: 12%;">{t.count}</th>
+                  <th style="width: 40%;">{t.pattern}</th>
+                  <th style="width: 40%;">{t.example}</th>
                 </tr>
               </thead>
               <tbody>
@@ -334,7 +486,7 @@
               </tbody>
             </table>
           {:else}
-            <div class="text-small text-muted p-2">{$_("AI.NoErrors")}</div>
+            <div class="text-small text-muted p-2">{t.noErrors}</div>
           {/if}
         </div>
       {/if}
@@ -344,21 +496,20 @@
     <div class="border rounded p-3 mb-2 markdown-body" style="background-color: var(--color-canvas-default); min-height: 280px;">
       {#if busy && !markdown}
         <div class="d-flex flex-items-center flex-justify-center p-4" style="color: var(--color-fg-muted);">
-          <span>{$_("AI.Analyzing")}</span>
+          <span>{t.analyzingMsg}</span>
           <span class="AnimatedEllipsis ml-2"></span>
         </div>
       {:else if markdown}
         {@html renderedMarkdown}
         {#if busy}
           <div class="mt-2 text-small text-muted d-flex flex-items-center">
-            <span>{$_("AI.AIThinking")}</span>
+            <span>{t.thinkingMsg}</span>
             <span class="AnimatedEllipsis ml-1"></span>
           </div>
         {/if}
       {:else}
         <div class="text-center text-muted p-4">
-          <p class="mb-2">{$_("AI.AnalyzeLogs")} ボタンをクリックして分析を開始してください。</p>
-          <p class="text-small">Click "{$_("AI.AnalyzeLogs")}" button above to start AI log analysis.</p>
+          <p class="mb-2">{t.emptyPrompt}</p>
         </div>
       {/if}
     </div>
@@ -369,19 +520,19 @@
     <div>
       <button class="btn btn-secondary" type="button" on:click={back}>
         <X16 />
-        {$_("AI.BackBtn")}
+        {t.back}
       </button>
     </div>
     <div class="d-flex" style="gap: 8px;">
       <button class="btn btn-sm" type="button" on:click={copy} disabled={!markdown}>
         <Copy16 />
-        {$_("AI.Copy")}
+        {t.copy}
       </button>
       <button class="btn btn-sm" type="button" on:click={() => downloadReport("md")} disabled={!markdown}>
-        {$_("AI.ExportMD")}
+        {t.exportMD}
       </button>
       <button class="btn btn-sm" type="button" on:click={() => downloadReport("txt")} disabled={!markdown}>
-        {$_("AI.ExportTXT")}
+        {t.exportTXT}
       </button>
     </div>
   </div>

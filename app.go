@@ -47,6 +47,8 @@ type App struct {
 	mapMu       sync.RWMutex
 	memos       []Memo
 	history     []string
+	aiMu        sync.Mutex
+	aiCancel    context.CancelFunc
 }
 
 // NewApp creates a new App application struct
