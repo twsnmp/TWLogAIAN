@@ -616,7 +616,7 @@ func (b *App) AutoGrok(testData string) AutoGrokResp {
 	}
 	findSplunkPat(testData, replaceMap)
 	if len(replaceMap) < 1 {
-		ret.ErrorMsg = "filed not found"
+		ret.ErrorMsg = "field not found"
 		return ret
 	}
 	ret.Grok = b.makeGrok(testData, replaceMap)

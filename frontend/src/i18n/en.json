@@ -450,6 +450,7 @@
   "EditExtractorType": {
     "InputPatMsg": "Please specify a pattern",
     "InputTestDataMsg": "Please specify test data",
+    "NoPatternFound": "No extractable pattern found",
     "Title": "Extraction (Grok) pattern editing",
     "Key": "Key",
     "PatKey": "Extract pattern key",

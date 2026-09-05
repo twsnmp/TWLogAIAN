@@ -269,7 +269,7 @@ const getTimeOnlyLogData = (r, filter) => {
         return;
       }
     }
-    d.push([getLogLevel(l), l.Time, l.All, "copy", "memo", "ai", "extractor", l.All]);
+    d.push([getLogLevel(l), l.Time, l.All, "copy", "memo", "ai", l.All, l.All]);
   });
   return d;
 };
@@ -283,7 +283,7 @@ const getAnomalyLogData = (r, filter) => {
       }
     }
     const score = l.KeyValue["anomalyScore"] || 0.0;
-    d.push([getLogLevel(l), l.Time, score, l.All, "copy", "memo", "ai", "extractor", l.All]);
+    d.push([getLogLevel(l), l.Time, score, l.All, "copy", "memo", "ai", l.All, l.All]);
   });
   return d;
 };

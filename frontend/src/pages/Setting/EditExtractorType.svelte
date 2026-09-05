@@ -103,11 +103,20 @@
       errorMsg = $_('EditExtractorType.InputTestDataMsg');
       return;
     }
+    errorMsg = "";
     const r = await AutoGrok(testLog);
     if (r) {
-      errorMsg = r.ErrorMsg;
+      if (r.ErrorMsg) {
+        if (r.ErrorMsg.includes("not found")) {
+          errorMsg = $_('EditExtractorType.NoPatternFound') || r.ErrorMsg;
+        } else {
+          errorMsg = r.ErrorMsg;
+        }
+      }
       if (r.Grok) {
         extractorType.Grok = r.Grok;
+        extractorType = extractorType;
+        test();
       }
     }
   };

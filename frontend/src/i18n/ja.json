@@ -450,6 +450,7 @@
   "EditExtractorType": {
     "InputPatMsg": "パターンを指定してください",
     "InputTestDataMsg": "テストデータを指定してください",
+    "NoPatternFound": "抽出可能なパターンが見つかりませんでした",
     "Title": "抽出(Grok)パターン編集",
     "Key": "キー",
     "PatKey": "抽出パターンのキー",

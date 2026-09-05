@@ -433,6 +433,20 @@
   };
 
 
+  const getRawLogFromRow = (cells, fallbackData) => {
+    if (fallbackData && fallbackData !== "extractor") {
+      return fallbackData;
+    }
+    if (cells) {
+      for (let i = cells.length - 1; i >= 0; i--) {
+        if (columns[i] && columns[i].id == "all" && cells[i] && cells[i].data) {
+          return cells[i].data;
+        }
+      }
+    }
+    return fallbackData || "";
+  };
+
   const cellClick = (e) => {
     if (!e || !e.detail || e.detail.length < 4) {
       return;
@@ -452,7 +466,8 @@
       askAIAboutLog(row._cells);
       return;
     } else if (col.id == "extractor") {
-      showEditExtractorType(cell.data, me.metaKey);
+      const log = getRawLogFromRow(row ? row._cells : null, cell ? cell.data : "");
+      showEditExtractorType(log, me.metaKey);
       return;
     } else if (col.id == "search") {
       BrowserOpenURL("https://www.google.com/search?q=windows+event+id+"+cell.data);
