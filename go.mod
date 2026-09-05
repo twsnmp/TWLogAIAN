@@ -3,6 +3,7 @@ module github.com/twsnmp/TWLogAIAN
 go 1.27
 
 require (
+	blitiri.com.ar/go/spf v1.5.1
 	github.com/0xrawsec/golang-evtx v1.2.9
 	github.com/Songmu/timeout v0.4.0
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de

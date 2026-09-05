@@ -39,6 +39,7 @@
   import Heatmap from "../Report/Heatmap.svelte";
   import Interval from "../Report/Interval.svelte";
   import Delay from "../Report/Delay.svelte";
+  import Email from "../Report/Email.svelte";
   import Memo from "../Report/Memo.svelte";
   import EditExtractorType from "../Setting/EditExtractorType.svelte";
   import { loadFieldTypes, getFieldType } from "../../js/define";
@@ -691,6 +692,8 @@
   <Interval logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "delay"}
   <Delay fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+{:else if page == "email"}
+  <Email logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "extractorType"}
   <EditExtractorType
     {extractorType}
@@ -934,6 +937,7 @@
               <option value="heatmap">{$_('LogView.HeatmapMenu')}</option>
               <option value="interval">{$_('LogView.IntervalMenu')}</option>
               <option value="delay">{$_('LogView.DelayMenu')}</option>
+              <option value="email">{$_('LogView.EmailMenu')}</option>
             </select>
           {/if}
         </div>
