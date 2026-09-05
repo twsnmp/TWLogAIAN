@@ -123,28 +123,23 @@ func (b *App) AskAIAboutLog(prompt, logStr, lang string) AIAnswer {
 	}
 
 	cleanPrompt := strings.TrimSpace(prompt)
-	var system string
-	var humanContent string
-
+	outputLang := "English"
+	defaultPrompt := "Please explain this log in detail. Describe its meaning, key components, whether there are anomalies or errors, potential root causes, and recommended actions."
 	if lang == "ja" {
-		system = `あなたはサイバーセキュリティおよびログ分析の専門家です。
-ユーザーから提示されたログを詳細に分析し、日本語で分かりやすく解説してください。
-見出し、箇条書き、太字、コードブロックなどを適切に活用し、Markdown形式で整形して回答してください。`
-
-		if cleanPrompt == "" {
-			cleanPrompt = "このログの内容について詳しく解説してください。ログの意味、重要な要素、エラーや異常の有無、想定される原因と推奨される対応をわかりやすく説明してください。"
-		}
-		humanContent = fmt.Sprintf("対象ログ:\n```\n%s\n```\n\n質問・指示:\n%s\n\n回答は日本語のMarkdown形式で記述してください。", logStr, cleanPrompt)
-	} else {
-		system = `You are an expert in cybersecurity and log analysis.
-Please analyze the log provided by the user in detail and provide a clear, well-structured explanation in English.
-Format your response using Markdown (use headings, bullet points, bold text, code blocks, etc.).`
-
-		if cleanPrompt == "" {
-			cleanPrompt = "Please explain this log in detail. Describe its meaning, key components, whether there are anomalies or errors, potential root causes, and recommended actions."
-		}
-		humanContent = fmt.Sprintf("Target Log:\n```\n%s\n```\n\nQuestion/Instruction:\n%s\n\nPlease provide your answer in English using Markdown formatting.", logStr, cleanPrompt)
+		outputLang = "Japanese"
+		defaultPrompt = "このログの内容について詳しく解説してください。ログの意味、重要な要素、エラーや異常の有無、想定される原因と推奨される対応をわかりやすく説明してください。"
 	}
+
+	if cleanPrompt == "" {
+		cleanPrompt = defaultPrompt
+	}
+
+	system := fmt.Sprintf(`You are an expert in cybersecurity, system administration, and log analysis.
+Analyze the target log entry provided by the user in detail and provide a clear, well-structured, actionable explanation.
+Structure your analysis using Markdown (headings, bullet points, bold text, and code blocks).
+You MUST write your entire response in %s.`, outputLang)
+
+	humanContent := fmt.Sprintf("Target Log:\n```\n%s\n```\n\nQuestion / Request:\n%s\n\nPlease provide your analysis in %s using Markdown.", logStr, cleanPrompt, outputLang)
 
 	history := []llms.MessageContent{
 		llms.TextParts(llms.ChatMessageTypeSystem, system),
@@ -488,18 +483,18 @@ func (b *App) formatAIStats(dur time.Duration, tokens int, llm llms.Model) strin
 }
 
 func buildAIPromptJA(req AIAnalysisReportRequest, summary AIReportSummary, samples []string) (string, string) {
-	system := "あなたは高度なサイバーセキュリティおよびログ分析の専門家です。提示されたログデータを詳細に分析し、運用管理者が迅速に対処できる実践的な日本語の分析レポート（Markdown形式）を作成してください。回答は必ず日本語で記述してください。"
+	system := "You are an expert in cybersecurity, systems administration, and log analysis. Analyze the provided log dataset in detail and generate a practical, professional analysis report in Markdown format. You MUST write your entire report in Japanese."
 
 	var sb strings.Builder
-	sb.WriteString("提示されたログデータを詳細に分析し、運用管理者が迅速に対処できる実践的な日本語の分析レポートを作成してください。\n\n")
+	sb.WriteString("Analyze the provided log dataset in detail and produce a structured, actionable analysis report in Japanese using Markdown format.\n\n")
 
 	if req.Prompt != "" {
-		sb.WriteString("【特別な指示・分析リクエスト】\n")
+		sb.WriteString("【特別な指示・分析リクエスト / Custom Request】\n")
 		sb.WriteString(req.Prompt)
 		sb.WriteString("\n\n")
 	}
 
-	sb.WriteString("【ログ概要データ】\n")
+	sb.WriteString("【ログ概要データ / Log Summary Data】\n")
 	sb.WriteString(fmt.Sprintf("- 総ログ件数: %d 件\n", summary.TotalEntries))
 	sb.WriteString(fmt.Sprintf("- エラーログ件数: %d 件\n", summary.ErrorCount))
 	sb.WriteString(fmt.Sprintf("- 警告ログ件数: %d 件\n", summary.WarningCount))
@@ -510,14 +505,14 @@ func buildAIPromptJA(req AIAnalysisReportRequest, summary AIReportSummary, sampl
 	}
 
 	if len(summary.TopErrors) > 0 {
-		sb.WriteString("\n【頻出エラーパターン（上位）】\n")
+		sb.WriteString("\n【頻出エラーパターン（上位） / Top Error Patterns】\n")
 		for i, ep := range summary.TopErrors {
 			sb.WriteString(fmt.Sprintf("%d. 発生回数: %d 回\n   パターン: `%s`\n   具体例: `%s`\n", i+1, ep.Count, ep.Pattern, ep.Example))
 		}
 	}
 
 	if len(samples) > 0 {
-		sb.WriteString("\n【ログサンプル（最新・代表的な抜粋）】\n```\n")
+		sb.WriteString("\n【ログサンプル（最新・代表的な抜粋） / Log Samples】\n```\n")
 		for _, s := range samples {
 			sb.WriteString(s)
 			sb.WriteString("\n")
@@ -525,19 +520,19 @@ func buildAIPromptJA(req AIAnalysisReportRequest, summary AIReportSummary, sampl
 		sb.WriteString("```\n\n")
 	}
 
-	sb.WriteString(`【レポート構成要件】
-以下の構成で、見出し、箇条書き、太字、コードブロックなどを効果的に用いてMarkdownで記述してください:
-1. **エグゼクティブ・サマリー**: ログ全体の傾向、健全性評価、特に警戒すべき事象の要約。
-2. **検出された異常・リスク（Anomalies）**:
-   - 種類（エラー急増 / セキュリティ侵害・不正アクセス / パフォーマンス・障害 / その他）
-   - 重要度（Critical / High / Medium / Low）
+	sb.WriteString(`[Report Requirements]
+Structure your report using Markdown (headings, bullet points, bold text, code blocks) with the following sections:
+1. **エグゼクティブ・サマリー (Executive Summary)**: ログ全体の傾向、健全性評価、重大事象の要約
+2. **検出された異常・リスク (Detected Anomalies & Risks)**:
+   - 種類 (error_spike / security / performance / other)
+   - 重要度 (Critical / High / Medium / Low)
    - 具体的な兆候と該当ログ
-3. **根本原因の考察（Root Cause Analysis）**: なぜこのエラーや異常が発生しているのかの分析。
-4. **推奨アクション・再発防止策（Recommendations）**:
-   - 即時対応（緊急対応）
-   - 恒久対策（監視強化・設定変更・保守手順など）
+3. **根本原因の考察 (Root Cause Analysis)**: エラーや異常が発生している要因の分析
+4. **推奨アクション・再発防止策 (Actionable Recommendations)**:
+   - 即時対応 (Immediate mitigations)
+   - 恒久対策 (Long-term preventative measures)
 
-必ず日本語で回答してください。`)
+You MUST write your entire analysis and report in Japanese.`)
 
 	return system, sb.String()
 }
@@ -919,66 +914,27 @@ func (b *App) AIGrok(testData, lang string) AIGrokResp {
 		}
 	}
 
-	var systemPrompt string
-	var humanContent string
+	systemPrompt := `You are an expert in log analysis and Logstash/Grok patterns.
+Analyze the given target log line and generate a Logstash Grok pattern that extracts all key fields (timestamp, host, process, PID, IP, MAC, user, status, numbers, message) using %{PATTERN:field_name}.
 
-	if lang == "ja" {
-		systemPrompt = `あなたはログ分析およびLogstash/Grokパターンの専門家です。
-与えられた対象ログ全体を解析し、抽出可能なすべての要素（日時、ホスト、プロセス、PID、IPアドレス、MACアドレス、ユーザー名、ステータス、数値、メッセージなど）を、最適なGrokパターン（%{パターン名:フィールド名}）に置き換えて抽出するGrokパターンを作成してください。
-
-【厳格なルール】
-1. ログのテキストをそのまま返してはいけません。必ず抽出対象を %{パターン名:フィールド名} に置き換えてください。
-2. 抽出する各フィールドには、必ず意味のある英数字のフィールド名（キャプチャ名）を付けてください。
-   代表的なGrokパターン:
-   - 日時: %{SYSLOGTIMESTAMP:timestamp}, %{TIMESTAMP_ISO8601:timestamp}, %{HTTPDATE:timestamp}
-   - IPアドレス: %{IPV4:src_ip}, %{IPV6:src_ip}, %{IP:src_ip}
-   - ホスト・ドメイン名: %{NOTSPACE:host}, %{HOSTNAME:host}
-   - プロセス・PID: %{WORD:process}\[%{INT:pid}\]
-   - 単語・数値: %{WORD:action}, %{INT:status}, %{NUMBER:bytes}
-   - 任意テキスト: %{DATA:message}, %{GREEDYDATA:message}
-3. time_field, ip_fields, mac_fields には、Grokパターン内で %{...:フィールド名} として定義した【フィールド名】のみを記入してください。ログの実際の値（IPアドレスの数値など）は絶対に入れないでください。
-4. 必ず以下のJSON形式のみで回答し、前後に解説文やMarkdownコードブロックは含めないでください。
-
-【回答例1 (Syslog)】
-対象ログ: Dec 10 06:55:46 LabSZ sshd[24200]: Invalid user webmaster from 173.234.31.186
-回答:
-{"grok":"%{SYSLOGTIMESTAMP:timestamp} %{NOTSPACE:host} %{WORD:process}\\[%{INT:pid}\\]: Invalid user %{WORD:user} from %{IP:src_ip}","time_field":"timestamp","ip_fields":"src_ip","mac_fields":""}
-
-【回答例2 (Webアクセスログ)】
-対象ログ: 192.168.1.10 - frank [10/Oct/2000:13:55:36 -0700] "GET /index.html HTTP/1.1" 200 2326
-回答:
-{"grok":"%{IP:client_ip} %{NOTSPACE:ident} %{WORD:auth} \\[%{HTTPDATE:timestamp}\\] \"%{WORD:method} %{NOTSPACE:request} HTTP/%{NUMBER:http_version}\" %{INT:response} %{INT:bytes}","time_field":"timestamp","ip_fields":"client_ip","mac_fields":""}`
-
-		humanContent = fmt.Sprintf("対象ログ:\n%s\n\nログから抽出可能なすべての要素を %%{パターン名:フィールド名} に置換したJSONのみを出力してください。", sampleLine)
-	} else {
-		systemPrompt = `You are an expert in log analysis and Logstash/Grok patterns.
-Analyze the given target log and create a comprehensive Logstash Grok pattern that extracts all possible fields (timestamp, host, process, PID, IP, MAC, user, status, numbers, message) using %{PATTERN:field_name}.
+[OUTPUT FORMAT]
+Return ONLY a valid single JSON object without markdown code fences, explanation, or conversational text:
+{"grok": "<grok pattern>", "time_field": "<timestamp field name or empty>", "ip_fields": "<comma-separated IP field names or empty>", "mac_fields": "<comma-separated MAC field names or empty>"}
 
 [STRICT RULES]
-1. Do NOT return raw log text. You MUST replace extractable elements with %{PATTERN:field_name}.
+1. Do NOT return the raw log text. You MUST replace extractable elements with %{PATTERN:field_name}.
 2. Always assign meaningful alphanumeric field names (named captures) to extracted fields.
    Common Grok patterns:
    - Timestamps: %{SYSLOGTIMESTAMP:timestamp}, %{TIMESTAMP_ISO8601:timestamp}, %{HTTPDATE:timestamp}
-   - IP addresses: %{IPV4:src_ip}, %{IPV6:src_ip}, %{IP:src_ip}
+   - IP addresses: %{IPV4:src_ip}, %{IPV6:src_ip}, %{IP:src_ip}, %{IP:client_ip}
    - Host/Domain: %{NOTSPACE:host}, %{HOSTNAME:host}
    - Process/PID: %{WORD:process}\[%{INT:pid}\]
    - Words/Numbers: %{WORD:action}, %{INT:status}, %{NUMBER:bytes}
    - Free text/messages: %{DATA:message}, %{GREEDYDATA:message}
-3. time_field, ip_fields, mac_fields MUST only contain the FIELD NAMES (named captures) defined in your grok pattern. NEVER put raw log values (like actual IP strings) there.
-4. Output ONLY valid JSON without any markdown code fences or conversational text.
+3. time_field, ip_fields, and mac_fields must contain ONLY the FIELD NAMES (e.g. "timestamp", "src_ip") defined in your grok pattern, NEVER actual raw log values.
+4. Output ONLY the JSON object without markdown code fences or conversational text.`
 
-[Example 1 (Syslog)]
-Target: Dec 10 06:55:46 LabSZ sshd[24200]: Invalid user webmaster from 173.234.31.186
-Response:
-{"grok":"%{SYSLOGTIMESTAMP:timestamp} %{NOTSPACE:host} %{WORD:process}\\[%{INT:pid}\\]: Invalid user %{WORD:user} from %{IP:src_ip}","time_field":"timestamp","ip_fields":"src_ip","mac_fields":""}
-
-[Example 2 (Web Access)]
-Target: 192.168.1.10 - frank [10/Oct/2000:13:55:36 -0700] "GET /index.html HTTP/1.1" 200 2326
-Response:
-{"grok":"%{IP:client_ip} %{NOTSPACE:ident} %{WORD:auth} \\[%{HTTPDATE:timestamp}\\] \"%{WORD:method} %{NOTSPACE:request} HTTP/%{NUMBER:http_version}\" %{INT:response} %{INT:bytes}","time_field":"timestamp","ip_fields":"client_ip","mac_fields":""}`
-
-		humanContent = fmt.Sprintf("Target Log:\n%s\n\nReturn ONLY the JSON format replacing all extractable fields with %%{PATTERN:field_name}.", sampleLine)
-	}
+	humanContent := fmt.Sprintf("Target Log:\n%s\n\nReturn ONLY the single JSON object containing the Grok pattern.\nJSON:", sampleLine)
 
 	history := []llms.MessageContent{
 		llms.TextParts(llms.ChatMessageTypeSystem, systemPrompt),
