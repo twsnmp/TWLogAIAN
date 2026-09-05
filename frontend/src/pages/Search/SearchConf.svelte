@@ -44,6 +44,7 @@
   let aiRegex = "";
   let aiExplain = "";
   let aiError = "";
+  let isComposing = false;
 
   const generateRegex = async () => {
     if (!aiPrompt.trim()) return;
@@ -72,7 +73,7 @@
   const cancelAIRegex = () => {
     CancelAIReport();
     aiBusy = false;
-    aiError = $_("AI.Canceled") || "Canceled";
+    aiError = $_("AI.Canceled") || "処理を中止しました";
   };
 
   const applyAIRegex = () => {
@@ -380,8 +381,21 @@
             type="text"
             placeholder={$_("SearchConf.AIPromptPlaceholder")}
             bind:value={aiPrompt}
+            on:compositionstart={() => {
+              isComposing = true;
+            }}
+            on:compositionend={() => {
+              setTimeout(() => {
+                isComposing = false;
+              }, 50);
+            }}
             on:keydown={(e) => {
-              if (e.key === "Enter") generateRegex();
+              if (e.key === "Enter") {
+                if (isComposing || e.isComposing || e.keyCode === 229) {
+                  return;
+                }
+                generateRegex();
+              }
             }}
           />
           {#if !aiBusy}

@@ -453,6 +453,15 @@
     "HighlighCode": "自動",
     "None": "しない"
   },
+  "SearchModal": {
+    "Title": "検索処理中",
+    "AIThinking": "AIが正規表現を考案中...",
+    "AISubText": "入力された条件から最適なパターンを組み立てています",
+    "Searching": "ログを検索中...",
+    "SearchSubText": "条件に合致するログを探索しています",
+    "Cancel": "中止",
+    "Canceled": "検索を中止しました"
+  },
   "EditExtractorType": {
     "InputPatMsg": "パターンを指定してください",
     "InputTestDataMsg": "テストデータを指定してください",
@@ -740,6 +749,7 @@
   "50lpp": "50行/ページ",
   "100lpp": "100行/ページ",
   "AI": {
+    "Canceled": "処理を中止しました",
     "NoAnswer": "AIから回答がありません",
     "AskAI": "AIに質問する",
     "AIThinking": "AIが考えています....",

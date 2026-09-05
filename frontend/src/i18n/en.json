@@ -453,6 +453,15 @@
     "HighlighCode": "Auto",
     "None": "None"
   },
+  "SearchModal": {
+    "Title": "Search in Progress",
+    "AIThinking": "AI is generating regular expression...",
+    "AISubText": "Constructing optimal regex pattern from your prompt",
+    "Searching": "Searching logs...",
+    "SearchSubText": "Scanning for matching log entries",
+    "Cancel": "Cancel",
+    "Canceled": "Search canceled"
+  },
   "EditExtractorType": {
     "InputPatMsg": "Please specify a pattern",
     "InputTestDataMsg": "Please specify test data",
@@ -740,6 +749,7 @@
   "50lpp": "50Lines/Page",
   "100lpp": "100Lines/Page",
   "AI": {
+    "Canceled": "Process canceled",
     "AIThinking": "AI is thinking...",
     "AddBtn": "Add",
     "AddClassFromWeaviate": "Add a class from Weaviate",

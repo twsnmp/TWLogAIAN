@@ -24,6 +24,7 @@
   } from "svelte-octicons";
   import SerachConf from "./SearchConf.svelte";
   import Result from "./Result.svelte";
+  import SearchModal from "./SearchModal.svelte";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { showLogChart, resizeLogChart, getLogChartImage } from "./logchart";
   import { getLogData, getLogColums, getGridSearch } from "./logview";
@@ -234,13 +235,17 @@
   }
 
   let busyMsg = "";
+  let searchStatus = "search";
+  let searchAborted = false;
+  let isComposing = false;
 
   const cancelSearch = () => {
+    searchAborted = true;
     CancelAIReport();
     busy = false;
     busyMsg = "";
     infoMsg = "";
-    errorMsg = $_("AI.Canceled") || "Canceled";
+    errorMsg = $_("SearchModal.Canceled") || "検索を中止しました";
   };
 
   const search = async () => {
@@ -249,14 +254,16 @@
     showConf = false;
     filter.st = false;
     filter.et = false;
+    searchAborted = false;
     busy = true;
-    busyMsg = $_("LogView.Searching");
 
     try {
       if (conf.mode === "ai" && conf.query.trim()) {
-        busyMsg = $_("SearchConf.AIGenerating") || "Generating regex...";
+        searchStatus = "ai";
+        busyMsg = $_("SearchModal.AIThinking") || "AIが正規表現を考案中...";
         const loc = locale === "ja" ? "ja" : "en";
         const res = await GenerateRegex(conf.query, loc);
+        if (searchAborted) return;
         if (res && res.Regex) {
           conf.query = res.Regex;
           conf.mode = "regexp";
@@ -272,7 +279,8 @@
         }
       }
 
-      busyMsg = $_("LogView.Searching");
+      searchStatus = "search";
+      busyMsg = $_("SearchModal.Searching") || "ログを検索中...";
       const request = {
         Mode: conf.mode === "ai" ? "regexp" : conf.mode,
         Query: conf.query,
@@ -285,6 +293,7 @@
       };
 
       const r = await SearchLog(request);
+      if (searchAborted) return;
       if (r) {
         result = r;
         if (logView == "") {
@@ -310,7 +319,9 @@
         setSearchInfo();
       }
     } catch (err) {
-      errorMsg = err.toString();
+      if (!searchAborted) {
+        errorMsg = err.toString();
+      }
     } finally {
       busy = false;
       busyMsg = "";
@@ -789,23 +800,41 @@
       </div>
     {/if}
     <div class="Box-row">
-      <div class="clearfix">
-        <div class="col-9 float-left">
+      <div class="d-flex flex-items-center gap-2">
+        <div class="flex-1 min-width-0">
           <input
             class="form-control input-block"
             type="text"
             placeholder={conf.mode === "ai" ? $_("SearchConf.AIPromptPlaceholder") : $_("LogView.SearchText")}
             bind:value={conf.query}
+            on:compositionstart={() => {
+              isComposing = true;
+            }}
+            on:compositionend={() => {
+              setTimeout(() => {
+                isComposing = false;
+              }, 50);
+            }}
+            on:keydown={(e) => {
+              if (e.key === "Enter") {
+                if (isComposing || e.isComposing || e.keyCode === 229) {
+                  return;
+                }
+                if (!busy) {
+                  search();
+                }
+              }
+            }}
           />
         </div>
-        <div class="col-3 float-left">
+        <div class="d-flex flex-items-center gap-1 flex-shrink-0">
           {#if conf.query != ""}
             <button class="btn btn-danger" type="button" on:click={clear}>
               <Trash16 />
             </button>
           {/if}
           <button
-            class="btn  btn-secondary"
+            class="btn btn-secondary"
             type="button"
             on:click={() => {
               BrowserOpenURL(
@@ -819,7 +848,7 @@
           </button>
           {#if !showConf}
             <button
-              class="btn  btn-secondary"
+              class="btn btn-secondary"
               type="button"
               on:click={() => {
                 showConf = true;
@@ -829,7 +858,7 @@
             </button>
           {:else}
             <button
-              class="btn  btn-secondary"
+              class="btn btn-secondary"
               type="button"
               on:click={() => {
                 showConf = false;
@@ -838,24 +867,15 @@
               <TriangleUp16 />
             </button>
           {/if}
-          {#if !busy}
-            <button
-              class="btn btn-primary ml-2"
-              type="button"
-              on:click={search}
-            >
-              <Search16 />
-              {$_('LogView.SearchBtn')}
-            </button>
-          {:else}
-            <button class="btn btn-primary ml-2" aria-disabled="true">
-              <Search16 />
-              <span>{busyMsg || $_('LogView.Searching')}</span><span class="AnimatedEllipsis"></span>
-            </button>
-            <button class="btn btn-danger ml-1" type="button" on:click={cancelSearch} title={$_('AI.Cancel') || 'Cancel'}>
-              <X16 />
-            </button>
-          {/if}
+          <button
+            class="btn btn-primary ml-1"
+            type="button"
+            disabled={busy}
+            on:click={search}
+          >
+            <Search16 />
+            {$_('LogView.SearchBtn')}
+          </button>
         </div>
       </div>
     </div>
@@ -986,7 +1006,21 @@
     {/if}
   </div>
 <div id="clipboard"></div>
+
+<SearchModal
+  show={busy}
+  status={searchStatus}
+  detailMessage={busyMsg}
+  on:cancel={cancelSearch}
+/>
+
 <style>
+  .gap-1 {
+    gap: 4px;
+  }
+  .gap-2 {
+    gap: 8px;
+  }
   #chart {
     width: 100%;
     height: 230px;
