@@ -2,8 +2,8 @@
   import * as echarts from 'echarts'
   import { getFieldName,getFields,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
-  import { createEventDispatcher, onMount, tick } from "svelte";
-  import { showTimeChart, resizeTimeChart,getTimeChartImage } from "./time";
+  import { createEventDispatcher, onMount, onDestroy, tick } from "svelte";
+  import { showTimeChart, resizeTimeChart, getTimeChartImage, disposeTimeChart } from "./time";
   import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _,getLocale } from '../../i18n/i18n';
@@ -16,6 +16,7 @@
   export let fields = [];
   export let dark = false;
 
+  let chartDiv;
   let numFields = [];
   let field = "";
   let chartType = "";
@@ -26,11 +27,12 @@
   let pagination = false;
 
   const updateTime = async () => {
-    if(field == "" ){
+    await tick();
+    if (!chartDiv || field == "") {
+      disposeTimeChart();
       return;
     }
-    await tick();
-    data = showTimeChart("chart", logs, field,chartType,dark);
+    data = showTimeChart(chartDiv, logs, field, chartType, dark);
     if(chartType == "1h" || chartType == "1m" ){
       columns = [
         {
@@ -78,11 +80,16 @@
     }
   };
 
-  onMount(() => {
+  onMount(async () => {
     numFields = getFields(fields,"number");
     if(field == "" && numFields.length > 0 ){
       field = numFields[0];
     }
+    await updateTime();
+  });
+
+  onDestroy(() => {
+    disposeTimeChart();
   });
 
   let exportType = '';
@@ -123,6 +130,7 @@
   };
 
   const back = () => {
+    disposeTimeChart();
     dispatch("done", {});
   };
 
@@ -159,7 +167,7 @@
   </div>
   <div style="overflow-y: auto; flex: 1;">
     <div class="Box-row">
-      <div id="chart"></div>
+      <div id="timeChart" bind:this={chartDiv}></div>
     </div>
     <div class="Box-row markdown-body log">
       <Grid {data} sort search {pagination} {columns} language={gridLang} />
@@ -190,7 +198,7 @@
 </div>
 
 <style>
-  #chart {
+  #timeChart {
     width: 100%;
     height: 300px;
     margin: 5px auto;

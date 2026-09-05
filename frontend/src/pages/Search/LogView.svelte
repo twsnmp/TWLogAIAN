@@ -44,7 +44,6 @@
   import EditExtractorType from "../Setting/EditExtractorType.svelte";
   import { loadFieldTypes, getFieldType } from "../../js/define";
   import numeral from "numeral";
-  import AutoEncoder from "./AutoEncoder.svelte";
   import * as echarts from "echarts";
   import { _,getLocale } from '../../i18n/i18n';
   import { copyText } from "svelte-copy";
@@ -94,8 +93,6 @@
   };
   let data = [];
   let columns = [];
-  let aecdata = [];
-  let aeStart;
   let infoMsg = "";
   let errorMsg = "";
   let anomalyTime = "";
@@ -232,7 +229,6 @@
   }
   const search = async () => {
     data.length = 0;
-    aecdata = [];
     anomalyTime = "";
     showConf = false;
     filter.st = false;
@@ -266,12 +262,7 @@
         conf.history = conf.history.filter((h) => h != conf.query);
         conf.history.push(conf.query);
       }
-      if (conf.anomaly == "autoencoder") {
-        busy = true;
-        showAutoencoder = true;
-        aeStart = new Date();
-        return;
-      } else if (conf.anomaly != "") {
+      if (conf.anomaly != "") {
         anomalyTime = (r.AnomalyDur / 1000.0).toFixed(3) + "s";
       }
       errorMsg = r.ErrorMsg;
@@ -605,20 +596,6 @@
     setLogTable();
   };
 
-  let showAutoencoder = false;
-  const handleAutoencoder = () => {
-    showAutoencoder = false;
-    const aeEnd = new Date();
-    anomalyTime =
-      (
-        (result.AnomalyDur + aeEnd.getTime() - aeStart.getTime()) /
-        1000.0
-      ).toFixed(3) + "s";
-    busy = false;
-    setLogTable();
-    updateChart();
-  };
-
   let extractorType = {
     Key: "",
     Name: "",
@@ -665,7 +642,7 @@
 <svelte:window on:resize={onResize} />
 
 {#if page == "result"}
-  <Result {indexInfo} {dark} {aecdata} on:done={handleDone} />
+  <Result {indexInfo} {dark} on:done={handleDone} />
 {:else if page == "memo"}
   <Memo on:done={handleDone} dark/>
 {:else if page == "ranking"}
@@ -818,16 +795,6 @@
           fields={indexInfo.Fields}
           {extractorTypeList}
           on:update={handleUpdateQuery}
-        />
-      </div>
-    {/if}
-    {#if showAutoencoder}
-      <div class="Box-row">
-        <AutoEncoder
-          {dark}
-          chartData={aecdata}
-          logs={result.Logs}
-          on:done={handleAutoencoder}
         />
       </div>
     {/if}

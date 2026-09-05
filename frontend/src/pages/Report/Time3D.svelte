@@ -2,8 +2,8 @@
   import * as echarts from 'echarts'
   import { getFieldName,getFields,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
-  import { createEventDispatcher, onMount, tick } from "svelte";
-  import { showTime3DChart, resizeTime3DChart,getTime3DChartImage } from "./time3d";
+  import { createEventDispatcher, onMount, onDestroy, tick } from "svelte";
+  import { showTime3DChart, resizeTime3DChart, getTime3DChartImage, disposeTime3DChart } from "./time3d";
   import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _,getLocale } from '../../i18n/i18n';
@@ -16,6 +16,7 @@
   export let fields = [];
   export let dark = false;
 
+  let chartDiv;
   let numFields = [];
   let catFields = [];
   let xField = "";
@@ -47,11 +48,12 @@
   let pagination = false;
 
   const updateTime3DChart = async () => {
-    if( xField == "" || zField == "" || colorField == "" ){
+    await tick();
+    if (!chartDiv || xField == "" || zField == "" || colorField == "") {
+      disposeTime3DChart();
       return;
     }
-    await tick();
-    data = showTime3DChart("chart", logs, xField,zField,colorField,dark);
+    data = showTime3DChart(chartDiv, logs, xField, zField, colorField, dark);
     if (data.length > 10) {
       pagination = {
         limit: getTableLimit(),
@@ -100,11 +102,16 @@
     exportType = "";
   }
 
+  onDestroy(() => {
+    disposeTime3DChart();
+  });
+
   const onResize = () => {
     resizeTime3DChart();
   };
 
   const back = () => {
+    disposeTime3DChart();
     dispatch("done", {});
   };
 
@@ -153,7 +160,7 @@
   </div>
   <div style="overflow-y: auto; flex: 1;">
     <div class="Box-row">
-      <div id="chart"></div>
+      <div id="time3dChart" bind:this={chartDiv}></div>
     </div>
     <div class="Box-row markdown-body log">
       <Grid {data} sort search {pagination} {columns} language={gridLang} />
@@ -184,7 +191,7 @@
 </div>
 
 <style>
-  #chart {
+  #time3dChart {
     width: 100%;
     height: 350px;
     margin: 5px auto;

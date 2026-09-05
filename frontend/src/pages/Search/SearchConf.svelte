@@ -262,9 +262,13 @@
     <select class="form-select" bind:value={conf.anomaly}>
       <option value="">{$_("SearchConf.NotDetect")}</option>
       <option value="iforest">Isolation Forest</option>
+      <option value="zscore">{$_("SearchConf.ZScore")}</option>
 {#if conf.limit <= 10000}
       <option value="lof">Local Outlier Factor</option>
+      <option value="knn">{$_("SearchConf.KNN")}</option>
+      <option value="mahalanobis">{$_("SearchConf.Mahalanobis")}</option>
       <option value="autoencoder">Auto Encoder</option>
+      <option value="lstm">{$_("SearchConf.LSTM")}</option>
 {/if}
       <option value="sum">Sum</option>
     </select>

@@ -50,7 +50,11 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
   if (chart) {
     chart.dispose()
   }
-  chart = echarts.init(document.getElementById(div),dark ? "dark" : "")
+  const el = typeof div === "string" ? document.getElementById(div) : div;
+  if (!el) {
+    return [];
+  }
+  chart = echarts.init(el, dark ? "dark" : "")
   const options = {
     title: {
       show: false,
@@ -158,13 +162,22 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
       },
     ],
   }
-  chart.setOption(options)
+  chart.setOption(options, true)
   chart.resize()
   return data;
 }
 
 export const resizeTime3DChart = () => {
-  chart.resize();
+  if (chart) {
+    chart.resize();
+  }
+}
+
+export const disposeTime3DChart = () => {
+  if (chart) {
+    chart.dispose();
+    chart = undefined;
+  }
 }
 
 export const getTime3DChartImage = () => {

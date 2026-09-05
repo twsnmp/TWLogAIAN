@@ -2,7 +2,6 @@
   import { X16 } from "svelte-octicons";
   import { createEventDispatcher,tick } from "svelte";
   import { showLogHeatmap, resizeLogHeatmap} from "./logheatmap";
-  import AutoEncoder from "./AutoEncoder.svelte";
   import { onMount } from 'svelte';
   import numeral from 'numeral';
   import {
@@ -16,7 +15,6 @@
   import {GetProcessInfo} from '../../../wailsjs/go/main/App';
 
   export let indexInfo;
-  export let aecdata;
   export let dark = false;
   let readLines = 0;
   let skipLines = 0;
@@ -185,12 +183,6 @@
           </tbody>
         </table>
       </div>
-      {#if aecdata.length > 0}
-        <div class="Box-row">
-          <h5>{$_('Result.AutoEncoderStat')}</h5>
-          <AutoEncoder {dark} chartData={aecdata} />
-        </div>
-      {/if}
     </div>
     <div class="Box-footer text-left">
       <button class="btn" type="button" on:click={back}>

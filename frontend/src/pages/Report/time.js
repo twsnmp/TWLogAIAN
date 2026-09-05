@@ -10,7 +10,8 @@ let chart;
 const calcRegression = (logs, field, chartType) => {
   const data = [];
   logs.forEach((l) => {
-    data.push([l.Time / (1000 * 1000), l.KeyValue[field] || 0.0]);
+    const val = (l.KeyValue && l.KeyValue[field] != null) ? Number(l.KeyValue[field]) : 0.0;
+    data.push([l.Time / (1000 * 1000), isNaN(val) ? 0.0 : val]);
   });
   return ecStat.regression(chartType, data);
 }
@@ -59,17 +60,35 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
   if (validLogs.length === 0) {
     return [];
   }
-  chart = echarts.init(document.getElementById(div), dark ? "dark" : null);
+  const el = typeof div === "string" ? document.getElementById(div) : div;
+  if (!el) {
+    return [];
+  }
+  chart = echarts.init(el, dark ? "dark" : null);
   const option = {
     title: {
       show: false,
     },
     toolbox: {},
-    dataZoom: [{}],
+    dataZoom: [
+      {
+        type: "inside",
+        xAxisIndex: 0,
+      },
+      {
+        type: "slider",
+        xAxisIndex: 0,
+        bottom: 8,
+        height: 20,
+      },
+    ],
     legend: {
+      top: 6,
+      left: "center",
       data: [getFieldName(field)],
       textStyle: {
-        fontSize: 10,
+        fontSize: 11,
+        color: dark ? "#c9d1d9" : "#24292f",
       },
     },
     tooltip: {
@@ -79,10 +98,10 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
       },
     },
     grid: {
-      left: "10%",
-      right: "10%",
+      left: "8%",
+      right: "8%",
       top: 40,
-      buttom: 0,
+      bottom: 60,
     },
     xAxis: {
       type: "time",
@@ -205,7 +224,8 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
         }
         tS = tC;
       }
-      values.push(l.KeyValue[field] || 0.0);
+      const val = (l.KeyValue && l.KeyValue[field] != null) ? Number(l.KeyValue[field]) : 0.0;
+      values.push(isNaN(val) ? 0.0 : val);
     });
     if (values.length > 0 ){
       tS++;
@@ -224,7 +244,8 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
     }
     validLogs.forEach((l) => {
       const t = new Date(l.Time / (1000 * 1000));
-      option.series[0].data.push([t, l.KeyValue[field] || 0.0]);
+      const val = (l.KeyValue && l.KeyValue[field] != null) ? Number(l.KeyValue[field]) : 0.0;
+      option.series[0].data.push([t, isNaN(val) ? 0.0 : val]);
     });
     const reg = calcRegression(validLogs, field, chartType);
     option.legend.data.push($_('Js.Regression') +'('+ reg.expression +")");
@@ -259,20 +280,31 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
     validLogs.forEach((l) => {
       const t = new Date(l.Time / (1000 * 1000));
       const name = echarts.time.format(t, "{yyyy}/{MM}/{dd} {HH}:{mm}:{ss}");
+      const val = (l.KeyValue && l.KeyValue[field] != null) ? Number(l.KeyValue[field]) : 0.0;
+      const numVal = isNaN(val) ? 0.0 : val;
       option.series[0].data.push({
         name,
-        value: [t, l.KeyValue[field] || 0.0],
+        value: [t, numVal],
       });
-      data.push([l.Time,l.KeyValue[field] || 0.0]);
+      data.push([l.Time, numVal]);
     });
   }
-  chart.setOption(option);
+  chart.setOption(option, true);
   chart.resize();
   return data;
 };
 
 export const resizeTimeChart = () => {
-  chart.resize();
+  if (chart) {
+    chart.resize();
+  }
+};
+
+export const disposeTimeChart = () => {
+  if (chart) {
+    chart.dispose();
+    chart = undefined;
+  }
 };
 
 export const getTimeChartImage = () => {
