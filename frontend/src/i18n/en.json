@@ -474,7 +474,9 @@
     "SaveBtn": "Save",
     "ConvertToGrok": "Convert to Grok",
     "ConvertToWildcard": "Convert to Wildcard",
-    "ShortcutHint": "(or select text and press Cmd/Ctrl+W or Cmd/Ctrl+S)"
+    "ShortcutHint": "(or select text and press Cmd/Ctrl+W or Cmd/Ctrl+S)",
+    "AIPatGen": "AI Pattern Gen",
+    "AIGenerating": "Generating..."
   },
   "EditFieldType": {
     "Title": "Edit field type",

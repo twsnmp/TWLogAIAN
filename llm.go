@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"sort"
@@ -16,6 +17,7 @@ import (
 	"github.com/tmc/langchaingo/llms/openai"
 	"github.com/twsnmp/TWLogAIAN/pkg/ai/tensai"
 	"github.com/twsnmp/TWLogAIAN/pkg/model"
+	"github.com/vjeantet/grok"
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -819,3 +821,292 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 		Stats:    stats,
 	}
 }
+
+// AIGrokResp represents the result of AI-generated Grok pattern
+type AIGrokResp struct {
+	Grok      string `json:"Grok"`
+	TimeField string `json:"TimeField"`
+	IPFields  string `json:"IPFields"`
+	MACFields string `json:"MACFields"`
+	ErrorMsg  string `json:"ErrorMsg"`
+}
+
+type aiGrokJSON struct {
+	Grok      string `json:"grok"`
+	TimeField string `json:"time_field"`
+	IPFields  string `json:"ip_fields"`
+	MACFields string `json:"mac_fields"`
+}
+
+// parseAIGrokResponse parses the raw LLM output into AIGrokResp
+func parseAIGrokResponse(rawResp string) AIGrokResp {
+	resp := AIGrokResp{}
+	clean := strings.TrimSpace(rawResp)
+
+	// 1. Try to find JSON object {...}
+	startIdx := strings.Index(clean, "{")
+	endIdx := strings.LastIndex(clean, "}")
+	if startIdx != -1 && endIdx != -1 && endIdx > startIdx {
+		jsonCandidate := clean[startIdx : endIdx+1]
+		var parsed aiGrokJSON
+		if err := json.Unmarshal([]byte(jsonCandidate), &parsed); err == nil && parsed.Grok != "" {
+			resp.Grok = strings.TrimSpace(parsed.Grok)
+			resp.TimeField = strings.TrimSpace(parsed.TimeField)
+			resp.IPFields = strings.TrimSpace(parsed.IPFields)
+			resp.MACFields = strings.TrimSpace(parsed.MACFields)
+			return resp
+		}
+	}
+
+	// 2. Fallback: extract from markdown code blocks
+	codeBlockRe := regexp.MustCompile("(?s)```(?:grok)?\n?(.*?)\n?```")
+	matches := codeBlockRe.FindStringSubmatch(clean)
+	if len(matches) > 1 && strings.TrimSpace(matches[1]) != "" {
+		candidate := strings.TrimSpace(matches[1])
+		if strings.Contains(candidate, "%{") {
+			resp.Grok = candidate
+			return resp
+		}
+	}
+
+	// 3. Fallback: find line containing %{...}
+	for _, line := range strings.Split(clean, "\n") {
+		trimmed := strings.TrimSpace(line)
+		trimmed = strings.Trim(trimmed, "`\"'")
+		if strings.Contains(trimmed, "%{") {
+			resp.Grok = trimmed
+			return resp
+		}
+	}
+
+	resp.Grok = clean
+	return resp
+}
+
+// AIGrok generates a Grok extraction pattern using LLM based on test log
+func (b *App) AIGrok(testData, lang string) AIGrokResp {
+	res := AIGrokResp{}
+	if b.config.LLMProvider == "" || b.config.LLMProvider == "none" {
+		res.ErrorMsg = "LLM provider is not configured"
+		return res
+	}
+
+	ctx := b.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	llm, err := b.GetLLM(ctx)
+	if err != nil {
+		OutLog("AIGrok GetLLM err=%v", err)
+		res.ErrorMsg = err.Error()
+		return res
+	}
+
+	trimmedLog := strings.TrimSpace(testData)
+	if trimmedLog == "" {
+		res.ErrorMsg = "Test log data is required"
+		return res
+	}
+
+	// Extract first non-empty line as main sample
+	sampleLine := ""
+	for _, l := range strings.Split(trimmedLog, "\n") {
+		l = strings.TrimSpace(l)
+		if l != "" {
+			sampleLine = l
+			break
+		}
+	}
+
+	var systemPrompt string
+	var humanContent string
+
+	if lang == "ja" {
+		systemPrompt = `あなたはログ分析およびLogstash/Grokパターンの専門家です。
+与えられた対象ログ全体を解析し、抽出可能なすべての要素（日時、ホスト、プロセス、PID、IPアドレス、MACアドレス、ユーザー名、ステータス、数値、メッセージなど）を、最適なGrokパターン（%{パターン名:フィールド名}）に置き換えて抽出するGrokパターンを作成してください。
+
+【厳格なルール】
+1. ログのテキストをそのまま返してはいけません。必ず抽出対象を %{パターン名:フィールド名} に置き換えてください。
+2. 抽出する各フィールドには、必ず意味のある英数字のフィールド名（キャプチャ名）を付けてください。
+   代表的なGrokパターン:
+   - 日時: %{SYSLOGTIMESTAMP:timestamp}, %{TIMESTAMP_ISO8601:timestamp}, %{HTTPDATE:timestamp}
+   - IPアドレス: %{IPV4:src_ip}, %{IPV6:src_ip}, %{IP:src_ip}
+   - ホスト・ドメイン名: %{NOTSPACE:host}, %{HOSTNAME:host}
+   - プロセス・PID: %{WORD:process}\[%{INT:pid}\]
+   - 単語・数値: %{WORD:action}, %{INT:status}, %{NUMBER:bytes}
+   - 任意テキスト: %{DATA:message}, %{GREEDYDATA:message}
+3. time_field, ip_fields, mac_fields には、Grokパターン内で %{...:フィールド名} として定義した【フィールド名】のみを記入してください。ログの実際の値（IPアドレスの数値など）は絶対に入れないでください。
+4. 必ず以下のJSON形式のみで回答し、前後に解説文やMarkdownコードブロックは含めないでください。
+
+【回答例1 (Syslog)】
+対象ログ: Dec 10 06:55:46 LabSZ sshd[24200]: Invalid user webmaster from 173.234.31.186
+回答:
+{"grok":"%{SYSLOGTIMESTAMP:timestamp} %{NOTSPACE:host} %{WORD:process}\\[%{INT:pid}\\]: Invalid user %{WORD:user} from %{IP:src_ip}","time_field":"timestamp","ip_fields":"src_ip","mac_fields":""}
+
+【回答例2 (Webアクセスログ)】
+対象ログ: 192.168.1.10 - frank [10/Oct/2000:13:55:36 -0700] "GET /index.html HTTP/1.1" 200 2326
+回答:
+{"grok":"%{IP:client_ip} %{NOTSPACE:ident} %{WORD:auth} \\[%{HTTPDATE:timestamp}\\] \"%{WORD:method} %{NOTSPACE:request} HTTP/%{NUMBER:http_version}\" %{INT:response} %{INT:bytes}","time_field":"timestamp","ip_fields":"client_ip","mac_fields":""}`
+
+		humanContent = fmt.Sprintf("対象ログ:\n%s\n\nログから抽出可能なすべての要素を %%{パターン名:フィールド名} に置換したJSONのみを出力してください。", sampleLine)
+	} else {
+		systemPrompt = `You are an expert in log analysis and Logstash/Grok patterns.
+Analyze the given target log and create a comprehensive Logstash Grok pattern that extracts all possible fields (timestamp, host, process, PID, IP, MAC, user, status, numbers, message) using %{PATTERN:field_name}.
+
+[STRICT RULES]
+1. Do NOT return raw log text. You MUST replace extractable elements with %{PATTERN:field_name}.
+2. Always assign meaningful alphanumeric field names (named captures) to extracted fields.
+   Common Grok patterns:
+   - Timestamps: %{SYSLOGTIMESTAMP:timestamp}, %{TIMESTAMP_ISO8601:timestamp}, %{HTTPDATE:timestamp}
+   - IP addresses: %{IPV4:src_ip}, %{IPV6:src_ip}, %{IP:src_ip}
+   - Host/Domain: %{NOTSPACE:host}, %{HOSTNAME:host}
+   - Process/PID: %{WORD:process}\[%{INT:pid}\]
+   - Words/Numbers: %{WORD:action}, %{INT:status}, %{NUMBER:bytes}
+   - Free text/messages: %{DATA:message}, %{GREEDYDATA:message}
+3. time_field, ip_fields, mac_fields MUST only contain the FIELD NAMES (named captures) defined in your grok pattern. NEVER put raw log values (like actual IP strings) there.
+4. Output ONLY valid JSON without any markdown code fences or conversational text.
+
+[Example 1 (Syslog)]
+Target: Dec 10 06:55:46 LabSZ sshd[24200]: Invalid user webmaster from 173.234.31.186
+Response:
+{"grok":"%{SYSLOGTIMESTAMP:timestamp} %{NOTSPACE:host} %{WORD:process}\\[%{INT:pid}\\]: Invalid user %{WORD:user} from %{IP:src_ip}","time_field":"timestamp","ip_fields":"src_ip","mac_fields":""}
+
+[Example 2 (Web Access)]
+Target: 192.168.1.10 - frank [10/Oct/2000:13:55:36 -0700] "GET /index.html HTTP/1.1" 200 2326
+Response:
+{"grok":"%{IP:client_ip} %{NOTSPACE:ident} %{WORD:auth} \\[%{HTTPDATE:timestamp}\\] \"%{WORD:method} %{NOTSPACE:request} HTTP/%{NUMBER:http_version}\" %{INT:response} %{INT:bytes}","time_field":"timestamp","ip_fields":"client_ip","mac_fields":""}`
+
+		humanContent = fmt.Sprintf("Target Log:\n%s\n\nReturn ONLY the JSON format replacing all extractable fields with %%{PATTERN:field_name}.", sampleLine)
+	}
+
+	history := []llms.MessageContent{
+		llms.TextParts(llms.ChatMessageTypeSystem, systemPrompt),
+		llms.TextParts(llms.ChatMessageTypeHuman, humanContent),
+	}
+
+	resp, err := llm.GenerateContent(ctx, history)
+	if err != nil {
+		OutLog("AIGrok GenerateContent err=%v", err)
+		res.ErrorMsg = err.Error()
+		return res
+	}
+
+	if resp == nil || len(resp.Choices) == 0 || resp.Choices[0].Content == "" {
+		res.ErrorMsg = "No response from LLM"
+		return res
+	}
+
+	res = parseAIGrokResponse(resp.Choices[0].Content)
+	b.cleanAndValidateAIGrok(&res, sampleLine)
+
+	return res
+}
+
+func (b *App) cleanAndValidateAIGrok(res *AIGrokResp, sampleLine string) {
+	namedCaptureRe := regexp.MustCompile(`%\{[A-Za-z0-9_]+:([A-Za-z0-9_]+)\}`)
+	matches := namedCaptureRe.FindAllStringSubmatch(res.Grok, -1)
+
+	// Check if grok pattern has captures and is syntactically valid and matches sample
+	needsFallback := len(matches) == 0
+	if !needsFallback {
+		grokConfig := grok.Config{
+			Patterns:          make(map[string]string),
+			NamedCapturesOnly: true,
+		}
+		grokConfig.Patterns["TWLOGAIAN"] = strings.TrimSpace(res.Grok)
+		g, err := grok.NewWithConfig(&grokConfig)
+		if err != nil {
+			needsFallback = true
+		} else if sampleLine != "" {
+			values, err := g.Parse("%{TWLOGAIAN}", sampleLine)
+			if err != nil || len(values) == 0 {
+				OutLog("AIGrok pattern failed to match sample: pat=%s, err=%v", res.Grok, err)
+				needsFallback = true
+			}
+		}
+	}
+
+	// Fallback to AutoGrok if LLM output was invalid, empty, or couldn't match sample
+	if needsFallback {
+		autoRes := b.AutoGrok(sampleLine)
+		if autoRes.Grok != "" {
+			res.Grok = autoRes.Grok
+			res.ErrorMsg = ""
+		} else if res.ErrorMsg == "" {
+			res.ErrorMsg = "No valid Grok pattern could be generated from log"
+		}
+	}
+
+	// Parse with final Grok pattern to extract actual captured field names and values
+	grokConfig := grok.Config{
+		Patterns:          make(map[string]string),
+		NamedCapturesOnly: true,
+	}
+	grokConfig.Patterns["TWLOGAIAN"] = strings.TrimSpace(res.Grok)
+	g, err := grok.NewWithConfig(&grokConfig)
+	if err != nil {
+		if res.ErrorMsg == "" {
+			res.ErrorMsg = fmt.Sprintf("Invalid Grok pattern: %v", err)
+		}
+		return
+	}
+
+	capturedFieldMap := make(map[string]string)
+	if sampleLine != "" {
+		if values, err := g.Parse("%{TWLOGAIAN}", sampleLine); err == nil {
+			for k, v := range values {
+				capturedFieldMap[k] = v
+			}
+		}
+	}
+
+	// Clean / auto-detect TimeField
+	if _, ok := capturedFieldMap[res.TimeField]; !ok {
+		res.TimeField = ""
+		for k := range capturedFieldMap {
+			lk := strings.ToLower(k)
+			if strings.Contains(lk, "time") || strings.Contains(lk, "date") {
+				res.TimeField = k
+				break
+			}
+		}
+	}
+
+	// Clean / auto-detect IPFields
+	validIPFields := []string{}
+	for _, f := range strings.Split(res.IPFields, ",") {
+		f = strings.TrimSpace(f)
+		if _, ok := capturedFieldMap[f]; ok {
+			validIPFields = append(validIPFields, f)
+		}
+	}
+	if len(validIPFields) == 0 {
+		for k, v := range capturedFieldMap {
+			lk := strings.ToLower(k)
+			if strings.Contains(lk, "ip") || regIPNorm.MatchString(v) {
+				validIPFields = append(validIPFields, k)
+			}
+		}
+	}
+	res.IPFields = strings.Join(validIPFields, ",")
+
+	// Clean / auto-detect MACFields
+	validMACFields := []string{}
+	for _, f := range strings.Split(res.MACFields, ",") {
+		f = strings.TrimSpace(f)
+		if _, ok := capturedFieldMap[f]; ok {
+			validMACFields = append(validMACFields, f)
+		}
+	}
+	if len(validMACFields) == 0 {
+		for k, v := range capturedFieldMap {
+			lk := strings.ToLower(k)
+			if strings.Contains(lk, "mac") || regMACNorm.MatchString(v) {
+				validMACFields = append(validMACFields, k)
+			}
+		}
+	}
+	res.MACFields = strings.Join(validMACFields, ",")
+}
+

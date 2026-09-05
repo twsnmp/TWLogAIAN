@@ -1,7 +1,7 @@
 <script>
   import GrokEditor from "../../components/GrokEditor.svelte";
 
-  import { X16, Check16, StarFill16, Reply16, Plus16,EyeClosed16,Eye16,TriangleDown16,TriangleUp16 } from "svelte-octicons";
+  import { X16, Check16, StarFill16, Reply16, Plus16,EyeClosed16,Eye16,TriangleDown16,TriangleUp16,Hubot16 } from "svelte-octicons";
   import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { createEventDispatcher } from "svelte";
@@ -15,7 +15,7 @@
   import { onMount } from "svelte";
   import EditFieldType from "./EditFieldType.svelte";
   import { _,getLocale } from '../../i18n/i18n';
-  import {SaveExtractorType,TestGrok,AutoGrok,SaveFieldType} from '../../../wailsjs/go/main/App';
+  import {SaveExtractorType,TestGrok,AutoGrok,SaveFieldType,AIGrok,GetConfig} from '../../../wailsjs/go/main/App';
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -31,6 +31,8 @@
   const dispatch = createEventDispatcher();
   let errorMsg = "";
   let grokEditor;
+  let hasLLM = false;
+  let busyAI = false;
 
   const back = () => {
     dispatch("done", {});
@@ -121,6 +123,35 @@
     }
   };
 
+  const aiGenerate = async () => {
+    if (testLog == "") {
+      errorMsg = $_('EditExtractorType.InputTestDataMsg');
+      return;
+    }
+    errorMsg = "";
+    busyAI = true;
+    try {
+      const r = await AIGrok(testLog, locale);
+      if (r) {
+        if (r.ErrorMsg) {
+          errorMsg = r.ErrorMsg;
+        }
+        if (r.Grok) {
+          extractorType.Grok = r.Grok;
+          if (r.TimeField) extractorType.TimeField = r.TimeField;
+          if (r.IPFields) extractorType.IPFields = r.IPFields;
+          if (r.MACFields) extractorType.MACFields = r.MACFields;
+          extractorType = extractorType;
+          await test();
+        }
+      }
+    } catch (e) {
+      errorMsg = e.toString();
+    } finally {
+      busyAI = false;
+    }
+  };
+
   const getGrokPat = (s) => {
     if (s.match(/^\d{1,3}(\.\d{1,3}){3}$/)) {
       return "%{IPV4:ipv4}";
@@ -190,8 +221,16 @@
     page = "";
   };
 
-  onMount(() => {
+  onMount(async () => {
     loadFieldTypes();
+    try {
+      const cfg = await GetConfig();
+      if (cfg && cfg.LLMProvider && cfg.LLMProvider !== "none") {
+        hasLLM = true;
+      }
+    } catch (e) {
+      console.error(e);
+    }
   });
 </script>
 
@@ -353,6 +392,12 @@
         </button>
       </div>
       <div>
+        {#if hasLLM}
+          <button class="btn btn-primary mr-1" type="button" disabled={busyAI} on:click={aiGenerate}>
+            <Hubot16 />
+            {busyAI ? $_('EditExtractorType.AIGenerating') : $_('EditExtractorType.AIPatGen')}
+          </button>
+        {/if}
         <button class="btn btn-danger mr-1" type="button" on:click={auto}>
           <StarFill16 />
           {$_('EditExtractorType.AutoPatGen')}
