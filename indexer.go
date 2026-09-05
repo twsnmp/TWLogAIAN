@@ -938,7 +938,7 @@ func (b *App) searchDataStore(r SearchRequest) SearchResult {
 	}
 
 	var hit uint64
-	var logs []*LogEnt
+	logs := []*LogEnt{}
 
 	matchLog := func(logStr string) bool {
 		if re != nil {

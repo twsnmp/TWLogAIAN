@@ -45,6 +45,24 @@ func TestParseAIRegexResponse(t *testing.T) {
 			wantRegex:   "192\\.168\\.1\\.[0-9]+",
 			wantExplain: "Subnet 192.168.1.0/24",
 		},
+		{
+			name: "Phrase with space and case insensitivity",
+			raw: `{
+				"regex": "(?i)connection\\s+refused",
+				"explain": "connection refusedを含むログを検索"
+			}`,
+			wantRegex:   "(?i)connection\\s+refused",
+			wantExplain: "connection refusedを含むログを検索",
+		},
+		{
+			name: "Simple keyword contains",
+			raw: `{
+				"regex": "(?i)timeout",
+				"explain": "timeoutを含むログを検索"
+			}`,
+			wantRegex:   "(?i)timeout",
+			wantExplain: "timeoutを含むログを検索",
+		},
 	}
 
 	for _, tt := range tests {
@@ -61,5 +79,48 @@ func TestParseAIRegexResponse(t *testing.T) {
 				t.Errorf("Regex %s failed to compile: %v", got.Regex, err)
 			}
 		})
+	}
+}
+
+func TestCleanSearchPrompt(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"Invalid userを含む", "Invalid user"},
+		{"timeoutを含むログ", "timeout"},
+		{"エラーのログ", "エラー"},
+		{"パスワード認証失敗を検索", "パスワード認証失敗"},
+		{"contains Invalid user", "Invalid user"},
+		{"logs with error", "error"},
+		{"192.168.1.1からのアクセス", "192.168.1.1"},
+		{"SSHのログイン失敗", "SSHのログイン失敗"},
+		{"", ""},
+	}
+
+	for _, tt := range tests {
+		got := cleanSearchPrompt(tt.input)
+		if got != tt.want {
+			t.Errorf("cleanSearchPrompt(%q) = %q, want %q", tt.input, got, tt.want)
+		}
+	}
+}
+
+func TestCleanGeneratedRegex(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"(?i)invalid userを含む", "(?i)invalid user"},
+		{"(?i)invalid\\s+userを含むログ", "(?i)invalid\\s+user"},
+		{"(?i)timeout", "(?i)timeout"},
+		{"192\\.168\\.1\\.1", "192\\.168\\.1\\.1"},
+	}
+
+	for _, tt := range tests {
+		got := cleanGeneratedRegex(tt.input)
+		if got != tt.want {
+			t.Errorf("cleanGeneratedRegex(%q) = %q, want %q", tt.input, got, tt.want)
+		}
 	}
 }

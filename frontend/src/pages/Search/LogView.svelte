@@ -306,7 +306,7 @@
         if (logView == "ex_data" && r.ExFields.length < 1) {
           logView = r.View;
         }
-        if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "") {
+        if (r.ErrorMsg == "" && r.Logs && r.Logs.length > 0 && conf.query != "") {
           conf.history = conf.history.filter((h) => h != conf.query);
           conf.history.push(conf.query);
         }

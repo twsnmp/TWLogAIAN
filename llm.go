@@ -1125,6 +1125,10 @@ func (b *App) GenerateRegex(prompt, lang string) AIRegexResp {
 		res.ErrorMsg = "Prompt is required"
 		return res
 	}
+	cleanedPrompt := cleanSearchPrompt(trimmedPrompt)
+	if cleanedPrompt == "" {
+		cleanedPrompt = trimmedPrompt
+	}
 
 	if b.config.LLMProvider == "" || b.config.LLMProvider == "none" {
 		res.ErrorMsg = "LLM provider is not configured"
@@ -1154,53 +1158,27 @@ func (b *App) GenerateRegex(prompt, lang string) AIRegexResp {
 		return res
 	}
 
-	var systemPrompt string
-	var humanContent string
-
+	explainLang := "in English"
 	if lang == "ja" {
-		systemPrompt = `あなたはログ分析および正規表現の専門家です。
-ユーザーから入力された自然言語の検索要望（例: 「SSHのログイン失敗」「500番台のエラー」「IP 192.168.1.100からのアクセス」など）を解析し、
-ログテキストから目的のログ行を抽出するための最適な正規表現（Go言語 regexp / RE2 構文準拠）を1つ生成してください。
+		explainLang = "in Japanese"
+	}
 
-【ルール】
-1. Go言語の regexp パッケージで有効な正規表現（RE2構文）のみを出力してください。Lookaround（先読み・後読み）やバックリファレンスはGoのRE2では非対応のため絶対に使用しないでください。
-2. 大文字・小文字を区別しない場合は (?i) フラグを活用してください。（例: (?i)(failed|error|refused)）
-3. 出力は必ず以下のJSON形式のみとし、前後にMarkdownコードブロックや不要な解説文を含めないでください。
-{"regex": "正規表現パターン", "explain": "正規表現の簡潔な説明"}
+	systemPrompt := fmt.Sprintf(`You are a specialized regex generator for log analysis.
+Your task is to convert the user's log search request into a Go regular expression (RE2 syntax) and return it ONLY as a JSON object.
 
-【例1】
-入力: SSHのログイン失敗
-出力:
-{"regex": "(?i)sshd.*(failed|invalid\\s+user|authentication\\s+failure)", "explain": "sshdの失敗・無効ユーザー・認証失敗を含むログを検索"}
-
-【例2】
-入力: HTTP 500番台のエラー
-出力:
-{"regex": "\"\\s+5[0-9]{2}\\s+", "explain": "HTTPステータスコードが500番台のアクセスログを検索"}`
-
-		humanContent = fmt.Sprintf("検索要望:\n%s\n\n上記に一致するログを抽出するGo正規表現をJSON形式のみで出力してください。", trimmedPrompt)
-	} else {
-		systemPrompt = `You are an expert in log analysis and regular expressions.
-Analyze the user's natural language search request (e.g. "SSH failed logins", "HTTP 500 errors", "access from 192.168.1.100") and generate an optimal regular expression (Go regexp / RE2 syntax) to filter log lines.
+[OUTPUT FORMAT]
+{"regex": "<pattern>", "explain": "<brief explanation %s>"}
 
 [RULES]
-1. Use only regular expressions valid in Go's regexp package (RE2 syntax). Do NOT use lookarounds or backreferences as Go RE2 does not support them.
-2. Use (?i) for case-insensitivity when appropriate (e.g. (?i)(failed|error)).
-3. Return ONLY valid JSON without markdown code fences or conversational text:
-{"regex": "regex pattern", "explain": "brief explanation in English"}
+1. Extract search terms directly from the user's request. Do NOT invent unmentioned services (such as sshd, nginx, apache) or extra words.
+2. Never include query action words (e.g. "を含む", "を検索", "のログ", "contains", "search for") in the regex. Match only the target terms.
+3. Prepend (?i) for case-insensitive matching when searching text or keywords.
+4. For multi-word phrases, use \s+ between words (e.g. invalid\s+user).
+5. Escape regex meta-characters like dots when matching literal text (e.g. IP addresses).
+6. Use only regular expressions valid in Go regexp package (RE2 syntax). Do NOT use lookarounds or backreferences.
+7. Output ONLY the single JSON object without markdown code blocks, explanations, or any other conversational text.`, explainLang)
 
-[Example 1]
-Input: SSH login failures
-Output:
-{"regex": "(?i)sshd.*(failed|invalid\\s+user|authentication\\s+failure)", "explain": "Matches sshd failure, invalid user, or auth failure"}
-
-[Example 2]
-Input: HTTP 500 errors
-Output:
-{"regex": "\"\\s+5[0-9]{2}\\s+", "explain": "Matches HTTP 5xx server status codes"}`
-
-		humanContent = fmt.Sprintf("Search request:\n%s\n\nOutput only the JSON containing the Go regular expression.", trimmedPrompt)
-	}
+	humanContent := fmt.Sprintf("Search request:\n%s\n\nReturn the Go regular expression in JSON format only.\nJSON:", cleanedPrompt)
 
 	history := []llms.MessageContent{
 		llms.TextParts(llms.ChatMessageTypeSystem, systemPrompt),
@@ -1231,6 +1209,8 @@ Output:
 		return res
 	}
 
+	res.Regex = cleanGeneratedRegex(res.Regex)
+
 	// Validate regex syntax with Go regexp compiler
 	if _, err := regexp.Compile(res.Regex); err != nil {
 		OutLog("GenerateRegex invalid regex=%s err=%v", res.Regex, err)
@@ -1239,6 +1219,99 @@ Output:
 	}
 
 	return res
+}
+
+// cleanSearchPrompt strips common conversational/query prefixes and suffixes from prompt
+func cleanSearchPrompt(prompt string) string {
+	p := strings.TrimSpace(prompt)
+	if p == "" {
+		return ""
+	}
+
+	// English prefix stripping (case-insensitive)
+	lowerP := strings.ToLower(p)
+	prefixes := []string{
+		"logs containing ",
+		"logs with ",
+		"logs of ",
+		"search for ",
+		"search ",
+		"find ",
+		"contains ",
+		"contain ",
+	}
+	for _, pref := range prefixes {
+		if strings.HasPrefix(lowerP, pref) {
+			p = strings.TrimSpace(p[len(pref):])
+			lowerP = strings.ToLower(p)
+			break
+		}
+	}
+
+	// Japanese suffix stripping (longer suffixes first)
+	suffixes := []string{
+		"を含んでいるログ",
+		"を含んでいる",
+		"を含むログ",
+		"を含む",
+		"を含まないログ",
+		"を含まない",
+		"からのアクセスログ",
+		"へのアクセスログ",
+		"からのアクセス",
+		"へのアクセス",
+		"のアクセスログ",
+		"のエラーログ",
+		"のエラー",
+		"のログ",
+		"を検索",
+		"で検索",
+		"の検索",
+		"を抽出",
+		"を探す",
+		"を表示",
+		"が出ている",
+		"が出た",
+		"がある",
+		"があった",
+	}
+	for _, suff := range suffixes {
+		if strings.HasSuffix(p, suff) && len(p) > len(suff) {
+			p = strings.TrimSpace(strings.TrimSuffix(p, suff))
+			break
+		}
+	}
+
+	return p
+}
+
+// cleanGeneratedRegex sanitizes and normalizes the regex produced by LLM
+func cleanGeneratedRegex(regex string) string {
+	r := strings.TrimSpace(regex)
+	if r == "" {
+		return ""
+	}
+
+	actionSuffixes := []string{
+		"を含んでいるログ",
+		"を含んでいる",
+		"を含むログ",
+		"を含む",
+		"のログ",
+		"を検索",
+		"で検索",
+		"の検索",
+		"を抽出",
+		"を探す",
+	}
+	for _, suff := range actionSuffixes {
+		if strings.HasSuffix(r, suff) && len(r) > len(suff) {
+			r = strings.TrimSpace(strings.TrimSuffix(r, suff))
+			break
+		}
+	}
+
+	return r
 }
 
 func parseAIRegexResponse(content string) AIRegexResp {
