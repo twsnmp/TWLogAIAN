@@ -33,6 +33,25 @@
   let customPrompt = "";
   let showPatterns = false;
   let selectedPresetIndex = -1;
+  let expandedExamples = {};
+
+  $: allExpanded = summary.TopErrors && summary.TopErrors.length > 0 &&
+    summary.TopErrors.every((_, idx) => !!expandedExamples[idx]);
+
+  const toggleExample = (idx) => {
+    expandedExamples[idx] = !expandedExamples[idx];
+    expandedExamples = { ...expandedExamples };
+  };
+
+  const toggleAllExamples = () => {
+    if (!summary.TopErrors) return;
+    const targetState = !allExpanded;
+    const next = {};
+    summary.TopErrors.forEach((_, idx) => {
+      next[idx] = targetState;
+    });
+    expandedExamples = next;
+  };
 
   let summary = {
     TotalEntries: logs ? logs.length : 0,
@@ -95,6 +114,10 @@
     count: "Count",
     pattern: "Pattern",
     example: "Example",
+    showExample: "Expand example",
+    hideExample: "Collapse example",
+    expandAllExamples: "Expand all examples",
+    collapseAllExamples: "Collapse all examples",
     noErrors: "No error logs detected",
     analyzingMsg: "AI is analyzing logs...",
     thinkingMsg: "AI is thinking...",
@@ -122,6 +145,10 @@
     count: $_("AI.Count") || "発生回数",
     pattern: $_("AI.Pattern") || "パターン",
     example: $_("AI.Example") || "該当例",
+    showExample: "該当例を展開",
+    hideExample: "該当例を閉じる",
+    expandAllExamples: "すべての該当例を展開",
+    collapseAllExamples: "すべての該当例を閉じる",
     noErrors: $_("AI.NoErrors") || "エラーログは検出されませんでした",
     analyzingMsg: "AIがログ全体を分析しています...",
     thinkingMsg: $_("AI.AIThinking") || "AIが考えています...",
@@ -505,23 +532,67 @@
       {#if showPatterns}
         <div class="mt-2">
           {#if summary.TopErrors && summary.TopErrors.length > 0}
+            <div class="d-flex flex-justify-end mb-1">
+              <button
+                class="btn-link text-small text-muted"
+                type="button"
+                on:click|stopPropagation={toggleAllExamples}
+              >
+                {allExpanded ? t.collapseAllExamples : t.expandAllExamples}
+              </button>
+            </div>
             <table class="table-sm width-full" style="font-size: 12px;">
               <thead>
                 <tr>
-                  <th style="width: 8%;">#</th>
-                  <th style="width: 12%;">{t.count}</th>
-                  <th style="width: 40%;">{t.pattern}</th>
-                  <th style="width: 40%;">{t.example}</th>
+                  <th style="width: 5%;">#</th>
+                  <th style="width: 10%;">{t.count}</th>
+                  <th style="width: 70%;">{t.pattern}</th>
+                  <th style="width: 15%; text-align: right;">{t.example}</th>
                 </tr>
               </thead>
               <tbody>
                 {#each summary.TopErrors as ep, i}
-                  <tr>
-                    <td>{i + 1}</td>
+                  <tr
+                    style="cursor: pointer;"
+                    class:bg-canvas-subtle={expandedExamples[i]}
+                    on:click={() => toggleExample(i)}
+                  >
+                    <td class="text-muted">{i + 1}</td>
                     <td><span class="Label Label--danger">{ep.Count}</span></td>
-                    <td><code style="word-break: break-all;">{ep.Pattern}</code></td>
-                    <td><div class="text-small text-muted" style="word-break: break-all; max-height: 60px; overflow-y: auto;">{ep.Example}</div></td>
+                    <td>
+                      <code style="word-break: break-all;">{ep.Pattern}</code>
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                      <button
+                        class="btn btn-sm py-0 px-2 f6"
+                        type="button"
+                        on:click|stopPropagation={() => toggleExample(i)}
+                      >
+                        {#if expandedExamples[i]}
+                          <ChevronDown16 />
+                          <span class="ml-1">{t.hideExample}</span>
+                        {:else}
+                          <ChevronRight16 />
+                          <span class="ml-1">{t.showExample}</span>
+                        {/if}
+                      </button>
+                    </td>
                   </tr>
+                  {#if expandedExamples[i]}
+                    <tr>
+                      <td></td>
+                      <td colspan="3" class="p-2" style="background-color: var(--color-canvas-inset, rgba(0,0,0,0.03));">
+                        <div class="border rounded p-2" style="background-color: var(--color-canvas-default);">
+                          <div class="text-bold text-small color-fg-muted mb-1 d-flex flex-items-center">
+                            <span>{t.example}:</span>
+                          </div>
+                          <div class="text-small" style="word-break: break-all; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, monospace; max-height: 120px; overflow-y: auto;">
+                            {ep.Example}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  {/if}
                 {/each}
               </tbody>
             </table>
