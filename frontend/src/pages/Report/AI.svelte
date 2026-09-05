@@ -10,7 +10,7 @@
   } from "svelte-octicons";
   import * as echarts from "echarts";
   import { createEventDispatcher, onMount, onDestroy } from "svelte";
-  import { AnalyzeLogsWithAI, CancelAIReport } from "../../../wailsjs/go/main/App";
+  import { AnalyzeLogsWithAI, CancelAIReport, GetLogSummary } from "../../../wailsjs/go/main/App";
   import { EventsOn, EventsOff } from "../../../wailsjs/runtime/runtime";
   import { copyText } from "svelte-copy";
   import { _, getLocale } from "../../i18n/i18n";
@@ -176,19 +176,59 @@
     };
   };
 
+  const loadInitialSummary = async () => {
+    if (!logs || logs.length === 0) return;
+    try {
+      const preparedLogs = logs.map((l) => {
+        const kv = l.KeyValue ? { ...l.KeyValue } : {};
+        kv["_level"] = getLogLevel(l);
+        return {
+          ...l,
+          KeyValue: kv,
+        };
+      });
+      const s = await GetLogSummary({
+        Prompt: "",
+        Lang: lang,
+        MaskPII: maskPII,
+        TopNError: topNError,
+        SampleSize: sampleSize,
+      }, preparedLogs);
+      if (s) {
+        summary = s;
+        if (summary.TopErrors && summary.TopErrors.length > 0) {
+          showPatterns = true;
+        }
+      }
+    } catch (e) {
+      console.warn("GetLogSummary error:", e);
+    }
+  };
+
   $: if (logs) {
     calculateInitialSummary();
+    loadInitialSummary();
   }
 
   onMount(() => {
     EventsOn("ai_report_stream", (chunk) => {
       markdown += chunk;
     });
+    EventsOn("ai_report_summary", (s) => {
+      if (s) {
+        summary = s;
+        if (summary.TopErrors && summary.TopErrors.length > 0) {
+          showPatterns = true;
+        }
+      }
+    });
     calculateInitialSummary();
+    loadInitialSummary();
   });
 
   onDestroy(() => {
     EventsOff("ai_report_stream");
+    EventsOff("ai_report_summary");
     try {
       CancelAIReport();
     } catch (e) {}

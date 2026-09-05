@@ -126,6 +126,18 @@ func TestAnalyzeLogsAggregation(t *testing.T) {
 	if resp.Summary.TopErrors[0].Count != 2 {
 		t.Errorf("expected pattern count 2, got %d", resp.Summary.TopErrors[0].Count)
 	}
+
+	// Test GetLogSummary standalone
+	summary := app.GetLogSummary(req, logs)
+	if summary.TotalEntries != 4 {
+		t.Errorf("GetLogSummary: expected 4 entries, got %d", summary.TotalEntries)
+	}
+	if summary.ErrorCount != 2 {
+		t.Errorf("GetLogSummary: expected 2 error count, got %d", summary.ErrorCount)
+	}
+	if len(summary.TopErrors) != 1 {
+		t.Fatalf("GetLogSummary: expected 1 top error, got %d", len(summary.TopErrors))
+	}
 }
 
 func TestUTF8StreamDecoder(t *testing.T) {

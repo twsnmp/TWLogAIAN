@@ -605,41 +605,15 @@ func (b *App) CancelAIReport() {
 	}
 }
 
-// AnalyzeLogsWithAI aggregates statistics, extracts top error patterns, and streams AI analysis.
-func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIAnalysisReportResponse {
+// GetLogSummary computes log statistics and extracts top error patterns without calling LLM.
+func (b *App) GetLogSummary(req AIAnalysisReportRequest, logs []*LogEnt) AIReportSummary {
 	if len(logs) == 0 {
-		return AIAnalysisReportResponse{
-			Error: "No logs to analyze",
+		return AIReportSummary{
+			TopErrors: []AIErrorPattern{},
 		}
-	}
-
-	// Cancel any previously active generation
-	b.CancelAIReport()
-
-	parentCtx := b.ctx
-	if parentCtx == nil {
-		parentCtx = context.Background()
-	}
-	ctx, cancel := context.WithCancel(parentCtx)
-	b.aiMu.Lock()
-	b.aiCancel = cancel
-	b.aiMu.Unlock()
-
-	defer func() {
-		b.aiMu.Lock()
-		cancel()
-		b.aiCancel = nil
-		b.aiMu.Unlock()
-	}()
-
-	if req.Lang == "" {
-		req.Lang = "ja"
 	}
 	if req.TopNError <= 0 {
 		req.TopNError = 10
-	}
-	if req.SampleSize <= 0 {
-		req.SampleSize = 50
 	}
 
 	summary := AIReportSummary{
@@ -700,6 +674,50 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 	}
 	for i := 0; i < topN; i++ {
 		summary.TopErrors = append(summary.TopErrors, *patterns[i])
+	}
+	return summary
+}
+
+// AnalyzeLogsWithAI aggregates statistics, extracts top error patterns, and streams AI analysis.
+func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIAnalysisReportResponse {
+	if len(logs) == 0 {
+		return AIAnalysisReportResponse{
+			Error: "No logs to analyze",
+		}
+	}
+
+	// Cancel any previously active generation
+	b.CancelAIReport()
+
+	parentCtx := b.ctx
+	if parentCtx == nil {
+		parentCtx = context.Background()
+	}
+	ctx, cancel := context.WithCancel(parentCtx)
+	b.aiMu.Lock()
+	b.aiCancel = cancel
+	b.aiMu.Unlock()
+
+	defer func() {
+		b.aiMu.Lock()
+		cancel()
+		b.aiCancel = nil
+		b.aiMu.Unlock()
+	}()
+
+	if req.Lang == "" {
+		req.Lang = "ja"
+	}
+	if req.TopNError <= 0 {
+		req.TopNError = 10
+	}
+	if req.SampleSize <= 0 {
+		req.SampleSize = 50
+	}
+
+	summary := b.GetLogSummary(req, logs)
+	if b.ctx != nil {
+		wails.EventsEmit(b.ctx, "ai_report_summary", summary)
 	}
 
 	// Sample logs from the end (most recent)
