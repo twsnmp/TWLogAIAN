@@ -340,16 +340,21 @@ func (b *App) addLogToIndex(buf []*LogEnt, logMapMu *sync.Mutex) {
 }
 
 type IndexInfo struct {
-	Total     uint64
-	Fields    []string
-	Duration  string
-	StartTime int64
-	EndTime   int64
+	Total         uint64
+	Fields        []string
+	Duration      string
+	StartTime     int64
+	EndTime       int64
+	StorageEngine string
+	LLMProvider   string
 }
 
 func (b *App) GetIndexInfo() (IndexInfo, error) {
 	OutLog("GetIndexInfo")
-	ret := IndexInfo{}
+	ret := IndexInfo{
+		StorageEngine: b.getStorageEngine(),
+		LLMProvider:   b.config.LLMProvider,
+	}
 	if b.ds != nil {
 		t, err := b.ds.Count()
 		if err != nil {
@@ -422,6 +427,9 @@ type SearchResult struct {
 
 func (b *App) SearchLog(r SearchRequest) SearchResult {
 	OutLog("SearchLog r=%#v", r)
+	if r.Mode == "ai" {
+		r.Mode = "regexp"
+	}
 	if b.ds != nil {
 		return b.searchDataStore(r)
 	}
@@ -876,6 +884,9 @@ func parseTimeFilter(tf string) (int64, int64) {
 
 func (b *App) searchDataStore(r SearchRequest) SearchResult {
 	OutLog("searchDataStore r=%#v", r)
+	if r.Mode == "ai" {
+		r.Mode = "regexp"
+	}
 	stTime := time.Now()
 	view := "timeonly"
 	if b.config.Extractor == "auto" {

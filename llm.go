@@ -1110,3 +1110,207 @@ func (b *App) cleanAndValidateAIGrok(res *AIGrokResp, sampleLine string) {
 	res.MACFields = strings.Join(validMACFields, ",")
 }
 
+// AIRegexResp represents the response of GenerateRegex
+type AIRegexResp struct {
+	Regex    string `json:"Regex"`
+	Explain  string `json:"Explain"`
+	ErrorMsg string `json:"ErrorMsg"`
+}
+
+// GenerateRegex converts a natural language prompt into a regular expression suitable for log search
+func (b *App) GenerateRegex(prompt, lang string) AIRegexResp {
+	res := AIRegexResp{}
+	trimmedPrompt := strings.TrimSpace(prompt)
+	if trimmedPrompt == "" {
+		res.ErrorMsg = "Prompt is required"
+		return res
+	}
+
+	if b.config.LLMProvider == "" || b.config.LLMProvider == "none" {
+		res.ErrorMsg = "LLM provider is not configured"
+		return res
+	}
+
+	parentCtx := b.ctx
+	if parentCtx == nil {
+		parentCtx = context.Background()
+	}
+	ctx, cancel := context.WithTimeout(parentCtx, 20*time.Second)
+	defer cancel()
+
+	b.aiMu.Lock()
+	b.aiCancel = cancel
+	b.aiMu.Unlock()
+	defer func() {
+		b.aiMu.Lock()
+		b.aiCancel = nil
+		b.aiMu.Unlock()
+	}()
+
+	llm, err := b.GetLLM(ctx)
+	if err != nil {
+		OutLog("GenerateRegex GetLLM err=%v", err)
+		res.ErrorMsg = err.Error()
+		return res
+	}
+
+	var systemPrompt string
+	var humanContent string
+
+	if lang == "ja" {
+		systemPrompt = `あなたはログ分析および正規表現の専門家です。
+ユーザーから入力された自然言語の検索要望（例: 「SSHのログイン失敗」「500番台のエラー」「IP 192.168.1.100からのアクセス」など）を解析し、
+ログテキストから目的のログ行を抽出するための最適な正規表現（Go言語 regexp / RE2 構文準拠）を1つ生成してください。
+
+【ルール】
+1. Go言語の regexp パッケージで有効な正規表現（RE2構文）のみを出力してください。Lookaround（先読み・後読み）やバックリファレンスはGoのRE2では非対応のため絶対に使用しないでください。
+2. 大文字・小文字を区別しない場合は (?i) フラグを活用してください。（例: (?i)(failed|error|refused)）
+3. 出力は必ず以下のJSON形式のみとし、前後にMarkdownコードブロックや不要な解説文を含めないでください。
+{"regex": "正規表現パターン", "explain": "正規表現の簡潔な説明"}
+
+【例1】
+入力: SSHのログイン失敗
+出力:
+{"regex": "(?i)sshd.*(failed|invalid\\s+user|authentication\\s+failure)", "explain": "sshdの失敗・無効ユーザー・認証失敗を含むログを検索"}
+
+【例2】
+入力: HTTP 500番台のエラー
+出力:
+{"regex": "\"\\s+5[0-9]{2}\\s+", "explain": "HTTPステータスコードが500番台のアクセスログを検索"}`
+
+		humanContent = fmt.Sprintf("検索要望:\n%s\n\n上記に一致するログを抽出するGo正規表現をJSON形式のみで出力してください。", trimmedPrompt)
+	} else {
+		systemPrompt = `You are an expert in log analysis and regular expressions.
+Analyze the user's natural language search request (e.g. "SSH failed logins", "HTTP 500 errors", "access from 192.168.1.100") and generate an optimal regular expression (Go regexp / RE2 syntax) to filter log lines.
+
+[RULES]
+1. Use only regular expressions valid in Go's regexp package (RE2 syntax). Do NOT use lookarounds or backreferences as Go RE2 does not support them.
+2. Use (?i) for case-insensitivity when appropriate (e.g. (?i)(failed|error)).
+3. Return ONLY valid JSON without markdown code fences or conversational text:
+{"regex": "regex pattern", "explain": "brief explanation in English"}
+
+[Example 1]
+Input: SSH login failures
+Output:
+{"regex": "(?i)sshd.*(failed|invalid\\s+user|authentication\\s+failure)", "explain": "Matches sshd failure, invalid user, or auth failure"}
+
+[Example 2]
+Input: HTTP 500 errors
+Output:
+{"regex": "\"\\s+5[0-9]{2}\\s+", "explain": "Matches HTTP 5xx server status codes"}`
+
+		humanContent = fmt.Sprintf("Search request:\n%s\n\nOutput only the JSON containing the Go regular expression.", trimmedPrompt)
+	}
+
+	history := []llms.MessageContent{
+		llms.TextParts(llms.ChatMessageTypeSystem, systemPrompt),
+		llms.TextParts(llms.ChatMessageTypeHuman, humanContent),
+	}
+
+	resp, err := llm.GenerateContent(ctx, history, llms.WithMaxTokens(128), llms.WithTemperature(0.1))
+	if err != nil {
+		OutLog("GenerateRegex GenerateContent err=%v", err)
+		if ctx.Err() == context.DeadlineExceeded {
+			res.ErrorMsg = "AI generation timed out (20s)"
+		} else if ctx.Err() == context.Canceled {
+			res.ErrorMsg = "AI generation canceled"
+		} else {
+			res.ErrorMsg = err.Error()
+		}
+		return res
+	}
+
+	if resp == nil || len(resp.Choices) == 0 || resp.Choices[0].Content == "" {
+		res.ErrorMsg = "No response from LLM"
+		return res
+	}
+
+	res = parseAIRegexResponse(resp.Choices[0].Content)
+	if res.Regex == "" {
+		res.ErrorMsg = "Failed to extract regex from LLM response"
+		return res
+	}
+
+	// Validate regex syntax with Go regexp compiler
+	if _, err := regexp.Compile(res.Regex); err != nil {
+		OutLog("GenerateRegex invalid regex=%s err=%v", res.Regex, err)
+		res.ErrorMsg = fmt.Sprintf("Generated regex syntax error: %v", err)
+		return res
+	}
+
+	return res
+}
+
+func parseAIRegexResponse(content string) AIRegexResp {
+	res := AIRegexResp{}
+	c := strings.TrimSpace(content)
+
+	// Strip markdown code block if present
+	if strings.HasPrefix(c, "```") {
+		idx := strings.Index(c, "\n")
+		if idx != -1 {
+			c = c[idx+1:]
+		}
+		if lastIdx := strings.LastIndex(c, "```"); lastIdx != -1 {
+			c = c[:lastIdx]
+		}
+		c = strings.TrimSpace(c)
+	}
+
+	// Try direct JSON unmarshal
+	type jsonSchema struct {
+		Regex   string `json:"regex"`
+		Explain string `json:"explain"`
+	}
+	var parsed jsonSchema
+	if err := json.Unmarshal([]byte(c), &parsed); err == nil && parsed.Regex != "" {
+		res.Regex = parsed.Regex
+		res.Explain = parsed.Explain
+		return res
+	}
+
+	// Fallback: search for JSON object inside content
+	firstBrace := strings.Index(c, "{")
+	lastBrace := strings.LastIndex(c, "}")
+	if firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace {
+		jsonSub := c[firstBrace : lastBrace+1]
+		if err := json.Unmarshal([]byte(jsonSub), &parsed); err == nil && parsed.Regex != "" {
+			res.Regex = parsed.Regex
+			res.Explain = parsed.Explain
+			return res
+		}
+	}
+
+	// Fallback: search lines for backtick quoted regex or compile-able pattern
+	lines := strings.Split(c, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		// Check for backticks: `pattern`
+		if strings.Contains(line, "`") {
+			parts := strings.Split(line, "`")
+			if len(parts) >= 3 {
+				candidate := strings.TrimSpace(parts[1])
+				if candidate != "" {
+					if _, err := regexp.Compile(candidate); err == nil {
+						res.Regex = candidate
+						return res
+					}
+				}
+			}
+		}
+		// If line alone compiles as regex and doesn't look like plain sentence
+		if !strings.HasPrefix(line, "#") && !strings.HasPrefix(line, "*") && len(line) < 200 {
+			if _, err := regexp.Compile(line); err == nil {
+				res.Regex = line
+				return res
+			}
+		}
+	}
+
+	res.Regex = c
+	return res
+}
+

@@ -9,6 +9,8 @@
     CloseWorkDir,
     Export,
     AddMemo,
+    GenerateRegex,
+    CancelAIReport,
   } from "../../../wailsjs/go/main/App.js";
   import { BrowserOpenURL } from "../../../wailsjs/runtime/runtime.js";
   import {
@@ -103,6 +105,8 @@
     Duration: "",
     StartTime: 0,
     EndTime: 0,
+    StorageEngine: "bluge",
+    LLMProvider: "none",
   };
   let result = {
     Logs: [],
@@ -228,48 +232,88 @@
     }
     searchInfo = r;
   }
+
+  let busyMsg = "";
+
+  const cancelSearch = () => {
+    CancelAIReport();
+    busy = false;
+    busyMsg = "";
+    infoMsg = "";
+    errorMsg = $_("AI.Canceled") || "Canceled";
+  };
+
   const search = async () => {
     data.length = 0;
     anomalyTime = "";
     showConf = false;
     filter.st = false;
     filter.et = false;
-    const request = {
-      Mode: conf.mode,
-      Query: conf.query,
-      TimeFilter: getTimeFilter(),
-      GeoFilter: getGeoFilter(),
-      Anomaly: conf.anomaly,
-      Vector: conf.vector,
-      Extractor: conf.extractor,
-      Limit: conf.limit * 1 > 100 ? conf.limit * 1 : 1000,
-    }
     busy = true;
-    const r = await SearchLog(request);
-    busy = false;
-    if (r) {
-      result = r;
-      if (logView == "") {
-        logView = r.View == "auto" ? "timeonly" : r.View;
+    busyMsg = $_("LogView.Searching");
+
+    try {
+      if (conf.mode === "ai" && conf.query.trim()) {
+        busyMsg = $_("SearchConf.AIGenerating") || "Generating regex...";
+        const loc = locale === "ja" ? "ja" : "en";
+        const res = await GenerateRegex(conf.query, loc);
+        if (res && res.Regex) {
+          conf.query = res.Regex;
+          conf.mode = "regexp";
+          if (res.Explain) {
+            infoMsg = `${res.Regex} (${res.Explain})`;
+          }
+        } else if (res && res.ErrorMsg) {
+          errorMsg = res.ErrorMsg;
+          return;
+        } else {
+          errorMsg = "AI failed to generate valid regex";
+          return;
+        }
       }
-      if (lastExtractor != conf.extractor && r.ExFields.length > 0) {
-        logView = "ex_data";
+
+      busyMsg = $_("LogView.Searching");
+      const request = {
+        Mode: conf.mode === "ai" ? "regexp" : conf.mode,
+        Query: conf.query,
+        TimeFilter: getTimeFilter(),
+        GeoFilter: getGeoFilter(),
+        Anomaly: conf.anomaly,
+        Vector: conf.vector,
+        Extractor: conf.extractor,
+        Limit: conf.limit * 1 > 100 ? conf.limit * 1 : 1000,
+      };
+
+      const r = await SearchLog(request);
+      if (r) {
+        result = r;
+        if (logView == "") {
+          logView = r.View == "auto" ? "timeonly" : r.View;
+        }
+        if (lastExtractor != conf.extractor && r.ExFields.length > 0) {
+          logView = "ex_data";
+        }
+        lastExtractor = conf.extractor;
+        if (logView == "ex_data" && r.ExFields.length < 1) {
+          logView = r.View;
+        }
+        if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "") {
+          conf.history = conf.history.filter((h) => h != conf.query);
+          conf.history.push(conf.query);
+        }
+        if (conf.anomaly != "") {
+          anomalyTime = (r.AnomalyDur / 1000.0).toFixed(3) + "s";
+        }
+        errorMsg = r.ErrorMsg;
+        setLogTable();
+        updateChart();
+        setSearchInfo();
       }
-      lastExtractor = conf.extractor;
-      if (logView == "ex_data" && r.ExFields.length < 1) {
-        logView = r.View;
-      }
-      if (r.ErrorMsg == "" && r.Logs.length > 0 && conf.query != "") {
-        conf.history = conf.history.filter((h) => h != conf.query);
-        conf.history.push(conf.query);
-      }
-      if (conf.anomaly != "") {
-        anomalyTime = (r.AnomalyDur / 1000.0).toFixed(3) + "s";
-      }
-      errorMsg = r.ErrorMsg;
-      setLogTable();
-      updateChart();
-      setSearchInfo();
+    } catch (err) {
+      errorMsg = err.toString();
+    } finally {
+      busy = false;
+      busyMsg = "";
     }
   };
 
@@ -280,6 +324,12 @@
     const ii = await GetIndexInfo();
     if (ii) {
       indexInfo = ii;
+      if (indexInfo.StorageEngine && indexInfo.StorageEngine !== "bluge" && conf.mode === "full") {
+        conf.mode = "simple";
+      }
+      if ((!indexInfo.LLMProvider || indexInfo.LLMProvider === "none") && conf.mode === "ai") {
+        conf.mode = "simple";
+      }
       setSearchInfo();
     }
     loadFieldTypes();
@@ -744,7 +794,7 @@
           <input
             class="form-control input-block"
             type="text"
-            placeholder="{$_('LogView.SearchText')}"
+            placeholder={conf.mode === "ai" ? $_("SearchConf.AIPromptPlaceholder") : $_("LogView.SearchText")}
             bind:value={conf.query}
           />
         </div>
@@ -800,7 +850,10 @@
           {:else}
             <button class="btn btn-primary ml-2" aria-disabled="true">
               <Search16 />
-              <span>{$_('LogView.Searching')}</span><span class="AnimatedEllipsis"></span>
+              <span>{busyMsg || $_('LogView.Searching')}</span><span class="AnimatedEllipsis"></span>
+            </button>
+            <button class="btn btn-danger ml-1" type="button" on:click={cancelSearch} title={$_('AI.Cancel') || 'Cancel'}>
+              <X16 />
             </button>
           {/if}
         </div>
@@ -812,6 +865,8 @@
           {conf}
           fields={indexInfo.Fields}
           {extractorTypeList}
+          storageEngine={indexInfo.StorageEngine || "bluge"}
+          hasLLM={!!(indexInfo.LLMProvider && indexInfo.LLMProvider !== "none")}
           on:update={handleUpdateQuery}
         />
       </div>
