@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/anthropic"
@@ -17,6 +18,39 @@ import (
 	"github.com/twsnmp/TWLogAIAN/pkg/model"
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+type utf8StreamDecoder struct {
+	buf []byte
+}
+
+func (d *utf8StreamDecoder) decode(chunk []byte) string {
+	d.buf = append(d.buf, chunk...)
+	validLen := 0
+	for validLen < len(d.buf) {
+		r, size := utf8.DecodeRune(d.buf[validLen:])
+		if r == utf8.RuneError && size == 1 {
+			if !utf8.FullRune(d.buf[validLen:]) {
+				break
+			}
+		}
+		validLen += size
+	}
+	if validLen == 0 {
+		return ""
+	}
+	validBytes := d.buf[:validLen]
+	d.buf = d.buf[validLen:]
+	return string(validBytes)
+}
+
+func (d *utf8StreamDecoder) flush() string {
+	if len(d.buf) == 0 {
+		return ""
+	}
+	res := string(d.buf)
+	d.buf = nil
+	return res
+}
 
 type AIAnswer struct {
 	Answer string `json:"Answer"`
@@ -116,14 +150,23 @@ Format your response using Markdown (use headings, bullet points, bold text, cod
 	}
 
 	var sb strings.Builder
+	decoder := &utf8StreamDecoder{}
 	resp, err := llm.GenerateContent(ctx, history, llms.WithStreamingFunc(func(c context.Context, chunk []byte) error {
-		chunkStr := string(chunk)
-		sb.WriteString(chunkStr)
-		if b.ctx != nil {
-			wails.EventsEmit(b.ctx, "ask_ai_stream", chunkStr)
+		chunkStr := decoder.decode(chunk)
+		if chunkStr != "" {
+			sb.WriteString(chunkStr)
+			if b.ctx != nil {
+				wails.EventsEmit(b.ctx, "ask_ai_stream", chunkStr)
+			}
 		}
 		return nil
 	}))
+	if tail := decoder.flush(); tail != "" {
+		sb.WriteString(tail)
+		if b.ctx != nil {
+			wails.EventsEmit(b.ctx, "ask_ai_stream", tail)
+		}
+	}
 	if err != nil {
 		OutLog("AskAIAboutLog err=%v", err)
 		r.Error = err.Error()
@@ -594,16 +637,25 @@ func (b *App) AnalyzeLogsWithAI(req AIAnalysisReportRequest, logs []*LogEnt) AIA
 	var sb strings.Builder
 	var tokenCount int
 	st := time.Now()
+	decoder := &utf8StreamDecoder{}
 
 	resp, err := llm.GenerateContent(ctx, history, llms.WithStreamingFunc(func(c context.Context, chunk []byte) error {
-		chunkStr := string(chunk)
 		tokenCount++
-		sb.WriteString(chunkStr)
-		if b.ctx != nil {
-			wails.EventsEmit(b.ctx, "ai_report_stream", chunkStr)
+		chunkStr := decoder.decode(chunk)
+		if chunkStr != "" {
+			sb.WriteString(chunkStr)
+			if b.ctx != nil {
+				wails.EventsEmit(b.ctx, "ai_report_stream", chunkStr)
+			}
 		}
 		return nil
 	}))
+	if tail := decoder.flush(); tail != "" {
+		sb.WriteString(tail)
+		if b.ctx != nil {
+			wails.EventsEmit(b.ctx, "ai_report_stream", tail)
+		}
+	}
 
 	dur := time.Since(st)
 	stats := b.formatAIStats(dur, tokenCount, llm)

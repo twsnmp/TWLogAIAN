@@ -47,19 +47,21 @@ export function renderMarkdown(md) {
   let codeBlockLang = "";
   let codeBlockLines = [];
 
-  let inUl = false;
-  let inOl = false;
+  const listStack = [];
   let inTable = false;
   let pendingBlankInList = false;
 
-  const closeList = () => {
-    if (inUl) {
-      out.push("</ul>");
-      inUl = false;
+  const closeListToIndent = (indent) => {
+    while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
+      const top = listStack.pop();
+      out.push(top.type === "ul" ? "</ul>" : "</ol>");
     }
-    if (inOl) {
-      out.push("</ol>");
-      inOl = false;
+  };
+
+  const closeAllLists = () => {
+    while (listStack.length > 0) {
+      const top = listStack.pop();
+      out.push(top.type === "ul" ? "</ul>" : "</ol>");
     }
     pendingBlankInList = false;
   };
@@ -85,7 +87,7 @@ export function renderMarkdown(md) {
         inCodeBlock = false;
         codeBlockLines = [];
       } else {
-        closeList();
+        closeAllLists();
         closeTable();
         inCodeBlock = true;
         codeBlockLang = codeMatch[2];
@@ -102,8 +104,7 @@ export function renderMarkdown(md) {
     // 2. Blank line
     if (trimmed === "") {
       closeTable();
-      if (inUl || inOl) {
-        // Keep list open for potential next list item (loose list)
+      if (listStack.length > 0) {
         pendingBlankInList = true;
       }
       continue;
@@ -111,7 +112,7 @@ export function renderMarkdown(md) {
 
     // 3. Horizontal Rule
     if (/^(?:---|\*\*\*|___)$/.test(trimmed)) {
-      closeList();
+      closeAllLists();
       closeTable();
       out.push('<hr class="my-3" />');
       continue;
@@ -120,7 +121,7 @@ export function renderMarkdown(md) {
     // 4. Headings
     const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
     if (headingMatch) {
-      closeList();
+      closeAllLists();
       closeTable();
       const level = headingMatch[1].length;
       const headingText = parseInline(headingMatch[2]);
@@ -132,7 +133,7 @@ export function renderMarkdown(md) {
     // 5. Blockquote
     const quoteMatch = line.match(/^>\s*(.*)$/);
     if (quoteMatch) {
-      closeList();
+      closeAllLists();
       closeTable();
       out.push(`<blockquote class="color-fg-muted pl-3 my-2" style="border-left: 3px solid var(--color-border-default, #30363d);">${parseInline(quoteMatch[1])}</blockquote>`);
       continue;
@@ -140,7 +141,7 @@ export function renderMarkdown(md) {
 
     // 6. Tables
     if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
-      closeList();
+      closeAllLists();
       const cells = trimmed.slice(1, -1).split("|").map(c => c.trim());
       const isDivider = cells.every(c => /^:?-+:?$/.test(c));
 
@@ -166,12 +167,17 @@ export function renderMarkdown(md) {
     // 7. Unordered List item
     const ulMatch = line.match(/^(\s*)[-*+]\s+(.*)$/);
     if (ulMatch) {
-      if (inOl) {
-        closeList();
-      }
-      if (!inUl) {
-        out.push('<ul class="pl-4 my-2">');
-        inUl = true;
+      const indent = ulMatch[1].length;
+      closeListToIndent(indent);
+
+      if (listStack.length === 0 || listStack[listStack.length - 1].indent < indent) {
+        listStack.push({ type: "ul", indent });
+        out.push('<ul class="pl-4 my-1">');
+      } else if (listStack[listStack.length - 1].type !== "ul") {
+        const old = listStack.pop();
+        out.push(old.type === "ul" ? "</ul>" : "</ol>");
+        listStack.push({ type: "ul", indent });
+        out.push('<ul class="pl-4 my-1">');
       }
       pendingBlankInList = false;
       out.push(`<li class="my-1">${parseInline(ulMatch[2])}</li>`);
@@ -179,29 +185,35 @@ export function renderMarkdown(md) {
     }
 
     // 8. Ordered List item (supports "1.", "1)", "2.", etc.)
-    const olMatch = line.match(/^(\s*)\d+[.)]\s+(.*)$/);
+    const olMatch = line.match(/^(\s*)(\d+)[.)]\s+(.*)$/);
     if (olMatch) {
-      if (inUl) {
-        closeList();
-      }
-      if (!inOl) {
-        out.push('<ol class="pl-4 my-2">');
-        inOl = true;
+      const indent = olMatch[1].length;
+      const num = olMatch[2];
+      closeListToIndent(indent);
+
+      if (listStack.length === 0 || listStack[listStack.length - 1].indent < indent) {
+        listStack.push({ type: "ol", indent });
+        out.push(`<ol start="${num}" class="pl-4 my-1">`);
+      } else if (listStack[listStack.length - 1].type !== "ol") {
+        const old = listStack.pop();
+        out.push(old.type === "ul" ? "</ul>" : "</ol>");
+        listStack.push({ type: "ol", indent });
+        out.push(`<ol start="${num}" class="pl-4 my-1">`);
       }
       pendingBlankInList = false;
-      out.push(`<li class="my-1">${parseInline(olMatch[2])}</li>`);
+      out.push(`<li value="${num}" class="my-1">${parseInline(olMatch[3])}</li>`);
       continue;
     }
 
     // 9. List continuation or regular paragraph
-    if ((inUl || inOl) && !pendingBlankInList && /^\s{2,}/.test(line)) {
+    if (listStack.length > 0 && !pendingBlankInList && /^\s{2,}/.test(line)) {
       // Indented text inside current list item
       out.push(`<div class="pl-3 my-1 color-fg-muted">${parseInline(trimmed)}</div>`);
       continue;
     }
 
     // Regular paragraph
-    closeList();
+    closeAllLists();
     out.push(`<p class="my-2" style="line-height: 1.6;">${parseInline(line)}</p>`);
   }
 
@@ -209,7 +221,7 @@ export function renderMarkdown(md) {
     const codeContent = escapeHtml(codeBlockLines.join("\n"));
     out.push(`<div class="my-2"><pre class="p-3 color-bg-subtle border rounded-2" style="overflow-x: auto; font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace; font-size: 12px; line-height: 1.4;"><code>${codeContent}</code></pre></div>`);
   }
-  closeList();
+  closeAllLists();
   closeTable();
 
   return out.join("\n");

@@ -128,3 +128,38 @@ func TestAnalyzeLogsAggregation(t *testing.T) {
 	}
 }
 
+func TestUTF8StreamDecoder(t *testing.T) {
+	d := &utf8StreamDecoder{}
+	// "こんにちは" in UTF-8:
+	// こ: e3 81 93
+	// ん: e3 82 93
+	// に: e3 81 ab
+	// ち: e3 81 a1
+	// は: e3 81 af
+	fullBytes := []byte("こんにちは！Hello")
+
+	// Cut between runes and within runes:
+	// Chunk 1: 'こ' (3 bytes) + first 2 bytes of 'ん'
+	c1 := fullBytes[:5]
+	// Chunk 2: last 1 byte of 'ん' + 'に' (3 bytes) + first 1 byte of 'ち'
+	c2 := fullBytes[5:10]
+	// Chunk 3: remaining bytes
+	c3 := fullBytes[10:]
+
+	r1 := d.decode(c1)
+	if r1 != "こ" {
+		t.Errorf("expected 'こ', got %q", r1)
+	}
+	r2 := d.decode(c2)
+	if r2 != "んに" {
+		t.Errorf("expected 'んに', got %q", r2)
+	}
+	r3 := d.decode(c3)
+	tail := d.flush()
+	total := r1 + r2 + r3 + tail
+	if total != "こんにちは！Hello" {
+		t.Errorf("expected 'こんにちは！Hello', got %q", total)
+	}
+}
+
+

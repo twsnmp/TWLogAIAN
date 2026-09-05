@@ -45,29 +45,29 @@
   let stats = "";
 
   $: presets = lang === "ja" ? [
-    { label: $_("AI.PresetGeneral"), text: "" },
+    { label: $_("AI.PresetGeneral"), text: "ログ全体の傾向、エラーや異常パターンの有無、推奨される対応策を総合的に分析してください。" },
     { label: $_("AI.PresetIncident"), text: "重大なセキュリティインシデント、不正アクセス、攻撃の兆候に特化して分析し、危険度と証拠ログ、緊急対処策を提示してください。" },
     { label: $_("AI.PresetPerf"), text: "システムのパフォーマンス障害、レイテンシ悪化、リソース枯渇やエラー急増のボトルネックに特化して原因究明と是正策を提示してください。" },
     { label: $_("AI.PresetActionPlan"), text: "発見された問題点を解消しシステムの可用性・信頼性を高めるための具体的かつ実行可能な推奨アクションプラン・再発防止策を提示してください。" },
   ] : [
-    { label: $_("AI.PresetGeneral"), text: "" },
+    { label: $_("AI.PresetGeneral"), text: "Analyze overall log trends, identify anomalies and error patterns, and summarize actionable recommendations." },
     { label: $_("AI.PresetIncident"), text: "Focus specifically on critical security incidents, intrusion attempts, and anomalies. Highlight high-risk indicators and provide immediate containment procedures." },
     { label: $_("AI.PresetPerf"), text: "Focus specifically on performance bottlenecks, latency spikes, resource exhaustion, and error surges. Identify potential culprits and corrective actions." },
     { label: $_("AI.PresetActionPlan"), text: "Provide a concrete, actionable roadmap and preventative recommendations to improve overall system reliability and stability." },
   ];
 
-  const applyPreset = (p) => {
+  const selectPreset = (p) => {
     customPrompt = p.text;
-    runAnalysis();
+  };
+
+  const setLang = (newLang) => {
+    lang = newLang;
   };
 
   onMount(() => {
     EventsOn("ai_report_stream", (chunk) => {
       markdown += chunk;
     });
-    if (logs && logs.length > 0) {
-      runAnalysis();
-    }
   });
 
   onDestroy(() => {
@@ -149,18 +149,21 @@
   };
 
   $: renderedMarkdown = renderMarkdown(markdown);
+  $: placeholderText = lang === "ja"
+    ? "追加の質問や分析の指示を入力してください（空欄の場合は標準分析を実行します）"
+    : "Enter additional questions or instructions (leave blank for standard analysis)";
 </script>
 
 <div class="Box mx-auto Box--condensed" style="max-width: 99%; display: flex; flex-direction: column; max-height: calc(100vh - 40px);">
   <!-- Header -->
   <div class="Box-header d-flex flex-justify-between flex-items-center flex-wrap" style="gap: 8px;">
-    <div class="d-flex flex-items-center" style="gap: 8px;">
+    <div class="d-flex flex-items-center flex-wrap" style="gap: 8px;">
       <h3 class="Box-title m-0">{$_("AI.ReportTitle")}</h3>
       <span class="Label Label--secondary">{$_("AI.TotalLogs")}: {summary.TotalEntries}</span>
       {#if summary.ErrorCount > 0}
         <span class="Label Label--danger">{$_("AI.ErrorLogs")}: {summary.ErrorCount}</span>
-      {:else}
-        <span class="Label Label--success">{$_("AI.ErrorLogs")}: 0</span>
+      {:else if summary.TotalEntries > 0}
+        <span class="Label Label--secondary">{$_("AI.ErrorLogs")}: {summary.ErrorCount}</span>
       {/if}
       {#if summary.WarningCount > 0}
         <span class="Label Label--warning">{$_("AI.WarnLogs")}: {summary.WarningCount}</span>
@@ -176,15 +179,34 @@
     </div>
 
     <!-- Controls -->
-    <div class="d-flex flex-items-center" style="gap: 6px;">
-      <!-- Language -->
-      <select class="form-select select-sm" bind:value={lang} on:change={runAnalysis} disabled={busy}>
-        <option value="ja">{$_("AI.LangJa")}</option>
-        <option value="en">{$_("AI.LangEn")}</option>
-      </select>
+    <div class="d-flex flex-items-center" style="gap: 8px;">
+      <!-- Language Toggle Group -->
+      <div class="d-flex flex-items-center">
+        <span class="text-small color-fg-muted font-weight-bold mr-1">{$_("AI.Lang")}:</span>
+        <div class="BtnGroup">
+          <button
+            class="btn btn-sm BtnGroup-item"
+            class:btn-primary={lang === "ja"}
+            type="button"
+            on:click={() => setLang("ja")}
+            disabled={busy}
+          >
+            {$_("AI.LangJa")}
+          </button>
+          <button
+            class="btn btn-sm BtnGroup-item"
+            class:btn-primary={lang === "en"}
+            type="button"
+            on:click={() => setLang("en")}
+            disabled={busy}
+          >
+            {$_("AI.LangEn")}
+          </button>
+        </div>
+      </div>
 
       <!-- Sample size -->
-      <select class="form-select select-sm" bind:value={sampleSize} on:change={runAnalysis} disabled={busy} title={$_("AI.SampleSize")}>
+      <select class="form-select select-sm" bind:value={sampleSize} disabled={busy} title={$_("AI.SampleSize")}>
         <option value={20}>20 sample</option>
         <option value={50}>50 sample</option>
         <option value={100}>100 sample</option>
@@ -196,7 +218,7 @@
         class="btn btn-sm"
         class:btn-outline={maskPII}
         type="button"
-        on:click={() => { maskPII = !maskPII; runAnalysis(); }}
+        on:click={() => { maskPII = !maskPII; }}
         disabled={busy}
         title="Toggle PII Masking"
       >
@@ -232,19 +254,40 @@
   <!-- Main Scrollable Content -->
   <div class="Box-body p-3" style="overflow-y: auto; flex: 1;">
     <!-- Preset Action Bar -->
-    <div class="mb-3 d-flex flex-wrap flex-items-center" style="gap: 6px;">
+    <div class="mb-2 d-flex flex-wrap flex-items-center" style="gap: 6px;">
       <span class="text-bold text-small mr-1" style="color: var(--color-fg-muted);">Presets:</span>
       {#each presets as p}
         <button
           class="btn btn-sm"
-          class:btn-primary={customPrompt === p.text}
+          class:btn-outline={customPrompt === p.text}
           type="button"
           disabled={busy}
-          on:click={() => applyPreset(p)}
+          on:click={() => selectPreset(p)}
         >
           {p.label}
         </button>
       {/each}
+    </div>
+
+    <!-- Custom Prompt Input Bar (Swapped ABOVE Results) -->
+    <div class="d-flex flex-items-center mb-3" style="gap: 8px;">
+      <input
+        type="text"
+        class="form-control flex-auto"
+        placeholder={placeholderText}
+        bind:value={customPrompt}
+        on:keydown={(e) => { if (e.key === "Enter" && !busy) runAnalysis(); }}
+        disabled={busy}
+      />
+      <button class="btn btn-primary" type="button" on:click={runAnalysis} disabled={busy}>
+        {#if busy}
+          <span class="AnimatedEllipsis"></span>
+          {$_("AI.Analyzing")}
+        {:else}
+          <Play16 />
+          {$_("AI.AnalyzeLogs")}
+        {/if}
+      </button>
     </div>
 
     <!-- Collapsible Top Error Patterns -->
@@ -298,7 +341,7 @@
     </div>
 
     <!-- AI Analysis Report Content View -->
-    <div class="border rounded p-3 mb-3 markdown-body" style="background-color: var(--color-canvas-default); min-height: 250px;">
+    <div class="border rounded p-3 mb-2 markdown-body" style="background-color: var(--color-canvas-default); min-height: 280px;">
       {#if busy && !markdown}
         <div class="d-flex flex-items-center flex-justify-center p-4" style="color: var(--color-fg-muted);">
           <span>{$_("AI.Analyzing")}</span>
@@ -314,25 +357,10 @@
         {/if}
       {:else}
         <div class="text-center text-muted p-4">
-          {$_("AI.NoAnswer")}
+          <p class="mb-2">{$_("AI.AnalyzeLogs")} ボタンをクリックして分析を開始してください。</p>
+          <p class="text-small">Click "{$_("AI.AnalyzeLogs")}" button above to start AI log analysis.</p>
         </div>
       {/if}
-    </div>
-
-    <!-- Custom Prompt Input Bar -->
-    <div class="d-flex flex-items-center" style="gap: 8px;">
-      <input
-        type="text"
-        class="form-control flex-auto"
-        placeholder={$_("AI.CustomPromptPlaceholder")}
-        bind:value={customPrompt}
-        on:keydown={(e) => { if (e.key === "Enter" && !busy) runAnalysis(); }}
-        disabled={busy}
-      />
-      <button class="btn btn-primary" type="button" on:click={runAnalysis} disabled={busy}>
-        <Play16 />
-        {$_("AI.AnalyzeLogs")}
-      </button>
     </div>
   </div>
 
