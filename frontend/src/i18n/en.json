@@ -491,7 +491,9 @@
     "ConvertToWildcard": "Convert to Wildcard",
     "ShortcutHint": "(or select text and press Cmd/Ctrl+W or Cmd/Ctrl+S)",
     "AIPatGen": "AI Pattern Gen",
-    "AIGenerating": "Generating..."
+    "AIGenerating": "Generating...",
+    "AIGeneratingModalTitle": "Generating Grok Pattern with AI...",
+    "AIGeneratingSub": "Analyzing test log and constructing optimal pattern"
   },
   "EditFieldType": {
     "Title": "Edit field type",

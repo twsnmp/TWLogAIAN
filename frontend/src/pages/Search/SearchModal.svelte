@@ -5,8 +5,11 @@
   import catImage from "../../assets/images/ai_cat_search.png";
 
   export let show = false;
-  // status: "ai" (AI正規表現生成中) | "search" (ログ検索中)
+  // status: "ai" (AI正規表現生成中) | "search" (ログ検索中) | "grok" (Grokパターン生成中)
   export let status = "search";
+  export let title = "";
+  export let subtext = "";
+  export let badgeText = "";
   export let detailMessage = "";
 
   const dispatch = createEventDispatcher();
@@ -15,7 +18,7 @@
     dispatch("cancel");
   };
 
-  // AI思考中に浮遊させる正規表現シンボル
+  // AI正規表現思考中に浮遊させるシンボル
   const regexTokens = [
     { text: ".*", top: "18%", left: "10%", delay: "0s" },
     { text: "\\d+", top: "72%", left: "8%", delay: "0.8s" },
@@ -24,13 +27,26 @@
     { text: "\\w+", top: "45%", left: "85%", delay: "1.2s" },
     { text: "(?:)", top: "48%", left: "3%", delay: "2.0s" },
   ];
+
+  // Grokパターン生成中に浮遊させるGrokパターンシンボル
+  const grokTokens = [
+    { text: "%{IPV4}", top: "16%", left: "8%", delay: "0s" },
+    { text: "%{NUMBER}", top: "74%", left: "6%", delay: "0.8s" },
+    { text: "%{WORD}", top: "12%", left: "76%", delay: "1.6s" },
+    { text: "%{DATA}", top: "75%", left: "78%", delay: "2.4s" },
+    { text: "%{TIME}", top: "44%", left: "84%", delay: "1.2s" },
+    { text: "%{GREEDY}", top: "48%", left: "2%", delay: "2.0s" },
+  ];
+
+  $: isAIMode = status === "ai" || status === "grok";
+  $: activeTokens = status === "grok" ? grokTokens : regexTokens;
 </script>
 
 {#if show}
   <div class="search-modal-backdrop" role="dialog" aria-modal="true">
     <div class="search-modal-card">
       <!-- アニメーション表示エリア -->
-      <div class="animation-container" class:ai-mode={status === "ai"}>
+      <div class="animation-container" class:ai-mode={isAIMode}>
         <!-- 外側の回転サイバーリング -->
         <div class="cyber-ring ring-outer"></div>
         <div class="cyber-ring ring-inner"></div>
@@ -47,10 +63,10 @@
           <div class="scan-beam"></div>
         </div>
 
-        <!-- AI思考中モードの正規表現浮遊パーティクル -->
-        {#if status === "ai"}
+        <!-- AI思考中/Grok生成モードの浮遊パーティクル -->
+        {#if isAIMode}
           <div class="particles-layer">
-            {#each regexTokens as token}
+            {#each activeTokens as token}
               <span
                 class="regex-token"
                 style="top: {token.top}; left: {token.left}; animation-delay: {token.delay};"
@@ -65,8 +81,12 @@
 
       <!-- ステータス・テキスト表示エリア -->
       <div class="status-content">
-        <div class="status-badge" class:badge-ai={status === "ai"}>
-          {#if status === "ai"}
+        <div class="status-badge" class:badge-ai={isAIMode}>
+          {#if badgeText}
+            {badgeText}
+          {:else if status === "grok"}
+            ✨ AI GROK PATTERN
+          {:else if status === "ai"}
             ✨ AI ASSISTANT
           {:else}
             🔍 LOG SEARCH
@@ -74,7 +94,11 @@
         </div>
 
         <h3 class="status-title">
-          {#if status === "ai"}
+          {#if title}
+            {title}
+          {:else if status === "grok"}
+            {$_("EditExtractorType.AIGeneratingModalTitle") || "AIでGrokパターンを生成中..."}
+          {:else if status === "ai"}
             {$_("SearchModal.AIThinking") || "AIが正規表現を考案中..."}
           {:else}
             {$_("SearchModal.Searching") || "ログを検索中..."}
@@ -85,6 +109,10 @@
         <p class="status-subtext">
           {#if detailMessage}
             {detailMessage}
+          {:else if subtext}
+            {subtext}
+          {:else if status === "grok"}
+            {$_("EditExtractorType.AIGeneratingSub") || "テストログから最適な抽出パターンを分析・構築しています"}
           {:else if status === "ai"}
             {$_("SearchModal.AISubText") || "入力された条件から最適なパターンを組み立てています"}
           {:else}

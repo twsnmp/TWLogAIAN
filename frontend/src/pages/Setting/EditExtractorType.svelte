@@ -15,7 +15,16 @@
   import { onMount } from "svelte";
   import EditFieldType from "./EditFieldType.svelte";
   import { _,getLocale } from '../../i18n/i18n';
-  import {SaveExtractorType,TestGrok,AutoGrok,SaveFieldType,AIGrok,GetConfig} from '../../../wailsjs/go/main/App';
+  import {
+    SaveExtractorType,
+    TestGrok,
+    AutoGrok,
+    SaveFieldType,
+    AIGrok,
+    GetConfig,
+    CancelAIReport,
+  } from '../../../wailsjs/go/main/App';
+  import SearchModal from '../Search/SearchModal.svelte';
 
   let locale = getLocale();
   let gridLang = locale == "ja" ? jaJP : undefined;
@@ -123,15 +132,26 @@
     }
   };
 
+  let aiAborted = false;
+
+  const cancelAIGenerate = () => {
+    aiAborted = true;
+    CancelAIReport();
+    busyAI = false;
+    errorMsg = $_("SearchModal.Canceled") || "処理を中止しました";
+  };
+
   const aiGenerate = async () => {
     if (testLog == "") {
       errorMsg = $_('EditExtractorType.InputTestDataMsg');
       return;
     }
     errorMsg = "";
+    aiAborted = false;
     busyAI = true;
     try {
       const r = await AIGrok(testLog, locale);
+      if (aiAborted) return;
       if (r) {
         if (r.ErrorMsg) {
           errorMsg = r.ErrorMsg;
@@ -146,7 +166,9 @@
         }
       }
     } catch (e) {
-      errorMsg = e.toString();
+      if (!aiAborted) {
+        errorMsg = e.toString();
+      }
     } finally {
       busyAI = false;
     }
@@ -414,6 +436,12 @@
     </div>
   </div>
 {/if}
+
+<SearchModal
+  show={busyAI}
+  status="grok"
+  on:cancel={cancelAIGenerate}
+/>
 
 <style>
 
