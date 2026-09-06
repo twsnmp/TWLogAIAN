@@ -53,7 +53,7 @@ jobs:
           # Gitタグをバージョンとして使用。手動実行時のフォールバックとしてv2.0.0を使用
           VERSION="${{ github.ref_name }}"
           if [[ ! "$VERSION" =~ ^v[0-9] ]]; then
-            VERSION="v2.0.0"
+            VERSION="v2.1.0"
           fi
           COMMIT=$(git rev-parse --short HEAD)
           wails build -clean -platform linux/amd64 -tags webkit2_41 -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}"

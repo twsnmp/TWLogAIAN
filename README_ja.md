@@ -20,13 +20,16 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 
 分析対象のログファイルは、
 
-- ローカルファイル（ZIP、EVTX、テキストなど）
+- ローカルファイル（ZIP、TAR.GZ、BZIP2、XZ、ZSTD、EVTX、テキストなど）
 - ローカルディレクトリ
-- ローカルでのコマンド実行結果(DockerやKubernetes)
-- リモートサーバーからSCPで転送
-- リモートサーバーでのSSHによるコマンド実行結果(DockerやKubernetes)
+- ローカルでのコマンド実行結果 (DockerやKubernetes)
+- リモートサーバーからSCP / SFTP / FTPで転送
+- リモートサーバーでのSSHによるコマンド実行結果 (DockerやKubernetes)
+- HTTP / Web APIからのログ取得
+- Grafana Loki連携
+- Elasticsearch連携
 - TWSNMP FC連携 (v1.1.0から)
-- Windowsイベントログ(v1.1.0から)
+- Windowsイベントログ (v1.1.0から)
 
 により取得できます。
 
@@ -34,24 +37,27 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 
 - ログの種類を自動判別する
 - タイムスタンプを自動取得する
-- 正規表現や簡易な方法でフィルターできる
-- ログの中から特定パターンのデータを抽出できる
+- ログ保存先（ストレージエンジン）の選択（Bluge、Parquet、Badger、Bbolt）
+- 正規表現や簡易な方法、AIによる正規表現考案でフィルターできる
+- ログの中から特定パターンのデータを抽出できる（AIによるGrokパターン自動生成にも対応）
 - 抽出したIPアドレスから位置情報、ホスト名を推定できる
 - 抽出したMACアドレスからベンダ名を推定できる
-- ログと抽出したデータを全文検索エンジンでインデックス作成できる
-- 全文検索エンジンで、時間範囲、キーワード、数値範囲、地理的な位置範囲で検索できる
+- ログと抽出したデータを全文検索エンジン（Bluge）または高速キーバリューストア／カラムナー（Parquet/Badger/Bbolt）に保存できる
+- 時間範囲、キーワード、正規表現、数値範囲、地理的な位置範囲で検索できる
 - ログの件数や抽出したデータをグラフや世界地図上にビジュアライズできる
 	- ヒストグラム
 	- クラスター
 	- 時系列
 	- 世界地図
 	- 地球儀
-	- ヒートマップ(v1.1.0)
+	- ヒートマップ (v1.1.0)
+	- メール詳細分析レポート (v2.1.0)
+	- インターバル分析／アクセス遅延分析レポート (v2.1.0)
 - 分析結果をCSVやEXCELに出力できる
-- ログを選択して時系列に並べたメモを作成できる(v1.2.0)
-- AI(機械学習)のアシストにより異常ログを検知できる(v1.3.0から)
-- 検索時のデータ抽出に対応（v1.5.0から）
-- LLM（Ollama、Gemini、OpenAI、Anthropic）連携によるログ解説・問い合わせ機能（v2.0.0から）
+- ログを選択して時系列に並べたメモを作成できる (v1.2.0)
+- AI（機械学習・ディープラーニング）による異常ログ検知 (Isolation Forest, LOF, AutoEncoder, LSTM, KNN, マハラノビス距離, Z-Score)
+- 各種レポート画面や検索でのAI解説・要約生成機能
+- 内蔵ローカルLLM（tensai、GPU対応）および外部LLM（Ollama、Gemini、OpenAI、Anthropic）連携によるログ解説・問い合わせ（Ask AI）機能
 
 を実現しました。
 
@@ -61,11 +67,13 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 - Wails v2 : Go言語版のGUI作成ツール
 - Svelte 5 / Vite 8 : フロントエンドフレームワーク & ビルドツール
 - Bluge : Go言語版全文検索エンジン
-- langchaingo : LLM連携ライブラリ（Go言語）
+- Parquet / Badger / Bbolt : 高速ストレージエンジン
+- tensai : 組み込みローカルLLM & 機械学習/ニューラルネットワーク推論エンジン（GPUアクセラレーション対応）
+- langchaingo : 外部LLM連携ライブラリ（Go言語）
 - p5.js / p5-svelte : 2D/3Dビジュアライズ
 - Apache ECharts : グラフ表示
 - Primer/CSS, Octicons : 画面デザイン
-- TensorFlow.js : AIによる異常検知
+- TensorFlow.js : フロントエンドAIによる異常検知
 
 です。
 
@@ -90,6 +98,7 @@ https://twsnmp.github.io/TWLogAIAN/
 - v1.10.0 (2023/6/12) Windowsイベントログ処理の改善、TF-IDFによる異常検知
 - v1.11.0 (2025/4/14) LLM/RAG対応
 - v2.0.0 (2026/6/20) Svelte 5 / Vite 8への移行、カスタムGrokEditorの導入、LLM対応（RAG機能の削除）
+- v2.1.0 (2026/9/6) 組み込みローカルLLM(tensai/GPU対応)、ストレージエンジン選択(Parquet/Badger/Bbolt)、AI要約・レポート解説、ディープラーニング異常検知(AutoEncoder/LSTM/KNN等)、ログインポート拡張(HTTP/Loki/ES/FTP等)、メール・遅延分析レポート追加
 
 ## Build
 

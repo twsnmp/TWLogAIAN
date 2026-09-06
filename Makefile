@@ -1,6 +1,6 @@
 .PHONY: all clean windows mac linux dev
 ### バージョンの定義
-VERSION     := "v2.0.0"
+VERSION     := "v2.1.0"
 COMMIT      := $(shell git rev-parse --short HEAD)
 
 ### コマンドの定義

@@ -247,10 +247,27 @@ Specifies the variable names of the IP fields to check for location data. You ca
 Specifies the variable names of the MAC address fields to check for vendor names. You can specify multiple fields separated by commas.
 
 
+## Storage Engine Selection (v2.1.0)
+
+Starting with TWLogAIAN v2.1.0, you can select the underlying storage engine for loaded logs:
+
+- **Bluge (Default / Full-Text Search Engine)**:
+  Builds a full-text search index for fast keyword, compound, and field queries. Supports the full-text search query syntax.
+- **Parquet (Columnar Storage)**:
+  Saves logs in high-performance columnar format. Greatly reduces storage size and boosts ingestion performance for large log volumes.
+- **Badger (High-Performance KVS)**:
+  A fast key-value store in pure Go providing steady, high-throughput storage.
+- **Bbolt (Embedded DB)**:
+  A lightweight and reliable embedded transactional database.
+
+> [!NOTE]
+> **Search Differences by Storage Engine**:
+> When using a **non-Bluge storage engine (Parquet, Badger, Bbolt)**, full-text indexes are not created, so **Full-Text Search Mode is unavailable**.
+> On the other hand, queries match directly against raw log lines using Go's standard regular expression engine, so **Regular Expression Mode operates with full accuracy and precision**. See [How to Write Search Queries](./search_en.html) for details.
+
 ## Create Index in Memory
 
-Builds the Bluge search index in memory and keeps all loaded logs in memory. All data will be lost when the application is closed. Loading an extremely large volume of logs with this option active may run out of memory. If unchecked, the index is saved to the workspace folder on disk.
-
+Keeps loaded logs and indexes in memory (for Bluge). All data is discarded upon exit. If unchecked, data is persisted to the workspace folder on disk.
 
 ## IP Location Database
 
@@ -368,9 +385,25 @@ https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/
 
 
 
+### SFTP / FTP Transfer (v2.1.0)
+
+In addition to SCP, transferring and importing log files directly from SFTP and FTP servers is supported. Specify the server hostname, port, username, password, and remote directory/file path.
+
+### HTTP / Web API Ingestion (v2.1.0)
+
+Send HTTP/HTTPS requests (GET or POST) directly to Web/REST APIs to fetch response logs (JSON or plain text) and ingest them into the store. Supports custom headers, query parameters, and authentication tokens.
+
+### Grafana Loki Integration (v2.1.0)
+
+Query Grafana Loki servers using LogQL to fetch logs. Configure the Loki endpoint URL, label selector query, time range, and optional authentication credentials.
+
+### Elasticsearch Integration (v2.1.0)
+
+Import log records matching search queries directly from Elasticsearch cluster indices. Configure the cluster URL, index pattern, query string, timestamp field, and credentials.
+
 ## Supported File Formats
 
-TWLogAIAN supports text-based log files that contain timestamps. The timestamp format is detected automatically. Gzip (`.gz`) archives are automatically extracted upon import. Log files inside ZIP archives are supported up to one nesting level. For `.tar.gz` archives, nested folders and multi-layered compression (such as archives inside archives) are fully supported. To enable this nested archive extraction, check the **Recursive tar.gz Extraction** option. Windows Event Log format (`.evtx`) is also supported, up to a file size limit of 1 GB per file (since files are loaded into memory).
+TWLogAIAN supports text-based log files that contain timestamps. The timestamp format is detected automatically. Compressed archives in `.gz`, `.bz2`, `.xz`, and `.zst` formats are automatically extracted upon import. Log files inside ZIP archives are fully supported. For `.tar.gz` archives, nested folders and multi-layered compression (such as archives inside archives) are supported when **Recursive tar.gz Extraction** is checked. Windows Event Log format (`.evtx`) is also supported up to 1 GB per file.
 
 
 ## Indexing
@@ -444,9 +477,10 @@ A list of previously executed search queries. Click an item to populate the sear
 ### Query Mode
 
 Determines how your search input is parsed. Options include:
-- **Simple**: Searches for exact matching keywords.
-- **RegEx**: Searches using regular expression syntax.
-- **Full Text**: Shows advanced fields for keyword and numeric criteria. Select conditions and click the **+** button to append them to the search query.
+- **Simple**: Searches for keywords using space-separated AND logic, `!` (NOT), and `*` (prefix wildcard). Available across all storage engines.
+- **RegEx**: Searches using regular expression syntax. Operates **with full accuracy when using non-Bluge engines (Parquet, Badger, Bbolt)**.
+- **AI (v2.1.0)**: Describe what you want to find in natural language; the LLM automatically formulates an optimal regular expression and searches.
+- **Full Text (Bluge only)**: Full-text search query syntax with keyword and numeric criteria helpers. Available exclusively when using Bluge.
 
 
 ### Search Period
@@ -458,15 +492,28 @@ Specifies the time range for your search. There are two modes:
 - **Range Mode**: Specify a start and end time range.
 
 
-## Anomaly Detection
+## Anomaly Detection (Enhanced in v2.1.0)
 
-Use machine learning models to identify anomalous log entries. Available algorithms include:
-- **None** (No detection)
-- **Isolation Forest**
-- **Local Outlier Factor**
-- **Auto Encoder**
+Use machine learning and deep learning models to identify anomalous log entries. Available algorithms include:
+- **Isolation Forest**: Fast decision-tree-based outlier detection
+- **Z-Score (v2.1.0)**: Statistical standard deviation score detection
+- **Local Outlier Factor (LOF)**: Local density-based outlier detection
+- **KNN (K-Nearest Neighbors) (v2.1.0)**: Distance-to-neighbors anomaly score
+- **Mahalanobis Distance (v2.1.0)**: Multivariate distance taking covariance into account
+- **Auto Encoder (tensai) (v2.1.0)**: Neural network reconstruction error detection
+- **LSTM (tensai) (v2.1.0)**: Long Short-Term Memory deep learning model for time series anomaly detection
+- **Sum**: Simple sum of feature magnitudes
 
-If detection is enabled, you can select which features to analyze, such as extracted numeric fields, string variables, or the frequency of SQL injection signatures. The **Day/Time** option calculates the day of the week and hour of the day from log timestamps to include as features. (This is useful for detecting anomalies relative to routine schedules, such as load spikes that are normal on Monday mornings but anomalous on Sunday nights).
+If detection is enabled, you can select which feature vector calculation mode to use:
+- Numeric data
+- Numeric data + Day of week & Hour
+- String & Numeric data
+- String & Numeric data + Day of week & Hour
+- SQL injection pattern count
+- OS command injection pattern count
+- Directory traversal pattern count
+- Web access (Walu) pattern count
+- TF-IDF (Term Frequency - Inverse Document Frequency vector)
 
 
 
@@ -652,6 +699,95 @@ Displays log frequencies in a grid mapped by hour of the day versus day of the w
 ![](./images/en/report_heatmap.png)
 
 
+## Email Detailed Analysis (v2.1.0)
+
+Aggregates, verifies, and visualizes email server logs (Postfix, Sendmail, Exchange, etc.) and extracted fields.
+
+- **Summary Statistics Badges**:
+  Displays key metrics in real time across the header: Total Emails, SPF Pass percentage, Fail / SoftFail counts, Average Delivery Delay (and Max Delay), and Average Relay Hops (and Max Hops).
+- **Verify SPF via DNS**:
+  When enabled, queries the DNS SPF records for each sender domain to validate the sender IP (Pass / Fail / SoftFail / None) and updates charts and tables accordingly.
+- **Verification Status Charts**:
+  Visualizes SPF verification breakdown and delivery statuses via donut charts.
+- **Email Table**:
+  Lists Time, From, To, Subject, Delay, Relays, Sender IP, and SPF status, with keyword filtering support.
+
+![](./images/en/report_email.png)
+
+
+## Interval Analysis (v2.1.0)
+
+Calculates and visualizes the time intervals between consecutive events originating from the same host, IP address, or user.
+
+- **Statistical Header Badges**:
+  Instantly displays comprehensive interval statistics: Mean, Median, Mode, Standard Deviation (StdDev), and Min / Max intervals.
+- **Chart Type Selector**:
+  Switch between visualization modes such as Scatter Plot (distribution over time) and Histogram.
+- **Time Series Scatter Plot**:
+  Plots interval durations (seconds) across the timeline with an interactive range slider at the bottom, making regular periodic beaconing (e.g. constant 300s polling) or anomalous interval bursts visually clear.
+- **Interval Table**:
+  Tabulates log events with Time, Interval (s), and raw Log content, accompanied by keyword filtering and pagination.
+
+![](./images/en/report_interval.png)
+
+
+## Access Delay Analysis (v2.1.0)
+
+Analyzes processing latencies, request delays (Delta), and timestamp inversions across log entries.
+
+- **Statistical Header Badges**:
+  Instantly displays summary metrics: Total Delays count, Max Delay, Mean Delay, and Median Delay.
+- **Calculation / Mode Selector**:
+  Allows selecting analysis modes such as Timestamp Inversion detection or specific latency criteria.
+- **Time Series Scatter Plot**:
+  Plots delay values (seconds) over time with an interactive timeline slider / zoom controller at the bottom, making latency spikes immediately visible.
+- **Ranked Delay Table**:
+  Ranks log entries by delay magnitude (Rank, Time, Delay, Log content) with keyword filtering support.
+
+![](./images/en/report_delay.png)
+
+
+## AI Analysis Report (v2.1.0)
+
+A dedicated global reporting workflow that analyzes all loaded or searched logs to cluster frequent error patterns and deliver comprehensive AI investigation summaries (distinct from the per-chart "AI Report Explanation" feature).
+
+- **Header Statistics & Controls**:
+  Real-time totals of analyzed logs, error counts, active time range, language switch (`日本語` / `English`), sample size selector, and `Mask PII ON` toggle.
+- **Investigation Presets**:
+  One-click preset buttons for targeted analysis perspectives:
+  - **Overall Summary & Anomalies**: High-level operational synthesis and unusual behavior overview
+  - **Critical Incidents & Security**: Attack signatures, authentication failures, and intrusion indicators
+  - **Performance Bottlenecks & Spikes**: Service slowdowns, latency spikes, and error surges
+  - **Recommendations & Action Plan**: Remediation guidance, mitigation actions, and preventive measures
+- **Custom Analysis Instructions**:
+  An input box to enter free-form questions or additional analytical instructions.
+- **Top Error Patterns**:
+  Automatically clusters recurring error log lines into patterns, showing total occurrences, pattern templates, and expandable raw log examples.
+- **Streaming Executive Summary & Export**:
+  Streams generated AI analysis in real time (Executive Summary, Overview, Detected Anomalies & Risks, etc.) with toggles for `Markdown` or plain `Text` rendering, and quick clipboard `Copy`.
+
+![](./images/en/report_ai_analysis.png)
+
+
+## AI Report Explanation (v2.1.0)
+
+Available from the **AI Explanation** menu at the bottom-left of each individual report screen (Ranking, Time Series, Histogram, Interval, etc.):
+
+1. **Trigger AI Explanation**:
+   Select an analysis angle from the "AI Explanation" dropdown on any report screen.
+2. **Cyber Cat Progress Modal**:
+   An animated cyber cat progress modal displays real-time analysis status while the LLM examines chart metrics.
+3. **Explanation Results Dialog**:
+   Structured breakdown presenting **Overview** and **Key Findings & Trends**. Supports response language toggle (`Japanese` / `English`), re-evaluating with **Re-Analyze**, clipboard copying via **Copy**, and exporting via **Export**.
+
+<div align="center">
+  <img src="./images/en/report_ai_explain_cat.png" width="480" alt="Cyber Cat Progress Modal">
+  <p><em>Cyber Cat Progress Modal (Waiting Screen)</em></p>
+</div>
+
+![](./images/en/report_ai_explain.png)
+
+
 ## Exporting Reports
 
 All of the reports described above can be exported. Access the export menu in the bottom right:
@@ -666,9 +802,54 @@ All of the reports described above can be exported. Access the export menu in th
 Allows you to save Grok patterns and other field extraction settings to definition files, which can then be reused in other analyses.
 
 
-## AI Integration Settings
+## AI Integration Settings (Enhanced in v2.1.0)
 
-Configure connections to Large Language Models (LLMs) such as Ollama, Gemini, OpenAI, or Anthropic to request automated log explanations. Specify the API key, model name, and the base URL for local deployments (e.g., Ollama). Note that this feature transmits your selected logs and prompt instructions directly to the LLM without RAG (Retrieval-Augmented Generation) lookup.
+Configure Large Language Models (LLMs) to power log explanations, summaries, and Ask AI queries.
+
+- **Embedded Local LLM (tensai) (v2.1.0)**:
+  An embedded LLM running entirely locally on your computer with zero external server dependencies or API keys. Ensures sensitive log data never leaves your machine.
+  Supports GPU hardware acceleration (Metal / DirectX / Vulkan / CUDA) for high-performance inference. Recommended GGUF models can be downloaded and managed directly via the built-in model manager.
+- **External LLMs (Ollama, Gemini, OpenAI, Anthropic)**:
+  Connect to cloud LLM APIs or local Ollama servers by configuring API keys, model names, and base URLs.
+
+![](./images/en/ai_setting.png)
+
+### Local LLM Models & GPU Management (v2.1.0)
+
+Clicking the **Model Manager / GPU Setup** button opens the management dialog:
+
+- **GPU Acceleration (WebGPU)**:
+  Displays the currently active GPU backend (Metal / Vulkan / Direct3D / wgpu) and the installation status of the `wgpu-native` library.
+- **Downloaded Models**:
+  Lists locally installed GGUF models with file size, update time, and deletion controls.
+- **Preset Model One-Click Download**:
+  Select from recommended tested lightweight models (such as Qwen 2.5 0.5B Instruct) and download them with a single click.
+- **Custom Download**:
+  Download any compatible GGUF model directly by specifying a Hugging Face repository ID or direct URL.
+
+![](./images/en/model_manager.png)
+
+
+## Ask AI Assistant (Enhanced in v2.1.0)
+
+An interactive assistant accessible from search results and report views to dive deeper into specific log entries.
+
+- **Preset Prompts**:
+  One-click analysis buttons for popular investigation angles:
+  - **Explain Log**: Detailed breakdown of log semantics and fields
+  - **Analyze Cause**: Diagnosing error and failure causes
+  - **Countermeasures**: Recommended remediation and troubleshooting steps
+  - **Security Risk**: Assessing unauthorized access or threat indicators
+  - **Extract Pattern**: Formulating regex or extraction rules for similar logs
+  - **Summary**: Concise executive log summary
+- **Language Toggle**:
+  Switch between **Japanese** and **English** with a single click.
+- **Privacy Protection (PII Masking)**:
+  Clicking **Ask with PII Masked** automatically obfuscates IP addresses, user credentials, and sensitive tokens before querying the LLM.
+- **Streaming Markdown & Copy**:
+  Renders LLM answers progressively with structured Markdown (headers, bullet points, syntax blocks), and includes a one-click **Copy** button.
+
+![](./images/en/ask_ai_screen.png)
 
 
 # Customizing Log Types
@@ -693,18 +874,18 @@ TWLogAIAN provides helper tools to make writing Grok patterns as simple as possi
 
 ## Grok Pattern Editor
 
-The Grok Pattern Editor displays the selected log entry as test data. Click the **Auto Generate** button to automatically draft an extraction pattern. You can test and refine your pattern by clicking the **Test** button. Once satisfied, save it under a unique name for future use.
+The Grok Pattern Editor displays the selected log entry as test data. Click the **Automatic pattern generation** button or **AI Pattern Gen** to draft an extraction pattern. You can test and refine your pattern by clicking the **Test** button. Once satisfied, click **Save** to store it under a unique name for future use.
 
 ![](./images/en/grok_edit_screen.png)
 
 
-## Auto Generate Pattern Button
+## Auto Generation & AI Pattern Gen (v2.1.0)
 
-Analyzes the first line of the test log and automatically generates a matching pattern, converting timestamps, IP addresses, email addresses, and URLs into appropriate Grok patterns. When developing this guide, I also added support to automatically detect key-value syntax patterns (similar to Splunk), such as:
+Analyzes test log lines and automatically generates matching extraction patterns:
+- **Automatic pattern generation**: Detects timestamps, IP addresses, email addresses, URLs, and key-value pairs using regular expression rules.
+- **AI Pattern Gen (v2.1.0)**: The LLM analyzes the syntax and semantics of the test log to formulate optimal field names and Grok expressions, displaying progress via the animated cyber cat modal.
 
-```
-ip=192.168.1.1
-```
+![](./images/en/grok_ai_generate.png)
 
 
 ## Log Definition

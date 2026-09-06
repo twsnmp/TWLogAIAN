@@ -9,11 +9,28 @@ This article serves as a reference/help guide for the search query syntax in the
 
 [Back](./index.html)
 
+## Search Feature Differences by Storage Engine
+
+In TWLogAIAN v2.1.0, you can choose **Parquet**, **Badger**, or **Bbolt** as the log storage engine in addition to **Bluge** (the traditional indexed engine).
+Depending on the selected storage engine, search capabilities behave as follows:
+
+| Storage Engine | Full-Text Search Mode | Regular Expression (Regexp) Behavior | Features & Recommended Use |
+| :--- | :---: | :---: | :--- |
+| **Bluge** (Default) | **Available** | △ Limited (token-based) | Best for fast keyword, field, and range queries using the full-text search index. However, regular expressions match against tokenized terms in the index, which may not match across arbitrary log structures as expected. |
+| **Non-Bluge**<br>(Parquet / Badger / Bbolt) | **Not Available**<br>(Hidden) | **◎ Fully & Accurately Works** | **Because full-text indexes are not built, Full-Text Search Mode is unavailable.** However, queries are evaluated directly against the raw log string using Go's standard regular expression engine, meaning **regular expressions work accurately and reliably.** Ideal for strict and complex regex pattern filtering. |
+
+*Note: When using a storage engine other than Bluge, "Full Text Search" is automatically omitted from the search mode selection menu.*
+
 ## Search Query Mode Switching
-You can switch search query modes from the Advanced Settings menu inside the search settings pane.
+You can switch search query modes from the Advanced Settings menu inside the search settings pane:
+
+- **Simple**: Intuitive filtering using space-separated AND keywords, NOT conditions, and prefix wildcards.
+- **Regexp**: Direct regular expression pattern matching (works with full fidelity on non-Bluge engines).
+- **AI**: Describe what you are looking for in natural language (Japanese or English), and the LLM will generate an optimal regular expression.
+- **Full Text**: Advanced query syntax using the Bluge query string parser (Bluge only).
 
 ## Simple Mode
-Simple Mode follows only a few rules:
+Simple Mode is available across all storage engines and follows only a few rules:
 - Key phrases separated by spaces function as an **AND** condition.
 - Prefixing a keyword with `!` functions as a **NOT** condition.
 - Suffixing a keyword with `*` functions as a prefix (wildcard) search.
@@ -25,14 +42,34 @@ test !mode sta*
 translates to the following condition:
 > Contains `test`, does not contain `mode`, and contains a word starting with `sta`.
 
-*Note: Currently, due to word boundary tokenization, words containing `_` or `:` might not match wildcard queries.*
+*Note: With Bluge, due to word boundary tokenization, words containing `_` or `:` might not match wildcard queries.*
 
 ## Regular Expression Mode
 Performs a search by treating the input query directly as a regular expression.
-However, it might not produce the expected results. This mode may be improved or removed in future versions.
 
-## Full-Text Search Mode
-This mode uses the standard Bleve query string query syntax (same as Bluge). It supports the following specifications:
+> [!NOTE]
+> **Behavior by Storage Engine**:
+> - **When using Parquet / Badger / Bbolt (Non-Bluge)**:
+>   Matching is evaluated against the entire raw log line using Go's standard regex engine (RE2-compatible), so **regular expressions function completely and accurately**.
+>   Examples: `^.*ERROR.*\[code=\d+\].*$` or `(Failed|Invalid) password for (invalid user )?\w+`
+> - **When using Bluge**:
+>   Regular expressions are evaluated against individual tokens within the search index, so patterns expecting full raw log structure may not match as intended.
+
+## AI Regular Expression Mode (Added in v2.1.0)
+Available when an LLM provider (the embedded local LLM tensai, or Ollama / Gemini / OpenAI / Anthropic) is enabled in settings.
+
+Enter a description of what you want to find in **natural language (English or Japanese)** into the search bar. The AI will formulate an optimal regular expression and immediately run the search.
+You do not need to memorize complex regex syntax. For example:
+
+- `authentication failed logs`
+- `access from IP address starting with 192.168.`
+- `HTTP status code 500 series errors`
+- `timeout or disconnected connection`
+
+The generated regular expression is populated into the search query input and can also be inspected and tweaked in the Advanced Settings pane.
+
+## Full-Text Search Mode (Bluge Only)
+This mode is available only when the storage engine is set to **Bluge**. It uses the standard Bleve query string query syntax (same as Bluge). It supports the following specifications:
 
 ### Term Search
 A single term with no special syntax matches documents (logs) containing that term.
