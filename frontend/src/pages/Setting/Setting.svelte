@@ -294,64 +294,7 @@
     return t || "";
   };
 
-  const editLogSourceButtons = (_, row) => {
-    const no = row.cells[0].data;
-    return h(
-      "button",
-      {
-        className: "btn btn-sm",
-        onClick: () => editLogSource(no),
-      },
-      html(
-        `<svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>`
-      )
-    );
-  };
 
-  const deleteLogSourceButtons = (_, row) => {
-    const no = row.cells[0].data;
-    return h(
-      "button",
-      {
-        className: "btn btn-sm btn-danger",
-        onClick: () => deleteLogSource(no),
-      },
-      html(
-        `<svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M6.5 1.75a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3V1.75zm4.5 0V3h2.25a.75.75 0 010 1.5H2.75a.75.75 0 010-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75zM4.496 6.675a.75.75 0 10-1.492.15l.66 6.6A1.75 1.75 0 005.405 15h5.19c.9 0 1.652-.681 1.741-1.576l.66-6.6a.75.75 0 00-1.492-.149l-.66 6.6a.25.25 0 01-.249.225h-5.19a.25.25 0 01-.249-.225l-.66-6.6z"></path></svg>`
-      )
-    );
-  };
-
-  const columns = [
-    {
-      name: "No",
-      sort: true,
-      width: "10%",
-    },
-    {
-      name: $_('Setting.Type'),
-      sort: true,
-      width: "20%",
-      formatter: formatLogSourceType,
-    },
-    {
-      name: $_('Setting.Path'),
-      sort: true,
-      width: "50%",
-    },
-    {
-      name: $_('Setting.Edit'),
-      sort: false,
-      width: "10%",
-      formatter: editLogSourceButtons,
-    },
-    {
-      name: $_('Setting.Delete'),
-      sort: false,
-      width: "10%",
-      formatter: deleteLogSourceButtons,
-    },
-  ];
   let busy = false;
   const start = async () => {
     busy = true;
@@ -497,15 +440,14 @@
               </button>
             </h5>
           </div>
-          <div class="form-group-body markdown-body mt-1">
+          <div class="form-group-body mt-1">
             <table class="width-full text-left" style="border-collapse: collapse; margin-bottom: 8px;">
               <thead>
                 <tr class="border-bottom">
                   <th class="p-1" style="width: 8%;">No</th>
-                  <th class="p-1" style="width: 18%;">{$_('Setting.Type')}</th>
-                  <th class="p-1" style="width: 54%;">{$_('Setting.Path')}</th>
-                  <th class="p-1" style="width: 10%;">{$_('Setting.Edit')}</th>
-                  <th class="p-1" style="width: 10%;">{$_('Setting.Delete')}</th>
+                  <th class="p-1" style="width: 20%;">{$_('Setting.Type')}</th>
+                  <th class="p-1" style="width: 58%;">{$_('Setting.Path')}</th>
+                  <th class="p-1 text-right" style="width: 14%;">{$_('Setting.Action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -513,14 +455,12 @@
                   <tr class="border-bottom">
                     <td class="p-1">{e.No}</td>
                     <td class="p-1">{formatLogSourceType(e.Type)}</td>
-                    <td class="p-1">{getLSPath(e)}</td>
-                    <td class="p-1">
-                      <button class="btn btn-sm" type="button" on:click={() => editLogSource(e.No)} aria-label="Edit">
+                    <td class="p-1" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title={getLSPath(e)}>{getLSPath(e)}</td>
+                    <td class="p-1 text-right" style="white-space: nowrap;">
+                      <button class="btn btn-sm action-btn mr-1" type="button" on:click={() => editLogSource(e.No)} aria-label="{$_('Setting.Edit')}">
                         <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
                       </button>
-                    </td>
-                    <td class="p-1">
-                      <button class="btn btn-sm btn-danger" type="button" on:click={() => deleteLogSource(e.No)} aria-label="Delete">
+                      <button class="btn btn-sm btn-danger action-btn" type="button" on:click={() => deleteLogSource(e.No)} aria-label="{$_('Setting.Delete')}">
                         <svg class="octicon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M6.5 1.75a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3V1.75zm4.5 0V3h2.25a.75.75 0 010 1.5H2.75a.75.75 0 010-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75zM4.496 6.675a.75.75 0 10-1.492.15l.66 6.6A1.75 1.75 0 005.405 15h5.19c.9 0 1.652-.681 1.741-1.576l.66-6.6a.75.75 0 00-1.492-.149l-.66 6.6a.25.25 0 01-.249.225h-5.19a.25.25 0 01-.249-.225l-.66-6.6z"></path></svg>
                       </button>
                     </td>
@@ -974,11 +914,14 @@
     max-height: calc(100vh - 30px);
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
   }
   .setting-body {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 12px 16px;
+    box-sizing: border-box;
   }
   .columns-container {
     display: flex;
@@ -1005,9 +948,19 @@
     display: table !important;
     width: 100% !important;
     table-layout: fixed;
+    box-sizing: border-box;
+  }
+  table.width-full th,
+  table.width-full td {
+    vertical-align: middle;
+    box-sizing: border-box;
   }
   table.width-full td {
     word-break: break-all;
+  }
+  .action-btn {
+    padding: 3px 6px !important;
+    line-height: 16px;
   }
   @media (max-width: 768px) {
     .columns-container {

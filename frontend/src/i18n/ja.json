@@ -596,6 +596,7 @@
     "Path": "パス",
     "Edit": "編集",
     "Delete": "削除",
+    "Action": "操作",
     "StartingTitle": "ログ分析起動",
     "Starting": "ログの読み込みを準備しています。お待ち下さい",
     "Title": "ログ分析の設定",

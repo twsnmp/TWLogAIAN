@@ -596,6 +596,7 @@
     "Path": "Path",
     "Edit": "Edit",
     "Delete": "Delete",
+    "Action": "Action",
     "StartingTitle": "Starting Log Analysis",
     "Starting": "Preparing to load logs. \nPlease wait...",
     "Title": "Log Analysis Settings",
