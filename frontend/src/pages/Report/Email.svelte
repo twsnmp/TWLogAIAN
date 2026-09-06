@@ -11,6 +11,7 @@
     getEmailChartImage,
   } from "./email";
   import Grid from "../../components/Grid.svelte";
+  import { html } from "gridjs";
   import jaJP from "../../js/gridjsJaJP";
   import { _, getLocale } from "../../i18n/i18n";
   import { AnalyzeEmailLogs, Export, LLMExplainReport } from "../../../wailsjs/go/main/App";
@@ -69,7 +70,7 @@
   let itemsColumns = [
     {
       name: $_("Email.Time"),
-      width: "15%",
+      width: "14%",
       formatter: (cell) => {
         if (!cell) return "";
         const d = new Date(cell);
@@ -99,7 +100,7 @@
     },
     {
       name: $_("Email.SenderIP"),
-      width: "9%",
+      width: "10%",
     },
     {
       name: "SPF",
@@ -110,7 +111,7 @@
         if (cell === "pass") color = "#2ea44f";
         else if (cell === "fail") color = "#cf222e";
         else if (cell === "softfail") color = "#d29922";
-        return `<span style="font-weight: bold; color: ${color};">${cell}</span>`;
+        return html(`<span style="font-weight: bold; color: ${color};">${cell}</span>`);
       },
     },
   ];
@@ -370,7 +371,7 @@
     </div>
     {#if data.length > 0}
       <div class="Box-row markdown-body log">
-        <Grid {data} sort search {pagination} {columns} language={gridLang} />
+        <Grid {data} sort search {pagination} {columns} language={gridLang} autoWidth={false} />
       </div>
     {/if}
   </div>
@@ -424,10 +425,24 @@
 />
 
 <style>
-
   #emailChart {
     width: 100%;
     height: 260px;
     margin: 5px auto;
+  }
+  :global(.log .gridjs-wrapper) {
+    overflow-x: hidden;
+  }
+  :global(.log table.gridjs-table) {
+    table-layout: fixed;
+    width: 100% !important;
+  }
+  :global(.log table.gridjs-table th.gridjs-th) {
+    padding: 6px 6px;
+    box-sizing: border-box;
+  }
+  :global(.log table.gridjs-table td.gridjs-td) {
+    word-break: break-all;
+    box-sizing: border-box;
   }
 </style>
