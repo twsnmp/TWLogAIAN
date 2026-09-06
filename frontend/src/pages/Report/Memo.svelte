@@ -2,9 +2,25 @@
   import { X16, Copy16,Pencil16,Trash16,XCircle16,Stop16,Info16,Circle16,Check16 } from "svelte-octicons";
   import { createEventDispatcher, onMount } from "svelte";
   import * as echarts from "echarts";
-  import { _ } from '../../i18n/i18n';
-  import {GetMemos,SetMemo,DeleteMemo} from '../../../wailsjs/go/main/App';
+  import { _, getLocale } from '../../i18n/i18n';
+  import {GetMemos,SetMemo,DeleteMemo, LLMExplainReport} from '../../../wailsjs/go/main/App';
   import { copyText } from "svelte-copy";
+  import ReportAIDialog from "../../components/ReportAIDialog.svelte";
+
+  export let dark = false;
+  export let hasLLM = false;
+
+  let locale = getLocale();
+  let showAIDialog = false;
+  let aiLang = locale === "en" ? "en" : "ja";
+  let selectAILang = "";
+
+  const onSelectAILang = () => {
+    if (!selectAILang) return;
+    aiLang = selectAILang;
+    showAIDialog = true;
+    selectAILang = "";
+  };
 
   let memos = [];
   let editMode = false;
@@ -181,11 +197,19 @@
     </div>
   </div>
   <div class="Box-footer d-flex flex-justify-between">
-    <div>
+    <div class="d-flex flex-items-center">
       <button class="btn btn-secondary" type="button" on:click={back}>
         <X16 />
         {$_('Memo.BackBtn')}
       </button>
+      {#if hasLLM}
+        <!-- svelte-ignore a11y-no-onchange -->
+        <select class="form-select ml-2" bind:value={selectAILang} on:change={onSelectAILang}>
+          <option value="">{$_('ReportAI.AIExplain')}</option>
+          <option value="ja">{$_('ReportAI.LangJa')}</option>
+          <option value="en">{$_('ReportAI.LangEn')}</option>
+        </select>
+      {/if}
     </div>
     <div>
       {#if memos.length > 0}
@@ -198,3 +222,18 @@
   </div>
 </div>
 <div id="memoCopy"></div>
+
+<ReportAIDialog
+  bind:show={showAIDialog}
+  bind:lang={aiLang}
+  title={$_('ReportAI.Title') + ' - ' + $_('Memo.Title')}
+  exportFilename="memo_ai_explanation"
+  analyzeFunc={(targetLang) => LLMExplainReport({
+    ReportType: "memo",
+    Title: $_('Memo.Title'),
+    Columns: ["Time", "Type", "Memo", "Log"],
+    Data: memos.slice(0, 60).map(m => [formatTime(m.Time), getTypeName(m.Type), m.Memo, m.Log]),
+    Lang: targetLang
+  })}
+/>
+

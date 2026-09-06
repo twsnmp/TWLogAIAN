@@ -122,3 +122,27 @@ func (b *App) exportCSV(data *ExportData) error {
 	w.Flush()
 	return w.Error()
 }
+
+func (b *App) ExportMarkdown(name, content string) error {
+	ts := time.Now().Format("20060102150405")
+	defaultName := fmt.Sprintf("twlogaian_ai_report_%s.md", ts)
+	if name != "" {
+		defaultName = fmt.Sprintf("twlogaian_%s_ai_report_%s.md", name, ts)
+	}
+	file, err := wails.SaveFileDialog(b.ctx, wails.SaveDialogOptions{
+		DefaultFilename:      defaultName,
+		CanCreateDirectories: true,
+		Filters: []wails.FileFilter{{
+			DisplayName: "Markdown (*.md)",
+			Pattern:     "*.md",
+		}},
+	})
+	if err != nil {
+		return err
+	}
+	if file == "" {
+		return nil
+	}
+	return os.WriteFile(file, []byte(content), 0600)
+}
+

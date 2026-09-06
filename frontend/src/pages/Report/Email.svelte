@@ -13,7 +13,8 @@
   import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _, getLocale } from "../../i18n/i18n";
-  import { AnalyzeEmailLogs, Export } from "../../../wailsjs/go/main/App";
+  import { AnalyzeEmailLogs, Export, LLMExplainReport } from "../../../wailsjs/go/main/App";
+  import ReportAIDialog from "../../components/ReportAIDialog.svelte";
   import * as echarts from "echarts";
 
   let locale = getLocale();
@@ -21,6 +22,18 @@
 
   export let logs = [];
   export let dark = false;
+  export let hasLLM = false;
+
+  let showAIDialog = false;
+  let aiLang = locale === "en" ? "en" : "ja";
+  let selectAILang = "";
+
+  const onSelectAILang = () => {
+    if (!selectAILang) return;
+    aiLang = selectAILang;
+    showAIDialog = true;
+    selectAILang = "";
+  };
 
   const dispatch = createEventDispatcher();
 
@@ -363,11 +376,19 @@
   </div>
 
   <div class="Box-footer d-flex flex-justify-between">
-    <div>
+    <div class="d-flex flex-items-center">
       <button class="btn btn-secondary" type="button" on:click={back}>
         <X16 />
         {$_("Email.BackBtn")}
       </button>
+      {#if hasLLM}
+        <!-- svelte-ignore a11y-no-onchange -->
+        <select class="form-select ml-2" bind:value={selectAILang} on:change={onSelectAILang}>
+          <option value="">{$_('ReportAI.AIExplain')}</option>
+          <option value="ja">{$_('ReportAI.LangJa')}</option>
+          <option value="en">{$_('ReportAI.LangEn')}</option>
+        </select>
+      {/if}
     </div>
     <div>
       {#if data.length > 0}
@@ -386,7 +407,24 @@
   </div>
 </div>
 
+<ReportAIDialog
+  bind:show={showAIDialog}
+  bind:lang={aiLang}
+  title={$_('ReportAI.Title') + ' - ' + $_('Email.Title')}
+  exportFilename="email_ai_explanation"
+  analyzeFunc={(targetLang) => LLMExplainReport({
+    ReportType: "email",
+    Title: $_('Email.Title'),
+    Params: { chartType: chartType, tableMode: tableMode },
+    Summary: reportResult && reportResult.Stats ? `Total: ${reportResult.Stats.TotalEmails}, SPF Pass: ${reportResult.Stats.SPFPass}, Fail: ${reportResult.Stats.SPFFail}, SoftFail: ${reportResult.Stats.SPFSoftFail}, None: ${reportResult.Stats.SPFNone}` : "",
+    Columns: columns.map(c => c.name),
+    Data: data.slice(0, 60),
+    Lang: targetLang
+  })}
+/>
+
 <style>
+
   #emailChart {
     width: 100%;
     height: 260px;

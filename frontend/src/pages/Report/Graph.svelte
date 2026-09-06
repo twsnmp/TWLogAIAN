@@ -6,14 +6,25 @@
   import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _,getLocale } from '../../i18n/i18n';
-  import {Export} from '../../../wailsjs/go/main/App';
-
-  let locale = getLocale();
-  let gridLang = locale == "ja" ? jaJP : undefined;
+  import {Export, LLMExplainReport} from '../../../wailsjs/go/main/App';
+  import ReportAIDialog from "../../components/ReportAIDialog.svelte";
 
   export let logs = [];
   export let fields = [];
   export let dark = false;
+  export let hasLLM = false;
+
+  let locale = getLocale();
+  let showAIDialog = false;
+  let aiLang = locale === "en" ? "en" : "ja";
+  let selectAILang = "";
+
+  const onSelectAILang = () => {
+    if (!selectAILang) return;
+    aiLang = selectAILang;
+    showAIDialog = true;
+    selectAILang = "";
+  };
   let catFields = [];
   let numFields = [];
   let srcField = "";
@@ -175,11 +186,19 @@
     </div>
   </div>
   <div class="Box-footer d-flex flex-justify-between">
-    <div>
+    <div class="d-flex flex-items-center">
       <button class="btn btn-secondary" type="button" on:click={back}>
         <X16 />
         {$_('Graph.BackBtn')}
       </button>
+      {#if hasLLM}
+        <!-- svelte-ignore a11y-no-onchange -->
+        <select class="form-select ml-2" bind:value={selectAILang} on:change={onSelectAILang}>
+          <option value="">{$_('ReportAI.AIExplain')}</option>
+          <option value="ja">{$_('ReportAI.LangJa')}</option>
+          <option value="en">{$_('ReportAI.LangEn')}</option>
+        </select>
+      {/if}
     </div>
     <div>
       {#if data.length > 0}
@@ -198,7 +217,25 @@
   </div>
 </div>
 
+<ReportAIDialog
+  bind:show={showAIDialog}
+  bind:lang={aiLang}
+  title={$_('ReportAI.Title') + ' - ' + $_('Graph.Title')}
+  exportFilename="graph_ai_explanation"
+  analyzeFunc={(targetLang) => LLMExplainReport({
+    ReportType: "graph",
+    Title: $_('Graph.Title'),
+    Field: getFieldName(srcField) || srcField,
+    SubField: getFieldName(dstField) || dstField,
+    Params: { numField: getFieldName(numField) || numField, graphType: graphType },
+    Columns: columns.map(c => c.name),
+    Data: data.slice(0, 60),
+    Lang: targetLang
+  })}
+/>
+
 <style>
+
   #chart {
     width: 100%;
     height: 350px;

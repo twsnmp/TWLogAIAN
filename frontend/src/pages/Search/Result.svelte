@@ -11,11 +11,25 @@
     isFieldValid,
   } from "../../js/define";
   import * as echarts from "echarts";
-  import { _ } from '../../i18n/i18n';
-  import {GetProcessInfo} from '../../../wailsjs/go/main/App';
+  import { _, getLocale } from '../../i18n/i18n';
+  import {GetProcessInfo, LLMExplainReport} from '../../../wailsjs/go/main/App';
+  import ReportAIDialog from "../../components/ReportAIDialog.svelte";
 
   export let indexInfo;
   export let dark = false;
+  export let hasLLM = false;
+
+  let locale = getLocale();
+  let showAIDialog = false;
+  let aiLang = locale === "en" ? "en" : "ja";
+  let selectAILang = "";
+
+  const onSelectAILang = () => {
+    if (!selectAILang) return;
+    aiLang = selectAILang;
+    showAIDialog = true;
+    selectAILang = "";
+  };
   let readLines = 0;
   let skipLines = 0;
   let startTime = "";
@@ -184,13 +198,45 @@
         </table>
       </div>
     </div>
-    <div class="Box-footer text-left">
-      <button class="btn" type="button" on:click={back}>
-        <X16 />
-        {$_('Result.BackBtn')}
-      </button>
+    <div class="Box-footer text-left d-flex flex-justify-between flex-items-center">
+      <div class="d-flex flex-items-center">
+        <button class="btn" type="button" on:click={back}>
+          <X16 />
+          {$_('Result.BackBtn')}
+        </button>
+        {#if hasLLM}
+          <!-- svelte-ignore a11y-no-onchange -->
+          <select class="form-select ml-2" bind:value={selectAILang} on:change={onSelectAILang}>
+            <option value="">{$_('ReportAI.AIExplain')}</option>
+            <option value="ja">{$_('ReportAI.LangJa')}</option>
+            <option value="en">{$_('ReportAI.LangEn')}</option>
+          </select>
+        {/if}
+      </div>
     </div>
 </div>
+
+<ReportAIDialog
+  bind:show={showAIDialog}
+  bind:lang={aiLang}
+  title={$_('ReportAI.Title') + ' - ' + $_('Result.Title')}
+  exportFilename="search_result_ai_explanation"
+  analyzeFunc={(targetLang) => LLMExplainReport({
+    ReportType: "result",
+    Title: $_('Result.Title'),
+    Summary: indexInfo ? `Total Logs: ${indexInfo.Total}, Duration: ${indexInfo.Duration}, Storage: ${indexInfo.StorageEngine}, Fields: ${indexInfo.Fields?.length || 0}, LogFiles: ${logFiles.length}` : "",
+    Columns: ["Item", "Value"],
+    Data: [
+      [$_('Result.AllLogs'), numeral(indexInfo?.Total || 0).format('0,0')],
+      [$_('Result.Time'), indexInfo?.Duration || ''],
+      [$_('Result.StorageEngine'), indexInfo?.StorageEngine || ''],
+      [$_('Result.StartDate'), startTime],
+      [$_('Result.EndDate'), endTime],
+    ],
+    Lang: targetLang
+  })}
+/>
+
 
 <style>
   #chart {

@@ -825,5 +825,24 @@
     "BackBtn": "戻る",
     "ShowPatterns": "頻出エラーパターンを表示",
     "HidePatterns": "頻出エラーパターンを閉じる"
+  },
+  "ReportAI": {
+    "Title": "レポートデータのAI解説",
+    "Loading": "データを分析し、AIが解説を作成中...",
+    "Close": "閉じる",
+    "ReAnalyze": "再解説",
+    "Copy": "コピー",
+    "Copied": "コピーしました",
+    "Export": "エクスポート",
+    "AIExplain": "AI解説",
+    "AIExplainJa": "AI解説",
+    "AIExplainEn": "英語解説",
+    "Cancel": "中止",
+    "Lang": "回答言語:",
+    "LangJa": "日本語",
+    "LangEn": "英語",
+    "NoContent": "解説データがありません。"
   }
 }
+
+

@@ -12,7 +12,8 @@
   import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _, getLocale } from "../../i18n/i18n";
-  import { Export } from "../../../wailsjs/go/main/App";
+  import { Export, LLMExplainReport } from "../../../wailsjs/go/main/App";
+  import ReportAIDialog from "../../components/ReportAIDialog.svelte";
   import * as echarts from "echarts";
 
   let locale = getLocale();
@@ -21,6 +22,18 @@
   export let logs = [];
   export let fields = [];
   export let dark = false;
+  export let hasLLM = false;
+
+  let showAIDialog = false;
+  let aiLang = locale === "en" ? "en" : "ja";
+  let selectAILang = "";
+
+  const onSelectAILang = () => {
+    if (!selectAILang) return;
+    aiLang = selectAILang;
+    showAIDialog = true;
+    selectAILang = "";
+  };
 
   const dispatch = createEventDispatcher();
 
@@ -230,11 +243,19 @@
   </div>
 
   <div class="Box-footer d-flex flex-justify-between">
-    <div>
+    <div class="d-flex flex-items-center">
       <button class="btn btn-secondary" type="button" on:click={back}>
         <X16 />
         {$_("Delay.BackBtn")}
       </button>
+      {#if hasLLM}
+        <!-- svelte-ignore a11y-no-onchange -->
+        <select class="form-select ml-2" bind:value={selectAILang} on:change={onSelectAILang}>
+          <option value="">{$_('ReportAI.AIExplain')}</option>
+          <option value="ja">{$_('ReportAI.LangJa')}</option>
+          <option value="en">{$_('ReportAI.LangEn')}</option>
+        </select>
+      {/if}
     </div>
     <div>
       {#if data.length > 0}
@@ -253,7 +274,25 @@
   </div>
 </div>
 
+<ReportAIDialog
+  bind:show={showAIDialog}
+  bind:lang={aiLang}
+  title={$_('ReportAI.Title') + ' - ' + $_('Delay.Title')}
+  exportFilename="delay_ai_explanation"
+  analyzeFunc={(targetLang) => LLMExplainReport({
+    ReportType: "delay",
+    Title: $_('Delay.Title'),
+    Field: getFieldName(selectedField) || selectedField,
+    Params: { mode: mode },
+    Summary: delayResult && delayResult.stats ? `Count: ${delayResult.stats.count}, Mean: ${delayResult.stats.mean?.toFixed(2)}s, Median: ${delayResult.stats.median?.toFixed(2)}s, Min: ${delayResult.stats.min?.toFixed(2)}s, Max: ${delayResult.stats.max?.toFixed(2)}s` : "",
+    Columns: columns.map(c => c.name),
+    Data: data.slice(0, 60),
+    Lang: targetLang
+  })}
+/>
+
 <style>
+
   #delayChart {
     width: 100%;
     height: 260px;

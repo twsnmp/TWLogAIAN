@@ -110,6 +110,7 @@
     StorageEngine: "bluge",
     LLMProvider: "none",
   };
+  $: hasLLM = !!(indexInfo && indexInfo.LLMProvider && indexInfo.LLMProvider !== "none");
   let result = {
     Logs: [],
     View: "",
@@ -736,35 +737,35 @@
 <svelte:window on:resize={onResize} />
 
 {#if page == "result"}
-  <Result {indexInfo} {dark} on:done={handleDone} />
+  <Result {indexInfo} {dark} on:done={handleDone} {hasLLM} />
 {:else if page == "memo"}
-  <Memo on:done={handleDone} dark/>
+  <Memo on:done={handleDone} dark {hasLLM} />
 {:else if page == "ranking"}
-  <Ranking fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Ranking fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "time"}
-  <Time fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Time fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "time3d"}
-  <Time3D fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Time3D fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "cluster"}
-  <Cluster fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Cluster fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "histogram"}
-  <Histogram fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Histogram fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "fft"}
-  <FFT fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <FFT fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "world"}
-  <World fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <World fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "graph"}
-  <Graph fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Graph fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "globe"}
-  <Globe fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Globe fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "heatmap"}
-  <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Heatmap fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "interval"}
-  <Interval logs={result.Logs} on:done={handleDone} dark />
+  <Interval logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "delay"}
-  <Delay fields={result.Fields} logs={result.Logs} on:done={handleDone} dark />
+  <Delay fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "email"}
-  <Email logs={result.Logs} on:done={handleDone} dark />
+  <Email logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "ai"}
   <AI logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "extractorType"}

@@ -825,5 +825,24 @@
     "BackBtn": "Back",
     "ShowPatterns": "Show Error Patterns",
     "HidePatterns": "Hide Error Patterns"
+  },
+  "ReportAI": {
+    "Title": "Report Data AI Explanation",
+    "Loading": "Analyzing data via AI...",
+    "Close": "Close",
+    "ReAnalyze": "Re-Analyze",
+    "Copy": "Copy",
+    "Copied": "Copied",
+    "Export": "Export",
+    "AIExplain": "AI Explain",
+    "AIExplainJa": "AI Explain (JA)",
+    "AIExplainEn": "AI Explain (EN)",
+    "Cancel": "Cancel",
+    "Lang": "Response Language:",
+    "LangJa": "Japanese",
+    "LangEn": "English",
+    "NoContent": "No explanation content."
   }
 }
+
+
