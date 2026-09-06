@@ -71,6 +71,12 @@ func (b *App) StartLogIndexer() error {
 			switch engine {
 			case "parquet":
 				dsPath = filepath.Join(b.workdir, "logs.parquet")
+				if _, err := os.Stat(dsPath); os.IsNotExist(err) {
+					matches, _ := filepath.Glob(filepath.Join(b.workdir, "*.parquet"))
+					if len(matches) > 0 {
+						dsPath = b.workdir
+					}
+				}
 				b.ds = datastore.NewParquetDataStore()
 			case "badger":
 				dsPath = filepath.Join(b.workdir, "twlogaian.badger")
@@ -226,7 +232,9 @@ func (b *App) logIndexer() {
 				flushBatch(b.indexer.logBuffer)
 				b.indexer.logBuffer = nil
 				b.processStat.Done = true
-				b.indexer.duration = time.Since(st)
+				if total > 0 || b.indexer.duration == 0 {
+					b.indexer.duration = time.Since(st)
+				}
 				OutLog("stop logindexer, total indexed=%d", total)
 				return
 			}
@@ -355,6 +363,14 @@ func (b *App) GetIndexInfo() (IndexInfo, error) {
 		StorageEngine: b.getStorageEngine(),
 		LLMProvider:   b.config.LLMProvider,
 	}
+	if b.ds == nil && b.indexer.writer == nil && b.workdir != "" && b.HasIndex() {
+		if err := b.StartLogIndexer(); err != nil {
+			OutLog("GetIndexInfo auto StartLogIndexer err=%v", err)
+		} else {
+			close(b.logCh)
+			b.wg.Wait()
+		}
+	}
 	if b.ds != nil {
 		t, err := b.ds.Count()
 		if err != nil {
@@ -429,6 +445,14 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 	OutLog("SearchLog r=%#v", r)
 	if r.Mode == "ai" {
 		r.Mode = "regexp"
+	}
+	if b.ds == nil && b.indexer.writer == nil && b.workdir != "" && b.HasIndex() {
+		if err := b.StartLogIndexer(); err != nil {
+			OutLog("SearchLog auto StartLogIndexer err=%v", err)
+		} else {
+			close(b.logCh)
+			b.wg.Wait()
+		}
 	}
 	if b.ds != nil {
 		return b.searchDataStore(r)

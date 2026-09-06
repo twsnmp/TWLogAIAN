@@ -62,6 +62,7 @@
   let showConf = false;
   let busy = false;
   let dark = false;
+  let indexLoaded = false;
   const conf = {
     mode: "simple",
     query: "",
@@ -332,16 +333,20 @@
   let extractorTypeList = [];
 
   onMount(async () => {
-    const ii = await GetIndexInfo();
-    if (ii) {
-      indexInfo = ii;
-      if (indexInfo.StorageEngine && indexInfo.StorageEngine !== "bluge" && conf.mode === "full") {
-        conf.mode = "simple";
+    try {
+      const ii = await GetIndexInfo();
+      if (ii) {
+        indexInfo = ii;
+        if (indexInfo.StorageEngine && indexInfo.StorageEngine !== "bluge" && conf.mode === "full") {
+          conf.mode = "simple";
+        }
+        if ((!indexInfo.LLMProvider || indexInfo.LLMProvider === "none") && conf.mode === "ai") {
+          conf.mode = "simple";
+        }
+        setSearchInfo();
       }
-      if ((!indexInfo.LLMProvider || indexInfo.LLMProvider === "none") && conf.mode === "ai") {
-        conf.mode = "simple";
-      }
-      setSearchInfo();
+    } finally {
+      indexLoaded = true;
     }
     loadFieldTypes();
     getExtractorTypes();
@@ -351,7 +356,9 @@
     if (h) {
       conf.history = h;
     }
-    search();
+    if (indexInfo.Total > 0) {
+      search();
+    }
   });
 
   const getExtractorTypes = async () => {
@@ -790,7 +797,7 @@
         </button>
       </div>
     {/if}
-    {#if !busy && indexInfo && indexInfo.Total === 0}
+    {#if indexLoaded && !busy && indexInfo && indexInfo.Total === 0}
       <div class="flash flash-warn d-flex flex-items-center flex-justify-between">
         <span>{$_('LogView.NoDataMsg')}</span>
         <button class="btn btn-sm btn-primary" type="button" on:click={back}>

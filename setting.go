@@ -148,6 +148,7 @@ func (b *App) SetWorkDir(wd string) string {
 		OutLog("SetWorkDir not dir")
 		return "not dir"
 	}
+	b.CloseIndexor()
 	b.logSources = []*LogSource{}
 	b.config = Config{
 		Extractor:     "auto",
