@@ -163,6 +163,7 @@ func (b *App) SetWorkDir(wd string) string {
 	}
 	b.addWorkDirs(wd)
 	b.workdir = wd
+	b.ensureExtractor()
 	return ""
 }
 

@@ -92,6 +92,7 @@ func (b *App) Start(c Config, noRead bool) string {
 		return err.Error()
 	}
 	if noRead {
+		b.ensureExtractor()
 		close(b.logCh)
 		b.wg.Wait()
 		return ""
@@ -1227,6 +1228,7 @@ func (b *App) autoSetExtractor(l string) string {
 		return ""
 	}
 	et := extractorTypes[key]
+	b.config.Extractor = key
 	b.config.GeoFields = et.IPFields
 	b.config.HostFields = et.IPFields
 	b.config.MACFields = et.MACFields
@@ -1243,7 +1245,56 @@ func (b *App) autoSetExtractor(l string) string {
 		return ""
 	}
 	b.processConf.Extractor = g
+	if b.db != nil {
+		_ = b.saveSettingsToDB()
+	}
 	return et.Name
+}
+
+// ensureExtractor : パーサーが未設定の場合に設定やログから復元・自動判別する
+func (b *App) ensureExtractor() {
+	if b.processConf.Extractor != nil {
+		return
+	}
+	if b.config.Extractor == "timeonly" {
+		return
+	}
+	// 1. 設定された抽出タイプがある場合
+	if b.config.Extractor != "" && b.config.Extractor != "auto" {
+		if err := b.setExtractor(); err == nil && b.processConf.Extractor != nil {
+			return
+		}
+	}
+	// 2. 自動判別の場合は過去のログファイル情報のETNameから復元を試みる
+	if b.config.Extractor == "auto" || b.config.Extractor == "" {
+		for _, lf := range b.processStat.LogFiles {
+			if lf.ETName != "" {
+				for k, et := range extractorTypes {
+					if et.Name == lf.ETName {
+						b.config.Extractor = k
+						if err := b.setExtractor(); err == nil && b.processConf.Extractor != nil {
+							if b.db != nil {
+								_ = b.saveSettingsToDB()
+							}
+							return
+						}
+					}
+				}
+			}
+		}
+	}
+	// 3. データストア（Parquet等）からサンプルログを取得して判別
+	if b.ds != nil && (b.config.Extractor == "auto" || b.config.Extractor == "") {
+		_ = b.ds.ForEach(0, 0, func(entry *datastore.LogEntry) bool {
+			line := strings.TrimSpace(entry.Log)
+			if line != "" {
+				if etName := b.autoSetExtractor(line); etName != "" {
+					return false
+				}
+			}
+			return true
+		})
+	}
 }
 
 func (b *App) testGrok(l, p string) int {

@@ -454,14 +454,17 @@ func (b *App) SearchLog(r SearchRequest) SearchResult {
 			b.wg.Wait()
 		}
 	}
+	b.ensureExtractor()
 	if b.ds != nil {
 		return b.searchDataStore(r)
 	}
 	view := "timeonly"
-	if b.config.Extractor == "auto" {
-		view = "auto"
+	if b.processConf.View != "" {
+		view = b.processConf.View
 	} else if et, ok := extractorTypes[b.config.Extractor]; ok {
 		view = et.View
+	} else if b.config.Extractor == "auto" {
+		view = "auto"
 	}
 	ret := SearchResult{
 		Logs:     []*LogEnt{},
@@ -912,11 +915,14 @@ func (b *App) searchDataStore(r SearchRequest) SearchResult {
 		r.Mode = "regexp"
 	}
 	stTime := time.Now()
+	b.ensureExtractor()
 	view := "timeonly"
-	if b.config.Extractor == "auto" {
-		view = "auto"
+	if b.processConf.View != "" {
+		view = b.processConf.View
 	} else if et, ok := extractorTypes[b.config.Extractor]; ok {
 		view = et.View
+	} else if b.config.Extractor == "auto" {
+		view = "auto"
 	}
 	ret := SearchResult{
 		Logs:     []*LogEnt{},

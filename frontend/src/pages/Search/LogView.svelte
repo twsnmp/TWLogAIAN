@@ -298,7 +298,17 @@
       if (r) {
         result = r;
         if (logView == "") {
-          logView = r.View == "auto" ? "timeonly" : r.View;
+          if (r.View && r.View != "auto") {
+            logView = r.View;
+          } else if (r.Fields.includes("tag") && r.Fields.includes("logsource")) {
+            logView = "syslog";
+          } else if (r.Fields.includes("verb") && r.Fields.includes("clientip")) {
+            logView = "access";
+          } else if (r.Fields.includes("winEventID")) {
+            logView = "windows";
+          } else {
+            logView = "timeonly";
+          }
         }
         if (lastExtractor != conf.extractor && r.ExFields.length > 0) {
           logView = "ex_data";
