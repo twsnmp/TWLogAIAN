@@ -57,7 +57,7 @@
   let columns = [
     {
       name: $_("Interval.Time"),
-      width: "25%",
+      width: "20%",
       formatter: (cell) => {
         if (!cell) return "";
         const d = new Date(cell);
@@ -66,12 +66,12 @@
     },
     {
       name: $_("Interval.DeltaSec"),
-      width: "15%",
+      width: "12%",
       formatter: (cell) => (cell !== undefined ? Number(cell).toFixed(3) : ""),
     },
     {
       name: $_("Interval.Log"),
-      width: "60%",
+      width: "68%",
     },
   ];
 
@@ -203,7 +203,7 @@
       <div id="intervalChart" bind:this={chartDiv}></div>
     </div>
     <div class="Box-row markdown-body log">
-      <Grid {data} sort search {pagination} {columns} language={gridLang} />
+      <Grid {data} sort search {pagination} {columns} language={gridLang} autoWidth={false} />
     </div>
   </div>
 
@@ -256,10 +256,24 @@
 />
 
 <style>
-
   #intervalChart {
     width: 100%;
     height: 260px;
     margin: 5px auto;
+  }
+  :global(.log .gridjs-wrapper) {
+    overflow-x: hidden;
+  }
+  :global(.log table.gridjs-table) {
+    table-layout: fixed;
+    width: 100% !important;
+  }
+  :global(.log table.gridjs-table th.gridjs-th) {
+    padding: 6px 6px;
+    box-sizing: border-box;
+  }
+  :global(.log table.gridjs-table td.gridjs-td) {
+    word-break: break-all;
+    box-sizing: border-box;
   }
 </style>
