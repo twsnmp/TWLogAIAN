@@ -2,8 +2,8 @@
   import * as echarts from "echarts";
   import { getFieldName, getFields,getTableLimit } from "../../js/define";
   import { X16 } from "svelte-octicons";
-  import { createEventDispatcher, onMount, tick } from "svelte";
-  import { getFFTMap, showFFTChart, resizeFFTChart,getFFTChartImage } from "./fft";
+  import { createEventDispatcher, onMount, onDestroy, tick } from "svelte";
+  import { getFFTMap, showFFTChart, resizeFFTChart, getFFTChartImage, disposeFFTChart } from "./fft";
   import Grid from "../../components/Grid.svelte";
   import jaJP from "../../js/gridjsJaJP";
   import { _,getLocale } from '../../i18n/i18n';
@@ -52,8 +52,12 @@
       keyList.push(key);
     }
     data = [];
-    columns[1].name = getFieldName(selected) || selected;
+    columns[1].name = selected === "_None" ? $_('FFT.NoItem') : (getFieldName(selected) || selected);
     logs.forEach((l) => {
+      if (selected === "_None") {
+        data.push([l.Time, "-"]);
+        return;
+      }
       const v = l.KeyValue[selected];
       switch (typeof v) {
         case "string":
@@ -81,11 +85,18 @@
       return;
     }
     await tick();
-    showFFTChart("chart", selected, fftMap, key, fftType, dark);
+    const mode = showFFTChart("chart", selected, fftMap, key, fftType, dark);
+    if (mode === "fallback_2d") {
+      key = "Total";
+    }
   };
 
   onMount(() => {
     catFields = getFields(fields, "string");
+  });
+
+  onDestroy(() => {
+    disposeFFTChart();
   });
 
   let exportType = '';

@@ -381,7 +381,7 @@ func (b *App) GetIndexInfo() (IndexInfo, error) {
 		ret.Duration = b.indexer.duration.String()
 		ret.StartTime = b.processStat.StartTime
 		ret.EndTime = b.processStat.EndTime
-		fields := []string{"time", "delta", "log"}
+		fields := []string{"time", "delta"}
 		for _, ft := range fieldTypes {
 			fields = append(fields, ft.Key)
 		}
@@ -921,7 +921,7 @@ func (b *App) searchDataStore(r SearchRequest) SearchResult {
 	ret := SearchResult{
 		Logs:     []*LogEnt{},
 		View:     view,
-		Fields:   []string{"time", "delta", "log"},
+		Fields:   []string{"time", "delta"},
 		ExFields: []string{},
 	}
 	if b.ds == nil {
