@@ -16,7 +16,6 @@ const makeClusterChart = (div, xField, yField,dark) => {
     legend: {
       data: [],
     },
-    toolbox: {},
     dataZoom: [{}],
     tooltip: {
       trigger: 'axis',

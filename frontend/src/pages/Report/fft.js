@@ -172,7 +172,6 @@ const showFFT2DChart = (fftMap, key, fftType) => {
 
   const options = {
     title: { show: false },
-    toolbox: {},
     dataZoom: [{}],
     tooltip: {
       trigger: 'axis',
@@ -260,7 +259,6 @@ const showFFT3DChart = (el, field, fftMap, fftType, dark) => {
 
   const options = {
     title: { show: false },
-    toolbox: {},
     tooltip: {},
     animationDurationUpdate: 500,
     visualMap: {

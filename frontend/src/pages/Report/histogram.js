@@ -16,7 +16,6 @@ const makeHistogramChart = (div, field, dark) => {
     title: {
       show: false,
     },
-    toolbox: {},
     dataZoom: [{}],
     tooltip: {
       trigger: 'axis',

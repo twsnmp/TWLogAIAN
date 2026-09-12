@@ -105,7 +105,6 @@ export const showWorldMap = (div, logs,geoField,numField,dark) => {
       },
       roam: true,
     },
-    toolbox: {},
     tooltip: {
       trigger: 'item',
       formatter: "{b}",

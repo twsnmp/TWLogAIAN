@@ -769,6 +769,31 @@ A dedicated global reporting workflow that analyzes all loaded or searched logs 
 ![](./images/en/report_ai_analysis.png)
 
 
+## Threat Detection & Compliance Audit (Sigma) (v2.2.0)
+
+A powerful security and audit analysis report powered by open-standard **Sigma** and **Wazuh** rule engines. Automatically scans loaded logs or search results to detect indicators of compromise, cyber attacks, and compliance violations.
+
+- **Summary Metric Badges**:
+  Displays real-time counts of Total Scanned Logs, Threat Hits, Compliance Audit Hits, and Active Evaluation Rules in the report header.
+- **Out-of-the-Box Embedded Rule Packs**:
+  Includes rich, pre-packaged rule sets ready to use without setup: Windows essentials, Windows client & Active Directory, Linux system & authentication, Web application attacks (SQLi, XSS, Path Traversal), Network threats (DoS, scans, anomalous traffic), Wazuh rules, and Compliance audit rules (PCI-DSS, NIST, GDPR, CIS, etc.).
+- **Interactive Visualizations**:
+  - **Severity Breakdown (Donut Chart)**: Visualizes the proportion of detected events across Critical, High, Medium, and Low/Info levels.
+  - **MITRE ATT&CK & Audit Tags (Horizontal Bar Chart)**: Highlights top detected attack tactics/techniques and regulatory compliance tags.
+  - **Detection Timeline (Line Chart)**: Tracks the volume and surge points of security events over time.
+- **Multiple View Modes & Detailed Grid**:
+  - **All Detections / Threat Events / Compliance Audit Events**: Displays severity badges, timestamps, matching rule titles, log sources, MITRE / compliance tags, and raw log lines with keyword search and pagination.
+  - **Rule Statistics**: Aggregates hit counts, severity, and rule source (embedded or custom).
+  - **MITRE / Tag Analysis**: Groups and counts events by category and security tag.
+- **External Sigma Rules Integration**:
+  Load your own custom Sigma rule files (`.yml` / `.yaml`) or entire community rule directories on the fly via the folder selector icon at the top of the report.
+- **AI-Powered Incident Explanation**:
+  Trigger LLM evaluation via the AI Explanation dropdown to receive an in-depth security analysis covering incident severity, mapped MITRE ATT&CK tactics, compliance impact, and prioritized incident response and remediation recommendations.
+
+![](./images/en/report_sigma.png)
+
+
+
 ## AI Report Explanation (v2.1.0)
 
 Available from the **AI Explanation** menu at the bottom-left of each individual report screen (Ranking, Time Series, Histogram, Interval, etc.):
@@ -828,6 +853,15 @@ Clicking the **Model Manager / GPU Setup** button opens the management dialog:
   Download any compatible GGUF model directly by specifying a Hugging Face repository ID or direct URL.
 
 ![](./images/en/model_manager.png)
+### Sigma Threat Detection & Rule Settings (v2.2.0)
+
+Located in the bottom-right of the log analysis settings dialog, allowing you to configure custom Sigma detection rules.
+
+- **External Sigma Rules Path (File or Folder)**:
+  Specify the file path or directory path to custom `.yml` / `.yaml` Sigma rules. Use the folder selection button on the right to browse and select a directory.
+  All matching rule files in the specified path are automatically loaded and applied across GUI reports and CLI evaluation.
+
+![](./images/en/sigma_setting.png)
 
 
 ## Ask AI Assistant (Enhanced in v2.1.0)
@@ -927,3 +961,56 @@ fieldtypes:
   - `name`: A user-friendly label for display.
   - `type`: The data type of the field (`number` or `string`).
   - `unit`: The unit of measurement displayed on charts.
+
+## Sigma CLI Tool (v2.2.0)
+
+In addition to the GUI application, TWLogAIAN includes a built-in **Sigma CLI Scanning Tool** suitable for automated batch tasks, command-line inspection, and pipeline integration without launching the graphical desktop interface.
+
+Invoke the CLI by providing the `sigma` argument when running TWLogAIAN:
+
+```bash
+# Linux / macOS
+./TWLogAIAN sigma <subcommand> [options]
+
+# Windows
+TWLogAIAN.exe sigma <subcommand> [options]
+```
+
+### Subcommands
+
+| Subcommand | Description |
+| :--- | :--- |
+| `packs` | Lists all embedded Sigma rule packs. |
+| `list` | Displays loaded Sigma rules (filterable with `-pack` and `-custom`). |
+| `stat` | Shows rule statistics including total rules, severity counts, and tag metrics. |
+| `logsrc` | Displays log sources required by the active rule set. |
+| `field` | Lists fields referenced across the rules. |
+| `test` | Evaluates one or more test log strings against the rules. |
+| `eval` | Scans log records from an existing datastore file (Parquet, Badger, Bbolt). |
+| `convert-wazuh` | Automatically converts Wazuh XML rules to Sigma YAML format. |
+| `convert-wazuh-decoder` | Extracts field mapping definitions from Wazuh XML decoders. |
+
+### Common Options
+
+- `-s, -rules <path>`: Path to external Sigma rule file or folder
+- `-p, -packs <packs>`: Comma-separated rule packs to evaluate (e.g. `windows-essential,linux-auth` or `all`)
+- `-c, -config <path>`: Path to field mapping config directory
+- `-d, -datastore <path>`: Path to datastore file (`logs.parquet`, `twlogaian.badger`, `twlogaian_logs.db`)
+- `-o <dir>`: Target directory for converted Wazuh rules (default: `./converted-rules`)
+
+### Usage Examples
+
+```bash
+# List available embedded rule packs
+./TWLogAIAN sigma packs
+
+# Quick test against an SSH attack log entry
+./TWLogAIAN sigma test "Failed password for invalid user admin from 192.168.1.100 port 22 ssh2"
+
+# Evaluate saved Parquet datastore against all rule packs
+./TWLogAIAN sigma eval -d logs.parquet -p all
+
+# Convert existing Wazuh rules to Sigma rules
+./TWLogAIAN sigma convert-wazuh /var/ossec/ruleset/rules/ -o ./my-sigma-rules
+```
+

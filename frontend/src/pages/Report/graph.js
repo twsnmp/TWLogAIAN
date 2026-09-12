@@ -95,7 +95,6 @@ export const showGraph = (div, logs, srcField,dstField,numField,type,dark) => {
       bottom: '3%',
       containLabel: true,
     },
-    toolbox: {},
     tooltip: {},
     legend: [
       {

@@ -47,6 +47,9 @@ type Config struct {
 	LLMBaseURL  string
 	LLMAPIKey   string
 	LLMModel    string
+	// Sigma Settings
+	SigmaPacks     []string
+	SigmaRulesPath string
 }
 
 type LogSource struct {
@@ -107,7 +110,7 @@ func (b *App) SelectFile(t, title string) string {
 	case "sshkey", "cert", "key", "cacert":
 		dir = false
 		sh = true
-	case "logdir":
+	case "logdir", "sigmarules":
 		dir = true
 	case "logfile":
 		dir = false

@@ -9,9 +9,11 @@ require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/blugelabs/bluge v0.2.2
 	github.com/blugelabs/query_string v0.3.0
+	github.com/bradleyjkemp/sigma-go v0.6.6
 	github.com/codegaudi/go-iforest v0.0.1
 	github.com/dgraph-io/badger/v4 v4.9.6
 	github.com/dustin/go-humanize v1.0.1
+	github.com/elastic/go-grok v0.3.1
 	github.com/emersion/go-imap/v2 v2.0.0-beta.8
 	github.com/fatih/color v1.18.0
 	github.com/gravwell/gravwell/v3 v3.8.20
@@ -35,6 +37,7 @@ require (
 	golang.org/x/text v0.41.0
 	google.golang.org/grpc v1.83.2
 	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -49,8 +52,12 @@ require (
 	cloud.google.com/go/vertexai v0.12.0 // indirect
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/0xrawsec/golang-utils v1.3.2 // indirect
+	github.com/BobuSumisu/aho-corasick v1.0.3 // indirect
+	github.com/PaesslerAG/gval v1.0.0 // indirect
+	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/RoaringBitmap/roaring v1.2.1 // indirect
 	github.com/Songmu/wrapcommander v0.1.0 // indirect
+	github.com/alecthomas/participle v0.7.1 // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/axiomhq/hyperloglog v0.0.0-20220105174342-98591331716a // indirect
 	github.com/bep/debounce v1.2.1 // indirect
@@ -94,6 +101,7 @@ require (
 	github.com/leaanthony/gosod v1.0.4 // indirect
 	github.com/leaanthony/slicer v1.6.0 // indirect
 	github.com/leaanthony/u v1.1.1 // indirect
+	github.com/magefile/mage v1.15.0 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect

@@ -43,6 +43,7 @@
   import Interval from "../Report/Interval.svelte";
   import Delay from "../Report/Delay.svelte";
   import Email from "../Report/Email.svelte";
+  import Sigma from "../Report/Sigma.svelte";
   import AI from "../Report/AI.svelte";
   import Memo from "../Report/Memo.svelte";
   import EditExtractorType from "../Setting/EditExtractorType.svelte";
@@ -766,6 +767,8 @@
   <Delay fields={result.Fields} logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "email"}
   <Email logs={result.Logs} on:done={handleDone} dark {hasLLM} />
+{:else if page == "sigma"}
+  <Sigma logs={result.Logs} on:done={handleDone} dark {hasLLM} />
 {:else if page == "ai"}
   <AI logs={result.Logs} on:done={handleDone} dark />
 {:else if page == "extractorType"}
@@ -1016,6 +1019,7 @@
               <option value="interval">{$_('LogView.IntervalMenu')}</option>
               <option value="delay">{$_('LogView.DelayMenu')}</option>
               <option value="email">{$_('LogView.EmailMenu')}</option>
+              <option value="sigma">{$_('LogView.SigmaMenu')}</option>
               <option value="ai">{$_('LogView.AIMenu')}</option>
             </select>
           {/if}

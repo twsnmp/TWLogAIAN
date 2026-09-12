@@ -47,11 +47,13 @@ Log analysis features:
   - Heatmap
   - Email Detailed Analysis Report (v2.1.0)
   - Interval & Access Delay Analysis Reports (v2.1.0)
+  - Threat Detection & Compliance Audit (Sigma) Report (v2.2.0)
 - Export analysis results to CSV or Excel
 - Create chronological notes from selected logs
 - AI-assisted anomaly detection with Machine Learning & Deep Learning (Isolation Forest, LOF, AutoEncoder, LSTM, KNN, Mahalanobis distance, Z-Score)
 - AI explanation and summarization across report views and search results
 - Explain logs and answer questions with embedded local LLM (tensai with GPU acceleration) and external LLMs (Ollama, Gemini, OpenAI, Anthropic)
+- Threat detection, MITRE ATT&CK mapping, and compliance auditing powered by Sigma rules (v2.2.0)
 
 Technologies used:
 
@@ -62,6 +64,7 @@ Technologies used:
 - Parquet / Badger / Bbolt: High-performance storage engines
 - tensai: Embedded local LLM & neural network inference engine (with GPU acceleration)
 - langchaingo: External LLM integration library
+- Sigma / Wazuh rules: Sigma rule evaluation engine & embedded rule packs (Windows/Linux/Web/Network/Compliance)
 - p5.js / p5-svelte: 2D/3D visualizations
 - Apache ECharts: Rich charting
 - Primer/CSS, Octicons: UI design system
@@ -89,6 +92,7 @@ https://twsnmp.github.io/TWLogAIAN/
 - v1.11.0 (2025/4/14) LLM/RAG integration
 - v2.0.0 (2026/6/20) Upgrade to Svelte 5 / Vite 8, custom GrokEditor, LLM integration (RAG removed)
 - v2.1.0 (2026/9/6) Embedded local LLM (tensai/GPU), storage engine options (Parquet/Badger/Bbolt), AI report explanation & summary, deep learning anomaly detection (AutoEncoder/LSTM/KNN), expanded log sources (HTTP/Loki/ES/FTP), email & delay analysis reports
+- v2.2.0 (2026/9/12) Sigma rule threat detection & compliance audit report, external Sigma rules integration, Wazuh rule converter, CLI scanning & evaluation tool (twlogaian sigma)
 
 ## Build
 

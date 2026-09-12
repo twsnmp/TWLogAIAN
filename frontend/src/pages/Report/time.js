@@ -69,7 +69,6 @@ export const showTimeChart = (div, logs, field, chartType, dark) => {
     title: {
       show: false,
     },
-    toolbox: {},
     dataZoom: [
       {
         type: "inside",

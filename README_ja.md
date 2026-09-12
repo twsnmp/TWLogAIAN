@@ -53,11 +53,13 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 	- ヒートマップ (v1.1.0)
 	- メール詳細分析レポート (v2.1.0)
 	- インターバル分析／アクセス遅延分析レポート (v2.1.0)
+	- 脅威検知・コンプライアンス監査 (Sigma) レポート (v2.2.0)
 - 分析結果をCSVやEXCELに出力できる
 - ログを選択して時系列に並べたメモを作成できる (v1.2.0)
 - AI（機械学習・ディープラーニング）による異常ログ検知 (Isolation Forest, LOF, AutoEncoder, LSTM, KNN, マハラノビス距離, Z-Score)
 - 各種レポート画面や検索でのAI解説・要約生成機能
 - 内蔵ローカルLLM（tensai、GPU対応）および外部LLM（Ollama、Gemini、OpenAI、Anthropic）連携によるログ解説・問い合わせ（Ask AI）機能
+- Sigmaルール評価エンジンによる脅威検知、MITRE ATT&CKマッピング、コンプライアンス監査 (v2.2.0)
 
 を実現しました。
 
@@ -70,6 +72,7 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 - Parquet / Badger / Bbolt : 高速ストレージエンジン
 - tensai : 組み込みローカルLLM & 機械学習/ニューラルネットワーク推論エンジン（GPUアクセラレーション対応）
 - langchaingo : 外部LLM連携ライブラリ（Go言語）
+- Sigma / Wazuh rules : Sigmaルール評価エンジン & 組み込みルールパック（Windows/Linux/Web/Network/Compliance）
 - p5.js / p5-svelte : 2D/3Dビジュアライズ
 - Apache ECharts : グラフ表示
 - Primer/CSS, Octicons : 画面デザイン
@@ -99,6 +102,7 @@ https://twsnmp.github.io/TWLogAIAN/
 - v1.11.0 (2025/4/14) LLM/RAG対応
 - v2.0.0 (2026/6/20) Svelte 5 / Vite 8への移行、カスタムGrokEditorの導入、LLM対応（RAG機能の削除）
 - v2.1.0 (2026/9/6) 組み込みローカルLLM(tensai/GPU対応)、ストレージエンジン選択(Parquet/Badger/Bbolt)、AI要約・レポート解説、ディープラーニング異常検知(AutoEncoder/LSTM/KNN等)、ログインポート拡張(HTTP/Loki/ES/FTP等)、メール・遅延分析レポート追加
+- v2.2.0 (2026/9/12) Sigmaルールによる脅威検知・コンプライアンス監査レポート、外部Sigmaルール連携、Wazuhルール変換、CLIスキャン・評価機能(twlogaian sigma)
 
 ## Build
 

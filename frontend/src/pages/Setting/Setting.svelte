@@ -7,6 +7,7 @@
     Checklist16,
     Trash16,
     Search16,
+    FileDirectory16,
   } from "svelte-octicons";
   import { createEventDispatcher } from "svelte";
   import LogSource from "./LogSource.svelte";
@@ -59,6 +60,8 @@
     LLMBaseURL: "",
     LLMAPIKey: "",
     LLMModel: "",
+    SigmaPacks: [],
+    SigmaRulesPath: "",
   };
   let logSource = {
     No: 0,
@@ -331,6 +334,10 @@
 
   const selectGeoIPDB = async () => {
     config.GeoIPDB = await SelectFile("geoip",$_('Setting.IPGeoDB'));
+  };
+
+  const selectSigmaRulesPath = async () => {
+    config.SigmaRulesPath = await SelectFile("sigmarules", $_('Setting.SelectSigmaRulesDir'));
   };
 
   const cancel = async () => {
@@ -863,6 +870,30 @@
                 </div>
               </div>
             {/if}
+
+            <!-- Sigma Settings -->
+            <hr class="mt-2 mb-2" />
+            <h5 class="mb-1">{$_('Setting.SigmaSetting')}</h5>
+            <div class="form-group">
+              <div class="form-group-header">
+                <h5>{$_('Setting.SigmaRulesPath')}</h5>
+              </div>
+              <div class="form-group-body">
+                <div class="input-group">
+                  <input
+                    class="form-control"
+                    type="text"
+                    placeholder="{$_('Setting.SigmaRulesPathPlaceholder')}"
+                    bind:value={config.SigmaRulesPath}
+                  />
+                  <span class="input-group-button">
+                    <button class="btn" type="button" on:click={selectSigmaRulesPath}>
+                      <FileDirectory16 />
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

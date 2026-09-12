@@ -40,7 +40,6 @@ export const showRankingChart = (div, list, max,dark) => {
     title: {
       show: false,
     },
-    toolbox: {},
     tooltip: {
       trigger: 'axis',
       axisPointer: {

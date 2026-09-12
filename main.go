@@ -27,6 +27,10 @@ var version = "v0.0.0"
 var commit = ""
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "sigma" {
+		runSigmaCLI(os.Args[2:])
+		return
+	}
 	// Create an instance of the app structure
 	app := NewApp()
 	if len(os.Args) > 1 && os.Args[1] == "debug" {

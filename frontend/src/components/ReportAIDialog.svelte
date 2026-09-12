@@ -478,7 +478,7 @@
     font-size: 13px;
     color: #8b949e;
     margin: 0;
-    max-width: 90%;
+    max-width: 98%;
     line-height: 1.45;
   }
 

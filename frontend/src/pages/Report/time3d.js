@@ -59,11 +59,6 @@ export const showTime3DChart = (div, logs, xField, zField, colorField,dark) => {
     title: {
       show: false,
     },
-    toolbox: {
-      iconStyle: {
-        color: '#ccc',
-      },
-    },
     tooltip: {},
     animationDurationUpdate: 1500,
     animationEasingUpdate: 'quinticInOut',

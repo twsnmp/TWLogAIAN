@@ -96,6 +96,8 @@ func buildReportPrompt(req LLMExplainReportRequest, targetLang string) (string, 
 		system.WriteString("Analyze response time and latency statistics. Identify performance degradation, tail latency, timeout risks, and root causes.")
 	case "email":
 		system.WriteString("Analyze email transaction logs, sender/recipient volumes, delivery failures, SPF/DKIM issues, and potential spam or data exfiltration.")
+	case "sigma":
+		system.WriteString("Analyze detected security threats and compliance audit findings identified by Sigma and Wazuh rules. Assess incident severity, MITRE ATT&CK tactics/techniques, compliance impacts (PCI-DSS, NIST, GDPR, CIS), potential attack vectors, affected assets, and provide clear, prioritized incident response and remediation steps.")
 	case "result":
 		system.WriteString("Provide a comprehensive summary of search results, key observations, data distribution, and recommended next steps for log investigation.")
 	case "memo":
