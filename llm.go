@@ -105,9 +105,15 @@ func (b *App) GetLLM(ctx context.Context) (llms.Model, error) {
 	case "tensai", "embedded", "local":
 		modelPath, err := model.FindModel("", b.config.LLMModel)
 		if err != nil {
-			return nil, fmt.Errorf("local model not found: %w", err)
+			OutLog("GetLLM tensai: local model %q not found: %v", b.config.LLMModel, err)
+			return nil, fmt.Errorf("local model not found (%s): %w", b.config.LLMModel, err)
 		}
-		return tensai.NewWithOptions(modelPath, false)
+		llm, err := tensai.NewWithOptions(modelPath, false)
+		if err != nil {
+			OutLog("GetLLM tensai: failed to load model %s: %v", modelPath, err)
+			return nil, err
+		}
+		return llm, nil
 	}
 	return nil, fmt.Errorf("llm provider not found")
 }

@@ -39,6 +39,7 @@
 
   let errorMsg = "";
   let infoMsg = "";
+  let confirmDeleteModel = "";
 
   const refreshData = async () => {
     try {
@@ -124,15 +125,20 @@
     }
   };
 
+  const askDeleteModel = (name) => {
+    confirmDeleteModel = name;
+  };
+
+  const cancelDeleteModel = () => {
+    confirmDeleteModel = "";
+  };
+
   const deleteModel = async (name) => {
+    confirmDeleteModel = "";
     errorMsg = "";
     infoMsg = "";
     try {
-      const err = await DeleteLocalModel(
-        name,
-        $_("ModelManager.Delete"),
-        $_("ModelManager.DeleteConfirm", { values: { name } })
-      );
+      const err = await DeleteLocalModel(name, "", "");
       if (err && err !== "cancel") {
         errorMsg = err;
       } else if (!err) {
@@ -280,10 +286,19 @@
                   <td class="p-2">{m.size_human}</td>
                   <td class="p-2 color-fg-muted">{new Date(m.mod_time).toLocaleString()}</td>
                   <td class="p-2 text-right">
-                    <button class="btn btn-sm btn-danger" type="button" on:click={() => deleteModel(m.name)}>
-                      <Trash16 />
-                      {$_("ModelManager.Delete")}
-                    </button>
+                    {#if confirmDeleteModel === m.name}
+                      <button class="btn btn-sm btn-danger mr-1" type="button" on:click={() => deleteModel(m.name)}>
+                        {$_("ModelManager.Delete")}
+                      </button>
+                      <button class="btn btn-sm btn-secondary" type="button" on:click={cancelDeleteModel}>
+                        {$_("ModelManager.Cancel")}
+                      </button>
+                    {:else}
+                      <button class="btn btn-sm btn-danger" type="button" on:click={() => askDeleteModel(m.name)}>
+                        <Trash16 />
+                        {$_("ModelManager.Delete")}
+                      </button>
+                    {/if}
                   </td>
                 </tr>
               {/each}
