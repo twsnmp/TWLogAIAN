@@ -827,28 +827,35 @@ All of the reports described above can be exported. Access the export menu in th
 Allows you to save Grok patterns and other field extraction settings to definition files, which can then be reused in other analyses.
 
 
-## AI Integration Settings (Enhanced in v2.1.0)
+## AI Integration Settings (Enhanced in v2.1.0, Improved in v2.3.0)
 
 Configure Large Language Models (LLMs) to power log explanations, summaries, and Ask AI queries.
 
-- **Embedded Local LLM (tensai) (v2.1.0)**:
-  An embedded LLM running entirely locally on your computer with zero external server dependencies or API keys. Ensures sensitive log data never leaves your machine.
-  Supports GPU hardware acceleration (Metal / DirectX / Vulkan / CUDA) for high-performance inference. Recommended GGUF models can be downloaded and managed directly via the built-in model manager.
+- **Embedded Local LLM (tensai) (v2.1.0, v2.3.0 Improved)**:
+  An embedded LLM running entirely locally on your computer with zero external server dependencies or API keys. Ensures sensitive log data never leaves your machine. (Upgraded to tensai v0.0.35 in v2.3.0 with fixed GGUF tokenizer type assertions for reliable local inference).
+  Supports GPU hardware acceleration (Metal / DirectX / Vulkan / CUDA) and arm64 NEON SIMD optimizations for high-performance inference.
 - **External LLMs (Ollama, Gemini, OpenAI, Anthropic)**:
   Connect to cloud LLM APIs or local Ollama servers by configuring API keys, model names, and base URLs.
 
 ![](./images/en/ai_setting.png)
 
-### Local LLM Models & GPU Management (v2.1.0)
+### Local LLM Models & GPU Management (v2.1.0, v2.3.0 Expanded)
 
 Clicking the **Model Manager / GPU Setup** button opens the management dialog:
 
-- **GPU Acceleration (WebGPU)**:
-  Displays the currently active GPU backend (Metal / Vulkan / Direct3D / wgpu) and the installation status of the `wgpu-native` library.
-- **Downloaded Models**:
-  Lists locally installed GGUF models with file size, update time, and deletion controls.
-- **Preset Model One-Click Download**:
-  Select from recommended tested lightweight models (such as Qwen 2.5 0.5B Instruct) and download them with a single click.
+- **GPU & SIMD Acceleration (WebGPU / NEON)**:
+  Displays the currently active GPU backend (Metal / Vulkan / Direct3D / wgpu), the installation status of the `wgpu-native` library, and arm64 NEON SIMD detection status.
+- **Downloaded Models & Inline Deletion (v2.3.0 Improved)**:
+  Lists locally installed GGUF models with file size and update time. Deletion now features an inline confirmation UI with automatic model cache cleanup.
+- **Preset Model One-Click Download (v2.3.0 Greatly Expanded)**:
+  Select from a wide variety of recommended, pre-tested models and download them with a single click:
+  - **Qwen 2.5 / Qwen 2.5 Coder** (0.5B / 1.5B / 3B): Fast, lightweight, and optimized for code/log analysis
+  - **Qwen 3** (4B): Advanced reasoning model supporting `<think>` thought processes
+  - **LLM-jp 3** (1.8B): Japanese-focused local model
+  - **Gemma Series** (Gemma 2 2B / Gemma 3 1B / Gemma 4 E2B): High-quality models from Google
+  - **SmolLM Series** (SmolLM2 135M / 360M / 1.7B, SmolLM3 3B): Ultra-compact to reasoning-capable lightweight models
+  - **Phi 3.5 Mini** (3.8B): Microsoft's high-reasoning compact model
+  - As well as Llama 3.2 1B, DeepSeek R1 Distill Qwen 1.5B, etc.
 - **Custom Download**:
   Download any compatible GGUF model directly by specifying a Hugging Face repository ID or direct URL.
 

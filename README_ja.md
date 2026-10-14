@@ -58,7 +58,7 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 - ログを選択して時系列に並べたメモを作成できる (v1.2.0)
 - AI（機械学習・ディープラーニング）による異常ログ検知 (Isolation Forest, LOF, AutoEncoder, LSTM, KNN, マハラノビス距離, Z-Score)
 - 各種レポート画面や検索でのAI解説・要約生成機能
-- 内蔵ローカルLLM（tensai、GPU対応）および外部LLM（Ollama、Gemini、OpenAI、Anthropic）連携によるログ解説・問い合わせ（Ask AI）機能
+- 内蔵ローカルLLM（tensai、GPU / arm64 NEON SIMD対応、プリセットモデル拡充: Qwen2.5/Qwen3/LLM-jp/Gemma/SmolLM/Phi等）および外部LLM（Ollama、Gemini、OpenAI、Anthropic）連携によるログ解説・問い合わせ（Ask AI）機能 (v2.3.0)
 - Sigmaルール評価エンジンによる脅威検知、MITRE ATT&CKマッピング、コンプライアンス監査 (v2.2.0)
 
 を実現しました。
@@ -70,7 +70,7 @@ TWSNMP FCで開発したsyslogの分析機能を拡張してデスクトップ�
 - Svelte 5 / Vite 8 : フロントエンドフレームワーク & ビルドツール
 - Bluge : Go言語版全文検索エンジン
 - Parquet / Badger / Bbolt : 高速ストレージエンジン
-- tensai : 組み込みローカルLLM & 機械学習/ニューラルネットワーク推論エンジン（GPUアクセラレーション対応）
+- tensai : 組み込みローカルLLM & 機械学習/ニューラルネットワーク推論エンジン（GPU & arm64 NEONアクセラレーション対応）
 - langchaingo : 外部LLM連携ライブラリ（Go言語）
 - Sigma / Wazuh rules : Sigmaルール評価エンジン & 組み込みルールパック（Windows/Linux/Web/Network/Compliance）
 - p5.js / p5-svelte : 2D/3Dビジュアライズ
@@ -103,6 +103,7 @@ https://twsnmp.github.io/TWLogAIAN/
 - v2.0.0 (2026/6/20) Svelte 5 / Vite 8への移行、カスタムGrokEditorの導入、LLM対応（RAG機能の削除）
 - v2.1.0 (2026/9/6) 組み込みローカルLLM(tensai/GPU対応)、ストレージエンジン選択(Parquet/Badger/Bbolt)、AI要約・レポート解説、ディープラーニング異常検知(AutoEncoder/LSTM/KNN等)、ログインポート拡張(HTTP/Loki/ES/FTP等)、メール・遅延分析レポート追加
 - v2.2.0 (2026/9/12) Sigmaルールによる脅威検知・コンプライアンス監査レポート、外部Sigmaルール連携、Wazuhルール変換、CLIスキャン・評価機能(twlogaian sigma)
+- v2.3.0 (2026/10/14) tensai v0.0.35更新、プリセットローカルLLMモデル拡充(Qwen2.5/Qwen3/LLM-jp/Gemma/SmolLM/Phi等)、arm64 NEON SIMD環境検出対応、GGUF推論安定化・エラー通知改善、モデル管理インライン削除UI、依存関係の脆弱性対応
 
 ## Build
 

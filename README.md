@@ -52,7 +52,7 @@ Log analysis features:
 - Create chronological notes from selected logs
 - AI-assisted anomaly detection with Machine Learning & Deep Learning (Isolation Forest, LOF, AutoEncoder, LSTM, KNN, Mahalanobis distance, Z-Score)
 - AI explanation and summarization across report views and search results
-- Explain logs and answer questions with embedded local LLM (tensai with GPU acceleration) and external LLMs (Ollama, Gemini, OpenAI, Anthropic)
+- Explain logs and answer questions with embedded local LLM (tensai with GPU / arm64 NEON SIMD acceleration, expanded presets: Qwen2.5/Qwen3/LLM-jp/Gemma/SmolLM/Phi) and external LLMs (Ollama, Gemini, OpenAI, Anthropic) (v2.3.0)
 - Threat detection, MITRE ATT&CK mapping, and compliance auditing powered by Sigma rules (v2.2.0)
 
 Technologies used:
@@ -62,7 +62,7 @@ Technologies used:
 - Svelte 5 / Vite 8: Frontend framework and build tool
 - Bluge: Go full-text search engine
 - Parquet / Badger / Bbolt: High-performance storage engines
-- tensai: Embedded local LLM & neural network inference engine (with GPU acceleration)
+- tensai: Embedded local LLM & neural network inference engine (with GPU & arm64 NEON acceleration)
 - langchaingo: External LLM integration library
 - Sigma / Wazuh rules: Sigma rule evaluation engine & embedded rule packs (Windows/Linux/Web/Network/Compliance)
 - p5.js / p5-svelte: 2D/3D visualizations
@@ -93,6 +93,7 @@ https://twsnmp.github.io/TWLogAIAN/
 - v2.0.0 (2026/6/20) Upgrade to Svelte 5 / Vite 8, custom GrokEditor, LLM integration (RAG removed)
 - v2.1.0 (2026/9/6) Embedded local LLM (tensai/GPU), storage engine options (Parquet/Badger/Bbolt), AI report explanation & summary, deep learning anomaly detection (AutoEncoder/LSTM/KNN), expanded log sources (HTTP/Loki/ES/FTP), email & delay analysis reports
 - v2.2.0 (2026/9/12) Sigma rule threat detection & compliance audit report, external Sigma rules integration, Wazuh rule converter, CLI scanning & evaluation tool (twlogaian sigma)
+- v2.3.0 (2026/10/14) tensai v0.0.35 update, expanded preset local LLM models (Qwen2.5/Qwen3/LLM-jp/Gemma/SmolLM/Phi), arm64 NEON SIMD environment detection, GGUF inference stability improvements, model manager inline deletion UI, dependency security updates
 
 ## Build
 
