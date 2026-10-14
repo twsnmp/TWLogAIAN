@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@primer/css": "^19.1.1",
-    "brace-expansion": "^5.0.9",
+    "brace-expansion": "^5.0.12",
     "echarts": "^6.1.0",
     "echarts-gl": "^2.0.8",
     "echarts-stat": "^1.2.0",
@@ -41,6 +41,8 @@
     "esbuild": "^0.25.0",
     "brace-expansion": "$brace-expansion",
     "postcss": "$postcss",
-    "nanoid": "^3.3.18"
+    "nanoid": "^3.3.18",
+    "source-map-js": "^1.2.2",
+    "devalue": "^5.9.3"
   }
 }
