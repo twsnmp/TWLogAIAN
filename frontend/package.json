@@ -16,7 +16,7 @@
     "simple-svelte-autocomplete": "^2.5.1",
     "svelte": "^5.56.3",
     "svelte-copy": "1.4",
-    "vite": "^8.0.16"
+    "vite": "^8.1.6"
   },
   "dependencies": {
     "@primer/css": "^19.1.1",
