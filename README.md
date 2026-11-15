@@ -94,6 +94,7 @@ https://twsnmp.github.io/TWLogAIAN/
 - v2.1.0 (2026/9/6) Embedded local LLM (tensai/GPU), storage engine options (Parquet/Badger/Bbolt), AI report explanation & summary, deep learning anomaly detection (AutoEncoder/LSTM/KNN), expanded log sources (HTTP/Loki/ES/FTP), email & delay analysis reports
 - v2.2.0 (2026/9/12) Sigma rule threat detection & compliance audit report, external Sigma rules integration, Wazuh rule converter, CLI scanning & evaluation tool (twlogaian sigma)
 - v2.3.0 (2026/10/14) tensai v0.0.35 update, expanded preset local LLM models (Qwen2.5/Qwen3/LLM-jp/Gemma/SmolLM/Phi), arm64 NEON SIMD environment detection, GGUF inference stability improvements, model manager inline deletion UI, dependency security updates
+- v2.3.1 (2026/11/16) Dependency security updates (vite, excelize, echo, opentelemetry, wails)
 
 ## Build
 

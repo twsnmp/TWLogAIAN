@@ -104,6 +104,7 @@ https://twsnmp.github.io/TWLogAIAN/
 - v2.1.0 (2026/9/6) 組み込みローカルLLM(tensai/GPU対応)、ストレージエンジン選択(Parquet/Badger/Bbolt)、AI要約・レポート解説、ディープラーニング異常検知(AutoEncoder/LSTM/KNN等)、ログインポート拡張(HTTP/Loki/ES/FTP等)、メール・遅延分析レポート追加
 - v2.2.0 (2026/9/12) Sigmaルールによる脅威検知・コンプライアンス監査レポート、外部Sigmaルール連携、Wazuhルール変換、CLIスキャン・評価機能(twlogaian sigma)
 - v2.3.0 (2026/10/14) tensai v0.0.35更新、プリセットローカルLLMモデル拡充(Qwen2.5/Qwen3/LLM-jp/Gemma/SmolLM/Phi等)、arm64 NEON SIMD環境検出対応、GGUF推論安定化・エラー通知改善、モデル管理インライン削除UI、依存関係の脆弱性対応
+- v2.3.1 (2026/11/16) 依存関係の脆弱性対応およびパッケージ更新（vite, excelize, echo, opentelemetry, wails）
 
 ## Build
 
